@@ -1,4 +1,4 @@
-prefix=/home/duzhong/dzacs/install
+prefix=/usr/local
 
 Name: dzactuator
 Description: Description of dzactuator

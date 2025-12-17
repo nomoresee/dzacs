@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/duzhong/dzacs/devel/lib/dzjudgment/dzjudgment"
-  "/home/duzhong/dzacs/devel/lib/dzjudgment/dzjudgment.pdb"
+  "../devel/lib/dzjudgment/dzjudgment"
+  "../devel/lib/dzjudgment/dzjudgment.pdb"
   "CMakeFiles/dzjudgment.dir/src/dzjudgment.cpp.o"
   "CMakeFiles/dzjudgment.dir/src/judgment.cpp.o"
 )

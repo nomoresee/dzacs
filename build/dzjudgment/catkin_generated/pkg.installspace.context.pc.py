@@ -4,5 +4,5 @@ PROJECT_PKG_CONFIG_INCLUDE_DIRS = "".split(';') if "" != "" else []
 PROJECT_CATKIN_DEPENDS = "roscpp;rospy;std_msgs;message_runtime;serial".replace(';', ' ')
 PKG_CONFIG_LIBRARIES_WITH_PREFIX = "".split(';') if "" != "" else []
 PROJECT_NAME = "dzjudgment"
-PROJECT_SPACE_DIR = "/home/duzhong/dzacs/install"
+PROJECT_SPACE_DIR = "/usr/local"
 PROJECT_VERSION = "0.0.0"

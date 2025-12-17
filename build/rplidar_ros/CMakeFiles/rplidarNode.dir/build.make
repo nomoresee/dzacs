@@ -301,47 +301,47 @@ rplidarNode_OBJECTS = \
 # External object files for target rplidarNode
 rplidarNode_EXTERNAL_OBJECTS =
 
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/src/node.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/arch/linux/net_serial.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/arch/linux/net_socket.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/arch/linux/timer.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/dataunpacker/dataunpacker.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/dataunpacker/unpacker/handler_capsules.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/dataunpacker/unpacker/handler_hqnode.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/dataunpacker/unpacker/handler_normalnode.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/hal/thread.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/rplidar_driver.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_async_transceiver.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_crc.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_lidar_driver.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_lidarprotocol_codec.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_serial_channel.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_tcp_channel.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_udp_channel.cpp.o
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/build.make
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/libroscpp.so
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libpthread.so
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libboost_chrono.so.1.71.0
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libboost_filesystem.so.1.71.0
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/libxmlrpcpp.so
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/librosconsole.so
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/librosconsole_log4cxx.so
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/librosconsole_backend_interface.so
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/liblog4cxx.so
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libboost_regex.so.1.71.0
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/libroscpp_serialization.so
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/librostime.so
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libboost_date_time.so.1.71.0
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/libcpp_common.so
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libboost_system.so.1.71.0
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libboost_thread.so.1.71.0
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libconsole_bridge.so.0.4
-/home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Linking CXX executable /home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode"
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/src/node.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/arch/linux/net_serial.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/arch/linux/net_socket.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/arch/linux/timer.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/dataunpacker/dataunpacker.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/dataunpacker/unpacker/handler_capsules.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/dataunpacker/unpacker/handler_hqnode.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/dataunpacker/unpacker/handler_normalnode.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/hal/thread.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/rplidar_driver.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_async_transceiver.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_crc.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_lidar_driver.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_lidarprotocol_codec.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_serial_channel.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_tcp_channel.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/sdk/src/sl_udp_channel.cpp.o
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/build.make
+devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/libroscpp.so
+devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libpthread.so
+devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libboost_chrono.so.1.71.0
+devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libboost_filesystem.so.1.71.0
+devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/libxmlrpcpp.so
+devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/librosconsole.so
+devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/librosconsole_log4cxx.so
+devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/librosconsole_backend_interface.so
+devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/liblog4cxx.so
+devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libboost_regex.so.1.71.0
+devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/libroscpp_serialization.so
+devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/librostime.so
+devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libboost_date_time.so.1.71.0
+devel/lib/rplidar_ros/rplidarNode: /opt/ros/noetic/lib/libcpp_common.so
+devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libboost_system.so.1.71.0
+devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libboost_thread.so.1.71.0
+devel/lib/rplidar_ros/rplidarNode: /usr/lib/aarch64-linux-gnu/libconsole_bridge.so.0.4
+devel/lib/rplidar_ros/rplidarNode: rplidar_ros/CMakeFiles/rplidarNode.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Linking CXX executable ../devel/lib/rplidar_ros/rplidarNode"
 	cd /home/duzhong/dzacs/build/rplidar_ros && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/rplidarNode.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
-rplidar_ros/CMakeFiles/rplidarNode.dir/build: /home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode
+rplidar_ros/CMakeFiles/rplidarNode.dir/build: devel/lib/rplidar_ros/rplidarNode
 
 .PHONY : rplidar_ros/CMakeFiles/rplidarNode.dir/build
 

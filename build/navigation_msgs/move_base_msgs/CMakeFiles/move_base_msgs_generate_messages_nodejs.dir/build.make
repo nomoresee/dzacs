@@ -53,122 +53,122 @@ CMAKE_BINARY_DIR = /home/duzhong/dzacs/build
 # Include the progress variables for this target.
 include navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs.dir/progress.make
 
-navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/pathpoint.js
-navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/hgpathplanner.js
-navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/hglocation.js
-navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js
-navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js
-navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js
-navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js
-navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js
-navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseResult.js
-navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js
+navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/pathpoint.js
+navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/hgpathplanner.js
+navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/hglocation.js
+navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js
+navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js
+navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js
+navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js
+navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js
+navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseResult.js
+navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js
 
 
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/pathpoint.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/pathpoint.js: /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/pathpoint.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/pathpoint.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+devel/share/gennodejs/ros/move_base_msgs/msg/pathpoint.js: /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/pathpoint.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating Javascript code from move_base_msgs/pathpoint.msg"
-	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/pathpoint.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg
+	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/pathpoint.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/build/devel/share/gennodejs/ros/move_base_msgs/msg
 
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/hgpathplanner.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/hgpathplanner.js: /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/hgpathplanner.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/hgpathplanner.js: /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/pathpoint.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/hgpathplanner.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+devel/share/gennodejs/ros/move_base_msgs/msg/hgpathplanner.js: /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/hgpathplanner.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/hgpathplanner.js: /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/pathpoint.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating Javascript code from move_base_msgs/hgpathplanner.msg"
-	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/hgpathplanner.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg
+	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/hgpathplanner.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/build/devel/share/gennodejs/ros/move_base_msgs/msg
 
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/hglocation.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/hglocation.js: /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/hglocation.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/hglocation.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+devel/share/gennodejs/ros/move_base_msgs/msg/hglocation.js: /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/hglocation.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Generating Javascript code from move_base_msgs/hglocation.msg"
-	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/hglocation.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg
+	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg/hglocation.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/build/devel/share/gennodejs/ros/move_base_msgs/msg
 
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseAction.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseGoal.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseFeedback.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseActionFeedback.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalStatus.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseResult.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalID.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseActionResult.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseActionGoal.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: devel/share/move_base_msgs/msg/MoveBaseAction.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: devel/share/move_base_msgs/msg/MoveBaseGoal.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalStatus.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: devel/share/move_base_msgs/msg/MoveBaseFeedback.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: devel/share/move_base_msgs/msg/MoveBaseActionGoal.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: devel/share/move_base_msgs/msg/MoveBaseResult.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: devel/share/move_base_msgs/msg/MoveBaseActionResult.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: devel/share/move_base_msgs/msg/MoveBaseActionFeedback.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalID.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Generating Javascript code from move_base_msgs/MoveBaseAction.msg"
-	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseAction.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg
+	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseAction.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/build/devel/share/gennodejs/ros/move_base_msgs/msg
 
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseActionGoal.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseGoal.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalID.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: devel/share/move_base_msgs/msg/MoveBaseActionGoal.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: devel/share/move_base_msgs/msg/MoveBaseGoal.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalID.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Generating Javascript code from move_base_msgs/MoveBaseActionGoal.msg"
-	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseActionGoal.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg
+	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseActionGoal.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/build/devel/share/gennodejs/ros/move_base_msgs/msg
 
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseActionResult.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseResult.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalID.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalStatus.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js: devel/share/move_base_msgs/msg/MoveBaseActionResult.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalStatus.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js: devel/share/move_base_msgs/msg/MoveBaseResult.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalID.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Generating Javascript code from move_base_msgs/MoveBaseActionResult.msg"
-	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseActionResult.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg
+	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseActionResult.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/build/devel/share/gennodejs/ros/move_base_msgs/msg
 
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseActionFeedback.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseFeedback.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalStatus.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalID.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: devel/share/move_base_msgs/msg/MoveBaseActionFeedback.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalStatus.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: devel/share/move_base_msgs/msg/MoveBaseFeedback.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/actionlib_msgs/msg/GoalID.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Generating Javascript code from move_base_msgs/MoveBaseActionFeedback.msg"
-	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseActionFeedback.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg
+	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseActionFeedback.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/build/devel/share/gennodejs/ros/move_base_msgs/msg
 
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseGoal.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: devel/share/move_base_msgs/msg/MoveBaseGoal.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Generating Javascript code from move_base_msgs/MoveBaseGoal.msg"
-	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseGoal.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg
+	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseGoal.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/build/devel/share/gennodejs/ros/move_base_msgs/msg
 
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseResult.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseResult.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseResult.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseResult.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseResult.js: devel/share/move_base_msgs/msg/MoveBaseResult.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Generating Javascript code from move_base_msgs/MoveBaseResult.msg"
-	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseResult.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg
+	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseResult.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/build/devel/share/gennodejs/ros/move_base_msgs/msg
 
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseFeedback.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: devel/share/move_base_msgs/msg/MoveBaseFeedback.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Generating Javascript code from move_base_msgs/MoveBaseFeedback.msg"
-	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseFeedback.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg
+	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseFeedback.msg -Imove_base_msgs:/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs/msg -Imove_base_msgs:/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Ivisualization_msgs:/opt/ros/noetic/share/visualization_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p move_base_msgs -o /home/duzhong/dzacs/build/devel/share/gennodejs/ros/move_base_msgs/msg
 
 move_base_msgs_generate_messages_nodejs: navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs
-move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/pathpoint.js
-move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/hgpathplanner.js
-move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/hglocation.js
-move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js
-move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js
-move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js
-move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js
-move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js
-move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseResult.js
-move_base_msgs_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js
+move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/pathpoint.js
+move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/hgpathplanner.js
+move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/hglocation.js
+move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseAction.js
+move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionGoal.js
+move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionResult.js
+move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseActionFeedback.js
+move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseGoal.js
+move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseResult.js
+move_base_msgs_generate_messages_nodejs: devel/share/gennodejs/ros/move_base_msgs/msg/MoveBaseFeedback.js
 move_base_msgs_generate_messages_nodejs: navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs.dir/build.make
 
 .PHONY : move_base_msgs_generate_messages_nodejs
