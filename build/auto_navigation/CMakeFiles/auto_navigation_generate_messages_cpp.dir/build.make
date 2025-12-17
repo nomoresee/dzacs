@@ -59,10 +59,10 @@ auto_navigation/CMakeFiles/auto_navigation_generate_messages_cpp: devel/include/
 
 devel/include/auto_navigation/NavigationGoal.h: /opt/ros/noetic/lib/gencpp/gen_cpp.py
 devel/include/auto_navigation/NavigationGoal.h: /home/duzhong/dzacs/src/auto_navigation/msg/NavigationGoal.msg
+devel/include/auto_navigation/NavigationGoal.h: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
 devel/include/auto_navigation/NavigationGoal.h: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
 devel/include/auto_navigation/NavigationGoal.h: /opt/ros/noetic/share/std_msgs/msg/Header.msg
 devel/include/auto_navigation/NavigationGoal.h: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
-devel/include/auto_navigation/NavigationGoal.h: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
 devel/include/auto_navigation/NavigationGoal.h: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
 devel/include/auto_navigation/NavigationGoal.h: /opt/ros/noetic/share/gencpp/msg.h.template
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating C++ code from auto_navigation/NavigationGoal.msg"

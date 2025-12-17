@@ -17,14 +17,6 @@
 #include "rknnPool.hpp"
 
 cv::Mat ros_frame;
-constexpr int CENTERING_THRESHOLD = 10;  // 允许的水平居中阈值(像素)
-
-// 添加目标检测统计变量
-static int total_detection_count = 0;      // 总检测次数
-static int target_detected_count = 0;      // 检测到目标的次数
-static int target_centered_count = 0;      // 目标居中的次数
-static ros::Time last_detection_print_time;
-
 
 void imageCallback(const sensor_msgs::ImageConstPtr &msg)
 {
@@ -42,37 +34,14 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg)
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "det_node");
-  // Ensure ROS time is initialized before the first call to ros::Time::now()
-  ros::Time::init();
-  ros::start();
-  // 如果使用模拟时间，在继续前等待 clock 消息生效
-  if (!ros::Time::isSystemTime())
-  {
-    ros::Time::waitForValid();
-  }
   ros::NodeHandle nh;
-  last_detection_print_time = ros::Time::now();
 
   ros::Publisher det_pub = nh.advertise<std_msgs::Int32MultiArray>("offset_center", 1);
 
   image_transport::ImageTransport it(nh);
   image_transport::Subscriber image_sub = it.subscribe("/usb_cam/image_raw", 1, imageCallback);
 
-  // 使用官方路径，但需要根据实际用户名修改
   std::string model_name = "/home/duzhong/dzacs/src/rknn_pt/model/light_det.rknn";
-  
-  // 检查模型文件是否存在
-  FILE* file = fopen(model_name.c_str(), "rb");
-  if (file == NULL) {
-    printf("错误: 模型文件不存在: %s\n", model_name.c_str());
-    printf("请检查以下路径是否存在:\n");
-    printf("1. %s\n", model_name.c_str());
-    printf("2. 请确认您的用户名是否为 'duzhong'\n");
-    printf("3. 如果不是，请修改源代码中的路径\n");
-    return -1;
-  }
-  fclose(file);
-  printf("模型文件路径: %s\n", model_name.c_str());
   // std::string vedio_name = "/home/duzhong/Desktop/8.mp4";
 
   int draw = 1;
@@ -149,24 +118,11 @@ int main(int argc, char **argv)
       {
         for (const auto &res : results_group.dets)
         {
-
-                  // 增加总检测次数
-        total_detection_count++;
-
           int center_x = res.box.x + res.box.width / 2;
           int center_y = res.box.y + res.box.height / 2;
 
           int offset_center_x = center_x - width / 2;
           int offset_center_y = center_y - height / 2;
-
-          // 增加检测到目标的次数
-          target_detected_count++;
-          
-          // 检查目标是否居中
-          if (abs(offset_center_x) <= CENTERING_THRESHOLD && abs(offset_center_y) <= 10) {
-            target_centered_count++;
-          }
-
 
           // printf("name: %s, x: %d, y: %d, width: %d, height: %d\n", res.det_name.c_str(), offset_center_x, offset_center_y, res.box.width, res.box.height);
 
@@ -181,18 +137,6 @@ int main(int argc, char **argv)
         }
         det_pub.publish(msg);
 
-        // 每5秒打印一次目标检测统计信息
-        ros::Time current_time = ros::Time::now();
-        if ((current_time - last_detection_print_time).toSec() >= 5.0) {
-          ROS_INFO("目标检测统计 - 总检测次数: %d, 检测到目标次数: %d, 目标居中次数: %d, 居中率: %.2f%%", 
-                   total_detection_count, 
-                   target_detected_count, 
-                   target_centered_count,
-                   target_detected_count > 0 ? (double)target_centered_count / target_detected_count * 100.0 : 0.0);
-          last_detection_print_time = current_time;
-        }
-
-        
         if (draw)
         {
           show_draw_results(results_group);

@@ -236,16 +236,6 @@
 			"path" : "/opt/ros/noetic/share/catkin/cmake/empy.cmake"
 		},
 		{
-			"isCMake" : true,
-			"isExternal" : true,
-			"path" : "/usr/share/cmake-3.16/Modules/FindPackageHandleStandardArgs.cmake"
-		},
-		{
-			"isCMake" : true,
-			"isExternal" : true,
-			"path" : "/usr/share/cmake-3.16/Modules/FindPackageMessage.cmake"
-		},
-		{
 			"isExternal" : true,
 			"path" : "/opt/ros/noetic/share/catkin/cmake/find_program_required.cmake"
 		},
@@ -345,21 +335,6 @@
 			"isCMake" : true,
 			"isExternal" : true,
 			"path" : "/usr/share/cmake-3.16/Modules/CheckCSourceCompiles.cmake"
-		},
-		{
-			"isCMake" : true,
-			"isExternal" : true,
-			"path" : "/usr/share/cmake-3.16/Modules/CheckIncludeFile.c.in"
-		},
-		{
-			"isCMake" : true,
-			"isExternal" : true,
-			"path" : "/usr/share/cmake-3.16/Modules/CheckFunctionExists.c"
-		},
-		{
-			"isCMake" : true,
-			"isExternal" : true,
-			"path" : "/usr/share/cmake-3.16/Modules/CheckFunctionExists.c"
 		},
 		{
 			"isCMake" : true,
