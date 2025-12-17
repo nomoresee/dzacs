@@ -53,35 +53,35 @@ CMAKE_BINARY_DIR = /home/duzhong/dzacs/build
 # Include the progress variables for this target.
 include auto_navigation/CMakeFiles/auto_navigation_generate_messages_eus.dir/progress.make
 
-auto_navigation/CMakeFiles/auto_navigation_generate_messages_eus: /home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l
-auto_navigation/CMakeFiles/auto_navigation_generate_messages_eus: /home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationStatus.l
-auto_navigation/CMakeFiles/auto_navigation_generate_messages_eus: /home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/manifest.l
+auto_navigation/CMakeFiles/auto_navigation_generate_messages_eus: devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l
+auto_navigation/CMakeFiles/auto_navigation_generate_messages_eus: devel/share/roseus/ros/auto_navigation/msg/NavigationStatus.l
+auto_navigation/CMakeFiles/auto_navigation_generate_messages_eus: devel/share/roseus/ros/auto_navigation/manifest.l
 
 
-/home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /opt/ros/noetic/lib/geneus/gen_eus.py
-/home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /home/duzhong/dzacs/src/auto_navigation/msg/NavigationGoal.msg
-/home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
-/home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
-/home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /opt/ros/noetic/share/std_msgs/msg/Header.msg
-/home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
-/home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
+devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /opt/ros/noetic/lib/geneus/gen_eus.py
+devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /home/duzhong/dzacs/src/auto_navigation/msg/NavigationGoal.msg
+devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /opt/ros/noetic/share/std_msgs/msg/Header.msg
+devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
+devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
+devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating EusLisp code from auto_navigation/NavigationGoal.msg"
-	cd /home/duzhong/dzacs/build/auto_navigation && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/geneus/cmake/../../../lib/geneus/gen_eus.py /home/duzhong/dzacs/src/auto_navigation/msg/NavigationGoal.msg -Iauto_navigation:/home/duzhong/dzacs/src/auto_navigation/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -Inav_msgs:/opt/ros/noetic/share/nav_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -p auto_navigation -o /home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg
+	cd /home/duzhong/dzacs/build/auto_navigation && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/geneus/cmake/../../../lib/geneus/gen_eus.py /home/duzhong/dzacs/src/auto_navigation/msg/NavigationGoal.msg -Iauto_navigation:/home/duzhong/dzacs/src/auto_navigation/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -Inav_msgs:/opt/ros/noetic/share/nav_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -p auto_navigation -o /home/duzhong/dzacs/build/devel/share/roseus/ros/auto_navigation/msg
 
-/home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationStatus.l: /opt/ros/noetic/lib/geneus/gen_eus.py
-/home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationStatus.l: /home/duzhong/dzacs/src/auto_navigation/msg/NavigationStatus.msg
-/home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationStatus.l: /opt/ros/noetic/share/std_msgs/msg/Header.msg
+devel/share/roseus/ros/auto_navigation/msg/NavigationStatus.l: /opt/ros/noetic/lib/geneus/gen_eus.py
+devel/share/roseus/ros/auto_navigation/msg/NavigationStatus.l: /home/duzhong/dzacs/src/auto_navigation/msg/NavigationStatus.msg
+devel/share/roseus/ros/auto_navigation/msg/NavigationStatus.l: /opt/ros/noetic/share/std_msgs/msg/Header.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating EusLisp code from auto_navigation/NavigationStatus.msg"
-	cd /home/duzhong/dzacs/build/auto_navigation && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/geneus/cmake/../../../lib/geneus/gen_eus.py /home/duzhong/dzacs/src/auto_navigation/msg/NavigationStatus.msg -Iauto_navigation:/home/duzhong/dzacs/src/auto_navigation/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -Inav_msgs:/opt/ros/noetic/share/nav_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -p auto_navigation -o /home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg
+	cd /home/duzhong/dzacs/build/auto_navigation && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/geneus/cmake/../../../lib/geneus/gen_eus.py /home/duzhong/dzacs/src/auto_navigation/msg/NavigationStatus.msg -Iauto_navigation:/home/duzhong/dzacs/src/auto_navigation/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -Inav_msgs:/opt/ros/noetic/share/nav_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -p auto_navigation -o /home/duzhong/dzacs/build/devel/share/roseus/ros/auto_navigation/msg
 
-/home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/manifest.l: /opt/ros/noetic/lib/geneus/gen_eus.py
+devel/share/roseus/ros/auto_navigation/manifest.l: /opt/ros/noetic/lib/geneus/gen_eus.py
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Generating EusLisp manifest code for auto_navigation"
-	cd /home/duzhong/dzacs/build/auto_navigation && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/geneus/cmake/../../../lib/geneus/gen_eus.py -m -o /home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation auto_navigation std_msgs geometry_msgs nav_msgs
+	cd /home/duzhong/dzacs/build/auto_navigation && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/geneus/cmake/../../../lib/geneus/gen_eus.py -m -o /home/duzhong/dzacs/build/devel/share/roseus/ros/auto_navigation auto_navigation std_msgs geometry_msgs nav_msgs
 
 auto_navigation_generate_messages_eus: auto_navigation/CMakeFiles/auto_navigation_generate_messages_eus
-auto_navigation_generate_messages_eus: /home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l
-auto_navigation_generate_messages_eus: /home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/msg/NavigationStatus.l
-auto_navigation_generate_messages_eus: /home/duzhong/dzacs/devel/share/roseus/ros/auto_navigation/manifest.l
+auto_navigation_generate_messages_eus: devel/share/roseus/ros/auto_navigation/msg/NavigationGoal.l
+auto_navigation_generate_messages_eus: devel/share/roseus/ros/auto_navigation/msg/NavigationStatus.l
+auto_navigation_generate_messages_eus: devel/share/roseus/ros/auto_navigation/manifest.l
 auto_navigation_generate_messages_eus: auto_navigation/CMakeFiles/auto_navigation_generate_messages_eus.dir/build.make
 
 .PHONY : auto_navigation_generate_messages_eus

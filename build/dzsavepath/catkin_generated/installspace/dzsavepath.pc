@@ -1,4 +1,4 @@
-prefix=/home/duzhong/dzacs/install
+prefix=/usr/local
 
 Name: dzsavepath
 Description: Description of dzsavepath

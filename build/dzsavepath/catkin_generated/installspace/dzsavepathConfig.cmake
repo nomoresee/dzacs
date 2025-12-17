@@ -68,13 +68,13 @@ set(dzsavepath_CONFIG_INCLUDED TRUE)
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
   set(dzsavepath_SOURCE_PREFIX /home/duzhong/dzacs/src/dzsavepath)
-  set(dzsavepath_DEVEL_PREFIX /home/duzhong/dzacs/devel)
+  set(dzsavepath_DEVEL_PREFIX /home/duzhong/dzacs/build/devel)
   set(dzsavepath_INSTALL_PREFIX "")
   set(dzsavepath_PREFIX ${dzsavepath_DEVEL_PREFIX})
 else()
   set(dzsavepath_SOURCE_PREFIX "")
   set(dzsavepath_DEVEL_PREFIX "")
-  set(dzsavepath_INSTALL_PREFIX /home/duzhong/dzacs/install)
+  set(dzsavepath_INSTALL_PREFIX /usr/local)
   set(dzsavepath_PREFIX ${dzsavepath_INSTALL_PREFIX})
 endif()
 
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/duzhong/dzacs/install/lib;/home/duzhong/catkin_ws/devel/lib;/opt/ros/noetic/lib)
+    foreach(path /usr/local/lib;/home/duzhong/catkin_ws/devel/lib;/home/duzhong/dzacs/devel/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

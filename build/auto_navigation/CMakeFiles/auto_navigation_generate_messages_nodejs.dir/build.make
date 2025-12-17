@@ -53,29 +53,29 @@ CMAKE_BINARY_DIR = /home/duzhong/dzacs/build
 # Include the progress variables for this target.
 include auto_navigation/CMakeFiles/auto_navigation_generate_messages_nodejs.dir/progress.make
 
-auto_navigation/CMakeFiles/auto_navigation_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js
-auto_navigation/CMakeFiles/auto_navigation_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationStatus.js
+auto_navigation/CMakeFiles/auto_navigation_generate_messages_nodejs: devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js
+auto_navigation/CMakeFiles/auto_navigation_generate_messages_nodejs: devel/share/gennodejs/ros/auto_navigation/msg/NavigationStatus.js
 
 
-/home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
-/home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /home/duzhong/dzacs/src/auto_navigation/msg/NavigationGoal.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
+devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /home/duzhong/dzacs/src/auto_navigation/msg/NavigationGoal.msg
+devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Point.msg
+devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
+devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Quaternion.msg
+devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/PoseStamped.msg
+devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js: /opt/ros/noetic/share/geometry_msgs/msg/Pose.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating Javascript code from auto_navigation/NavigationGoal.msg"
-	cd /home/duzhong/dzacs/build/auto_navigation && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/src/auto_navigation/msg/NavigationGoal.msg -Iauto_navigation:/home/duzhong/dzacs/src/auto_navigation/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -Inav_msgs:/opt/ros/noetic/share/nav_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -p auto_navigation -o /home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg
+	cd /home/duzhong/dzacs/build/auto_navigation && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/src/auto_navigation/msg/NavigationGoal.msg -Iauto_navigation:/home/duzhong/dzacs/src/auto_navigation/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -Inav_msgs:/opt/ros/noetic/share/nav_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -p auto_navigation -o /home/duzhong/dzacs/build/devel/share/gennodejs/ros/auto_navigation/msg
 
-/home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationStatus.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
-/home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationStatus.js: /home/duzhong/dzacs/src/auto_navigation/msg/NavigationStatus.msg
-/home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationStatus.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
+devel/share/gennodejs/ros/auto_navigation/msg/NavigationStatus.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+devel/share/gennodejs/ros/auto_navigation/msg/NavigationStatus.js: /home/duzhong/dzacs/src/auto_navigation/msg/NavigationStatus.msg
+devel/share/gennodejs/ros/auto_navigation/msg/NavigationStatus.js: /opt/ros/noetic/share/std_msgs/msg/Header.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating Javascript code from auto_navigation/NavigationStatus.msg"
-	cd /home/duzhong/dzacs/build/auto_navigation && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/src/auto_navigation/msg/NavigationStatus.msg -Iauto_navigation:/home/duzhong/dzacs/src/auto_navigation/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -Inav_msgs:/opt/ros/noetic/share/nav_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -p auto_navigation -o /home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg
+	cd /home/duzhong/dzacs/build/auto_navigation && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/duzhong/dzacs/src/auto_navigation/msg/NavigationStatus.msg -Iauto_navigation:/home/duzhong/dzacs/src/auto_navigation/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -Inav_msgs:/opt/ros/noetic/share/nav_msgs/cmake/../msg -Iactionlib_msgs:/opt/ros/noetic/share/actionlib_msgs/cmake/../msg -p auto_navigation -o /home/duzhong/dzacs/build/devel/share/gennodejs/ros/auto_navigation/msg
 
 auto_navigation_generate_messages_nodejs: auto_navigation/CMakeFiles/auto_navigation_generate_messages_nodejs
-auto_navigation_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js
-auto_navigation_generate_messages_nodejs: /home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationStatus.js
+auto_navigation_generate_messages_nodejs: devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js
+auto_navigation_generate_messages_nodejs: devel/share/gennodejs/ros/auto_navigation/msg/NavigationStatus.js
 auto_navigation_generate_messages_nodejs: auto_navigation/CMakeFiles/auto_navigation_generate_messages_nodejs.dir/build.make
 
 .PHONY : auto_navigation_generate_messages_nodejs

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/duzhong/dzacs/devel/lib/move_base/move_base"
-  "/home/duzhong/dzacs/devel/lib/move_base/move_base.pdb"
+  "../devel/lib/move_base/move_base"
+  "../devel/lib/move_base/move_base.pdb"
   "CMakeFiles/move_base_node.dir/src/move_base_node.cpp.o"
 )
 
