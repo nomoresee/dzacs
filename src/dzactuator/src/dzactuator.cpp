@@ -637,12 +637,12 @@ double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose){
     static double integral = 0.0;
     static double filtered_derivative = 0.0;
 
-    static constexpr double kp = 240.0;              // 稳定的比例增益
+    static constexpr double kp = 360.0;              // 稳定的比例增益
     static constexpr double ki = 1.46;            // 更低的积分增益
     static constexpr double kd = 1.02;             // 减小的微分增益
     static constexpr double max_speed = 18000.0;    // 最大速度限制
     static constexpr double sampling_time = 0.01;  // 采样时间 (10Hz)
-    static double offset = 10.0;
+    static double offset = 50.0;
     static double beta = 0.0;
     // 计算误差
     double error = static_cast<double>(target_pose - current_pose);
@@ -658,7 +658,7 @@ double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose){
     //微分项更新并滤波
     double derivative = (error - prev_error) / sampling_time;
     // double derivative=(prev_pose-current_pose)/ sampling_time;
-    filtered_derivative = 0.8 * filtered_derivative + 0.2 * derivative;
+    filtered_derivative = 0.6 * filtered_derivative + 0.4 * derivative;
     // PID 控制计算
     double speed = kp * error + ki * integral   + kd * filtered_derivative;
     // double speed = kp * error ;

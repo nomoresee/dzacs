@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(rknn_pt)
 
-set(RKNN_RT_LIB ${CMAKE_SOURCE_DIR}/rknn_pt/lib/librknnrt.so)
-set(RGA_LIB ${CMAKE_SOURCE_DIR}/rknn_pt/lib/librga.so)
+# set(RKNN_RT_LIB ${CMAKE_SOURCE_DIR}/rknn_pt/lib/librknnrt.so)
+# set(RGA_LIB ${CMAKE_SOURCE_DIR}/rknn_pt/lib/librga.so)
+
+
+# 修正后的代码
+set(RKNN_RT_LIB ${PROJECT_SOURCE_DIR}/lib/librknnrt.so)
+set(RGA_LIB ${PROJECT_SOURCE_DIR}/lib/librga.so)
+
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)

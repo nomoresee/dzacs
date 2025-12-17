@@ -1,8 +1,0 @@
-prefix=/home/duzhong/dzacs/build/devel
-
-Name: rknn_pt
-Description: Description of rknn_pt
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
