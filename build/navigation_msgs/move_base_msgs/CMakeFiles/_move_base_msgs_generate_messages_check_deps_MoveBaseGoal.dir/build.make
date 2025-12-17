@@ -54,7 +54,7 @@ CMAKE_BINARY_DIR = /home/duzhong/dzacs/build
 include navigation_msgs/move_base_msgs/CMakeFiles/_move_base_msgs_generate_messages_check_deps_MoveBaseGoal.dir/progress.make
 
 navigation_msgs/move_base_msgs/CMakeFiles/_move_base_msgs_generate_messages_check_deps_MoveBaseGoal:
-	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py move_base_msgs /home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseGoal.msg geometry_msgs/PoseStamped:geometry_msgs/Pose:geometry_msgs/Quaternion:geometry_msgs/Point:std_msgs/Header
+	cd /home/duzhong/dzacs/build/navigation_msgs/move_base_msgs && ../../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py move_base_msgs /home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseGoal.msg geometry_msgs/PoseStamped:geometry_msgs/Pose:std_msgs/Header:geometry_msgs/Quaternion:geometry_msgs/Point
 
 _move_base_msgs_generate_messages_check_deps_MoveBaseGoal: navigation_msgs/move_base_msgs/CMakeFiles/_move_base_msgs_generate_messages_check_deps_MoveBaseGoal
 _move_base_msgs_generate_messages_check_deps_MoveBaseGoal: navigation_msgs/move_base_msgs/CMakeFiles/_move_base_msgs_generate_messages_check_deps_MoveBaseGoal.dir/build.make
