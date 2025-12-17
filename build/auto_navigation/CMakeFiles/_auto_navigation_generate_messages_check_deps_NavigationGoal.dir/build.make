@@ -54,7 +54,7 @@ CMAKE_BINARY_DIR = /home/duzhong/dzacs/build
 include auto_navigation/CMakeFiles/_auto_navigation_generate_messages_check_deps_NavigationGoal.dir/progress.make
 
 auto_navigation/CMakeFiles/_auto_navigation_generate_messages_check_deps_NavigationGoal:
-	cd /home/duzhong/dzacs/build/auto_navigation && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py auto_navigation /home/duzhong/dzacs/src/auto_navigation/msg/NavigationGoal.msg geometry_msgs/Point:geometry_msgs/Pose:geometry_msgs/Quaternion:std_msgs/Header:geometry_msgs/PoseStamped
+	cd /home/duzhong/dzacs/build/auto_navigation && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py auto_navigation /home/duzhong/dzacs/src/auto_navigation/msg/NavigationGoal.msg std_msgs/Header:geometry_msgs/PoseStamped:geometry_msgs/Quaternion:geometry_msgs/Pose:geometry_msgs/Point
 
 _auto_navigation_generate_messages_check_deps_NavigationGoal: auto_navigation/CMakeFiles/_auto_navigation_generate_messages_check_deps_NavigationGoal
 _auto_navigation_generate_messages_check_deps_NavigationGoal: auto_navigation/CMakeFiles/_auto_navigation_generate_messages_check_deps_NavigationGoal.dir/build.make
