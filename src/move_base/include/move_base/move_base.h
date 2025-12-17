@@ -1,0 +1,451 @@
+/*********************************************************************
+ *
+ * Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2008, Willow Garage, Inc.
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of the Willow Garage nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Eitan Marder-Eppstein
+ *********************************************************************/
+#ifndef NAV_MOVE_BASE_ACTION_H_
+#define NAV_MOVE_BASE_ACTION_H_
+
+#include <vector>
+#include <string>
+
+#include <ros/ros.h>
+
+#include <actionlib/server/simple_action_server.h>
+#include <move_base_msgs/MoveBaseAction.h>
+
+#include <nav_core/base_local_planner.h>
+#include <nav_core/base_global_planner.h>
+#include <nav_core/recovery_behavior.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <costmap_2d/costmap_2d_ros.h>
+#include <costmap_2d/costmap_2d.h>
+#include <nav_msgs/GetPlan.h>
+
+#include <pluginlib/class_loader.hpp>
+#include <std_srvs/Empty.h>
+
+#include <dynamic_reconfigure/server.h>
+#include "move_base/MoveBaseConfig.h"
+
+#include "move_base_msgs/hgpathplanner.h"
+#include "move_base_msgs/pathpoint.h"
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
+
+#include "move_base_msgs/hglocation.h"
+#include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/Imu.h>
+#include <nav_msgs/Odometry.h>
+#include <laser_geometry/laser_geometry.h>
+#include <sensor_msgs/PointCloud.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/point_cloud_conversion.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <tf2_ros/buffer.h>
+#include <std_msgs/ByteMultiArray.h>
+
+#include "std_msgs/String.h"
+#include <std_msgs/Float32.h>
+#include <std_msgs/UInt8.h>
+#include <sstream>
+#include <iostream>
+#include <fstream>
+
+#define STOP_DIS 0.25
+
+namespace move_base
+{
+  // typedefs to help us out with the action server so that we don't hace to type so much
+  typedef actionlib::SimpleActionServer<move_base_msgs::MoveBaseAction> MoveBaseActionServer;
+
+  enum MoveBaseState
+  {
+    PLANNING,
+    CONTROLLING,
+    CLEARING
+  };
+
+  enum RecoveryTrigger
+  {
+    PLANNING_R,
+    CONTROLLING_R,
+    OSCILLATION_R
+  };
+
+  /**
+   * @class MoveBase
+   * @brief A class that uses the actionlib::ActionServer interface that moves the robot base to a goal location.
+   */
+  class MoveBase
+  {
+  public:
+    /**
+     * @brief  Constructor for the actions
+     * @param name The name of the action
+     * @param tf A reference to a TransformListener
+     */
+    MoveBase(tf2_ros::Buffer &tf);
+
+    /**
+     * @brief  Destructor - Cleans up
+     */
+    virtual ~MoveBase();
+
+    /**
+     * @brief  Performs a control cycle
+     * @param goal A reference to the goal to pursue
+     * @param global_plan A reference to the global plan being used
+     * @return True if processing of the goal is done, false otherwise
+     */
+    bool executeCycle(geometry_msgs::PoseStamped &goal, std::vector<geometry_msgs::PoseStamped> &global_plan);
+
+  private:
+    bool make_plan_clear_costmap_;
+    bool make_plan_add_unreachable_goal_;
+    ros::Publisher recovery_status_pub_;
+    std::vector<std::string> recovery_behavior_names_; 
+    /**
+     * @brief  A service call that clears the costmaps of obstacles
+     * @param req The service request
+     * @param resp The service response
+     * @return True if the service call succeeds, false otherwise
+     */
+    bool clearCostmapsService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &resp);
+
+    /**
+     * @brief  A service call that can be made when the action is inactive that will return a plan
+     * @param  req The goal request
+     * @param  resp The plan request
+     * @return True if planning succeeded, false otherwise
+     */
+    bool planService(nav_msgs::GetPlan::Request &req, nav_msgs::GetPlan::Response &resp);
+
+    /**
+     * @brief  Make a new global plan
+     * @param  goal The goal to plan to
+     * @param  plan Will be filled in with the plan made by the planner
+     * @return  True if planning succeeds, false otherwise
+     */
+    bool makePlan(const geometry_msgs::PoseStamped &goal, std::vector<geometry_msgs::PoseStamped> &plan);
+
+    /**
+     * @brief  Load the recovery behaviors for the navigation stack from the parameter server
+     * @param node The ros::NodeHandle to be used for loading parameters
+     * @return True if the recovery behaviors were loaded successfully, false otherwise
+     */
+    bool loadRecoveryBehaviors(ros::NodeHandle node);
+
+    /**
+     * @brief  Loads the default recovery behaviors for the navigation stack
+     */
+    void loadDefaultRecoveryBehaviors();
+
+    /**
+     * @brief  Clears obstacles within a window around the robot
+     * @param size_x The x size of the window
+     * @param size_y The y size of the window
+     */
+    void clearCostmapWindows(double size_x, double size_y);
+
+    /**
+     * @brief  Publishes a velocity command of zero to the base
+     */
+    void publishZeroVelocity();
+
+    /**
+     * @brief  Reset the state of the move_base action and send a zero velocity command to the base
+     */
+    void resetState();
+
+    void goalCB(const geometry_msgs::PoseStamped::ConstPtr &goal);
+
+    void planThread();
+
+    void executeCb(const move_base_msgs::MoveBaseGoalConstPtr &move_base_goal);
+
+    bool isQuaternionValid(const geometry_msgs::Quaternion &q);
+
+    bool getRobotPose(geometry_msgs::PoseStamped &global_pose, costmap_2d::Costmap2DROS *costmap);
+
+    double distance(const geometry_msgs::PoseStamped &p1, const geometry_msgs::PoseStamped &p2);
+
+    geometry_msgs::PoseStamped goalToGlobalFrame(const geometry_msgs::PoseStamped &goal_pose_msg);
+
+    /**
+     * @brief This is used to wake the planner at periodic intervals.
+     */
+    void wakePlanner(const ros::TimerEvent &event);
+
+    tf2_ros::Buffer &tf_;
+
+    MoveBaseActionServer *as_;
+
+    boost::shared_ptr<nav_core::BaseLocalPlanner> tc_;
+    costmap_2d::Costmap2DROS *planner_costmap_ros_, *controller_costmap_ros_;
+
+    boost::shared_ptr<nav_core::BaseGlobalPlanner> planner_;
+    std::string robot_base_frame_, global_frame_;
+
+    std::vector<boost::shared_ptr<nav_core::RecoveryBehavior>> recovery_behaviors_;
+    unsigned int recovery_index_;
+
+    geometry_msgs::PoseStamped global_pose_;
+    double planner_frequency_, controller_frequency_, inscribed_radius_, circumscribed_radius_;
+    double planner_patience_, controller_patience_;
+    int32_t max_planning_retries_;
+    uint32_t planning_retries_;
+    double conservative_reset_dist_, clearing_radius_;
+    ros::Publisher current_goal_pub_, vel_pub_, action_goal_pub_;
+    ros::Subscriber goal_sub_;
+    ros::ServiceServer make_plan_srv_, clear_costmaps_srv_;
+    bool shutdown_costmaps_, clearing_rotation_allowed_, recovery_behavior_enabled_;
+    double oscillation_timeout_, oscillation_distance_;
+
+    MoveBaseState state_;
+    RecoveryTrigger recovery_trigger_;
+
+    ros::Time last_valid_plan_, last_valid_control_, last_oscillation_reset_;
+    geometry_msgs::PoseStamped oscillation_pose_;
+    pluginlib::ClassLoader<nav_core::BaseGlobalPlanner> bgp_loader_;
+    pluginlib::ClassLoader<nav_core::BaseLocalPlanner> blp_loader_;
+    pluginlib::ClassLoader<nav_core::RecoveryBehavior> recovery_loader_;
+
+    // set up plan triple buffer
+    std::vector<geometry_msgs::PoseStamped> *planner_plan_;
+    std::vector<geometry_msgs::PoseStamped> *latest_plan_;
+    std::vector<geometry_msgs::PoseStamped> *controller_plan_;
+
+    // set up the planner's thread
+    bool runPlanner_;
+    boost::recursive_mutex planner_mutex_;
+    boost::condition_variable_any planner_cond_;
+    geometry_msgs::PoseStamped planner_goal_;
+    boost::thread *planner_thread_;
+
+    boost::recursive_mutex configuration_mutex_;
+    dynamic_reconfigure::Server<move_base::MoveBaseConfig> *dsrv_;
+
+    void reconfigureCB(move_base::MoveBaseConfig &config, uint32_t level);
+
+    move_base::MoveBaseConfig last_config_;
+    move_base::MoveBaseConfig default_config_;
+    bool setup_, p_freq_change_, c_freq_change_;
+    bool new_global_plan_;
+
+  public:
+    ros::Publisher hgglobalplannerpub;
+    ros::Publisher hglocationpub;
+    ros::Publisher stop_point_signal;
+
+    std_msgs::UInt8 stop_point_signal_msg;
+    move_base_msgs::hgpathplanner suggestroad;
+    move_base_msgs::hglocation currentlocation;
+
+    bool saveMapping;
+    geometry_msgs::PoseStamped last_pose;
+    std::string savePath;
+    FILE *fp;
+    void doplanner();
+
+    ros::Publisher vis_pub;
+    ros::Publisher angle_pub;
+    ros::Publisher plan_pub_;
+    ros::Publisher all_plan_pub_;
+    int maxstopIndex;
+    int LaststopIndex;
+    float pursuitSpeed;
+    float pubtargetSpeed;
+
+    sensor_msgs::LaserScan currentScan;
+    sensor_msgs::PointCloud2 scancloud;
+    laser_geometry::LaserProjection laserprojector;
+    char recvScanFlag;
+    volatile int foundObstacleFlag;
+
+    int stopPointNum;
+    std_msgs::UInt8 saveMappingMsg;
+    std_msgs::ByteMultiArray trafficLightArray;
+
+    ros::Subscriber sub_lasersScan;
+    ros::Subscriber sub_saveMapping;
+
+    void callback_lasersScan(const sensor_msgs::LaserScan::ConstPtr &msg);
+    void callback_saveMapping(const std_msgs::UInt8::ConstPtr &msg);
+
+    void pub_stopP_marks();
+    int detectReachedGoal(const geometry_msgs::PoseStamped &currentPose, geometry_msgs::PoseStamped &stopPose);
+    float sLineControl(geometry_msgs::PoseStamped current_position, std::vector<geometry_msgs::PoseStamped> temp_plan, float *pubSpeed);
+    float foundNearestPoint(float aimDis, geometry_msgs::PoseStamped current_position, std::vector<geometry_msgs::PoseStamped> temp_plan);
+    float lineDirection(float xsecond, float ysecond);
+    float foundTargetAngle(float targetDis, float speed, geometry_msgs::PoseStamped current_position, std::vector<geometry_msgs::PoseStamped> temp_plan, float *pubSpeed);
+
+    float obstacleDetect(geometry_msgs::PoseStamped current_position, std::vector<geometry_msgs::PoseStamped> temp_plan, float *distance);
+
+    // sub for multi_robor  stop_CMD
+
+    geometry_msgs::PoseStamped stoppoint_hold;
+
+    int pub_Num = 0;
+    int minIndex = 0;
+    int Last_lastIndex;
+    int LastIndex;
+    int maxIndex;
+    double minDis;
+    bool new_plan;
+
+    std::vector<geometry_msgs::PoseStamped> roadPoints;
+    int road_points_index;
+    std::string road_paths_savePath;
+    std::string stop_points_savePath;
+    std::vector<std::vector<geometry_msgs::PoseStamped>> road_paths;
+    std::vector<std::vector<geometry_msgs::PoseStamped>> stop_Points;
+    std::vector<geometry_msgs::PoseStamped> stopPoints;
+    void loadAllMaps(const std::vector<std::string> &mapFolders);
+    void loadMapsFromFolder(const std::string &folder, std::vector<std::vector<geometry_msgs::PoseStamped>> &paths);
+    void loadMap(std::string routelinemap, std::vector<geometry_msgs::PoseStamped> &path);
+    void getAllFiles(std::string path, std::vector<std::string> &files, std::vector<int> &nameNum);
+    bool makePlan(const geometry_msgs::PoseStamped &start, const geometry_msgs::PoseStamped &goal, std::vector<geometry_msgs::PoseStamped> &plan);
+    void publishPlan(const std::vector<geometry_msgs::PoseStamped> &path);
+
+    // 添加简化的路径跟踪参数
+    struct PathTrackingParams
+    {
+      double lookahead_distance = 0.5;    // 前瞻距离
+      double max_linear_speed = 1.0;      // 最大线速度 - 根据SmartMaster最高速度1m/s
+      double max_angular_speed = 0.5;     // 最大角速度 - 考虑阿克曼转向限制
+      double min_linear_speed = 0.1;      // 最小线速度
+      double goal_tolerance = 0.1;        // 目标容差
+      double obstacle_safety_distance = 0.25; // 障碍物安全距离 - 根据SmartMaster尺寸调整
+    };
+
+    PathTrackingParams tracking_params;
+
+    // 添加简化的路径跟踪函数
+    bool simplePathTracking(const geometry_msgs::PoseStamped &current_pose,
+                           const std::vector<geometry_msgs::PoseStamped> &path,
+                           geometry_msgs::Twist &cmd_vel);
+
+    // 添加纯追踪算法
+    double purePursuitController(const geometry_msgs::PoseStamped &current_pose,
+                                const std::vector<geometry_msgs::PoseStamped> &path);
+
+    // 简化的障碍物检测
+    bool simpleObstacleDetection(const sensor_msgs::LaserScan &scan,
+                                double safety_distance);
+
+    // 噪点过滤函数
+    bool filterLaserNoise(sensor_msgs::LaserScan &scan);
+    bool isNoisePoint(const sensor_msgs::LaserScan &scan, int index);
+    void applyMedianFilter(sensor_msgs::LaserScan &scan);
+    void removeOutliers(sensor_msgs::LaserScan &scan);
+
+    // 高级路径规划参数 - 根据SmartMaster硬件参数调整
+    struct AdvancedPlanningParams
+    {
+      // A*参数
+      double astar_resolution = 0.05;
+      double astar_inflation_radius = 0.25;  // 根据SmartMaster尺寸调整
+      
+      // DWA参数 - 根据SmartMaster性能调整
+      double max_vel_x = 1.0;  // 最高速度1m/s
+      double min_vel_x = -0.5; // 后退速度限制
+      double max_vel_y = 0.0;
+      double min_vel_y = 0.0;
+      double max_vel_theta = 0.5;  // 角速度限制，考虑阿克曼转向
+      double min_vel_theta = -0.5;
+      double acc_lim_x = 0.5;  // 加速度限制
+      double acc_lim_y = 0.0;
+      double acc_lim_theta = 0.3;  // 角加速度限制
+      
+      // TEB参数 - 根据SmartMaster性能调整
+      double teb_max_vel_x = 1.0;  // 最高速度1m/s
+      double teb_max_vel_theta = 0.5;  // 角速度限制
+      double teb_acc_lim_x = 0.5;  // 加速度限制
+      double teb_acc_lim_theta = 0.3;  // 角加速度限制
+      double teb_min_turning_radius = 0.25;  // 最小转弯半径240-260mm，取250mm
+      
+      // 动态避障参数 - 根据阿克曼结构调整
+      double dynamic_obstacle_inflation = 0.25;  // 根据SmartMaster尺寸调整
+      double prediction_time = 2.0;
+      double safety_margin = 0.15;  // 安全边距，考虑阿克曼转向特性
+      
+      // 噪点过滤参数
+      bool noise_filter_enabled = true;
+      double noise_filter_threshold = 0.1;  // 噪点过滤阈值
+      int noise_filter_window = 3;  // 噪点滤波窗口大小
+      double min_obstacle_range = 0.15;  // 最小障碍物距离
+      double max_obstacle_range = 8.0;   // 最大障碍物距离
+    };
+    
+    AdvancedPlanningParams planning_params;
+    
+    // 高级路径规划函数
+    bool advancedPathPlanning(const geometry_msgs::PoseStamped &start,
+                             const geometry_msgs::PoseStamped &goal,
+                             std::vector<geometry_msgs::PoseStamped> &global_plan);
+    
+    // A*全局路径规划
+    std::vector<geometry_msgs::PoseStamped> astarGlobalPlanner(
+        const geometry_msgs::PoseStamped &start,
+        const geometry_msgs::PoseStamped &goal);
+    
+    // DWA局部路径规划
+    geometry_msgs::Twist dwaLocalPlanner(
+        const geometry_msgs::PoseStamped &current_pose,
+        const std::vector<geometry_msgs::PoseStamped> &global_plan,
+        const sensor_msgs::LaserScan &scan);
+    
+    // TEB轨迹优化
+    std::vector<geometry_msgs::PoseStamped> tebTrajectoryOptimization(
+        const std::vector<geometry_msgs::PoseStamped> &initial_path);
+    
+    // 动态避障
+    bool dynamicObstacleAvoidance(const sensor_msgs::LaserScan &scan,
+                                  const geometry_msgs::PoseStamped &current_pose,
+                                  geometry_msgs::Twist &cmd_vel);
+    
+    // MPC控制器
+    geometry_msgs::Twist mpcController(const geometry_msgs::PoseStamped &current_pose,
+                                      const std::vector<geometry_msgs::PoseStamped> &reference_path);
+    
+    // 卡尔曼滤波状态估计
+    void kalmanFilterUpdate(const sensor_msgs::Imu &imu_data,
+                           const nav_msgs::Odometry &odom_data);
+  };
+};
+#endif

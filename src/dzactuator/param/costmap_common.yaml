@@ -1,0 +1,41 @@
+footprint: [[-0.14, -0.055], [-0.14, 0.055], [0.14, 0.055], [0.14, -0.055]]  # 根据SmartMaster尺寸调整
+
+static_layer:
+  enabled: true
+  map_topic: map
+  unknown_cost_value: -1
+  lethal_cost_threshold: 100
+  first_map_only: false
+  subscribe_to_updates: false
+  track_unknown_space: true
+  trinary_costmap: true
+
+obstacle_layer:
+  enabled: true
+  observation_sources: scan
+  scan:
+    topic: /scan
+    sensor_frame: laser
+    data_type: LaserScan
+    observation_persistence: 0.1
+    expected_update_rate: 5.0
+    clearing: true
+    marking: true
+    max_obstacle_height: 0.2
+    min_obstacle_height: 0.01
+    obstacle_range: 1.0
+    raytrace_range: 1.5
+    # 噪点过滤参数
+    min_obstacle_range: 0.10  # 最小障碍物距离，过滤近距离噪点
+    max_obstacle_range: 3.0   # 最大障碍物距离
+    obstacle_filter_window: 3  # 障碍物滤波窗口大小
+    obstacle_filter_threshold: 0.1  # 障碍物滤波阈值
+  combination_method: 1
+
+inflation_layer:
+  enabled: true
+  cost_scaling_factor: 5.0  # 降低代价缩放因子
+  inflation_radius: 0.2  # 减少膨胀半径，根据SmartMaster实际尺寸调整
+  # 噪点过滤参数
+  inflation_decay_function: "linear"  # 线性衰减函数
+  inflation_decay_scale: 0.5  # 衰减比例

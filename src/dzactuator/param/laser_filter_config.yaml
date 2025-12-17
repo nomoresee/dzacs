@@ -1,0 +1,29 @@
+scan_filter_chain:
+- name: range_filter
+  type: laser_filters/LaserScanRangeFilter
+  params:
+    lower_threshold: 0.1    # 最小距离阈值，过滤太近的噪点
+    upper_threshold: 4.0    # 最大距离阈值，过滤太远的噪点
+
+- name: intensity_filter
+  type: laser_filters/LaserScanIntensityFilter
+  params:
+    lower_threshold: 0      # 最小强度阈值
+    upper_threshold: 255    # 最大强度阈值
+
+- name: outlier_filter
+  type: laser_filters/LaserScanOutlierFilter
+  params:
+    window_size: 5          # 窗口大小
+    max_range_diff: 0.5     # 最大距离差异
+    max_range: 4.0          # 最大距离
+    min_range: 0.1          # 最小距离
+
+- name: shadow_filter
+  type: laser_filters/LaserScanShadowFilter
+  params:
+    min_angle: 0.0          # 最小角度
+    max_angle: 6.28         # 最大角度
+    min_range: 0.1          # 最小距离
+    max_range: 4.0          # 最大距离
+    shadow_filter_enabled: true 

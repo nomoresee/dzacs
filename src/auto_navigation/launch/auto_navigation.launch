@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- 自动导航启动文件 -->
+    
+    <!-- 参数配置 -->
+    <arg name="auto_execute" default="true" />
+    <arg name="goal_timeout" default="30.0" />
+    <arg name="max_retries" default="3" />
+    <arg name="goal_tolerance" default="0.1" />
+    
+    <!-- 返航基地坐标参数 -->
+    <arg name="base_x" default="1.07" />
+    <arg name="base_y" default="3.48" />
+    <arg name="base_yaw" default="-1.57" />
+    
+    <!-- 启动自动导航节点 -->
+    <node name="auto_navigation_node" pkg="auto_navigation" type="auto_navigation_node.py" output="screen">
+        <param name="auto_execute" value="$(arg auto_execute)" />
+        <param name="goal_timeout" value="$(arg goal_timeout)" />
+        <param name="max_retries" value="$(arg max_retries)" />
+        <param name="goal_tolerance" value="$(arg goal_tolerance)" />
+        
+        <!-- 返航基地坐标 -->
+        <param name="base_x" value="$(arg base_x)" />
+        <param name="base_y" value="$(arg base_y)" />
+        <param name="base_yaw" value="$(arg base_yaw)" />
+    </node>
+    
+    <!-- 启动目标发布器（可选） -->
+    <group if="$(arg auto_execute)">
+        <node name="goal_publisher" pkg="auto_navigation" type="goal_publisher.py" output="screen">
+        </node>
+    </group>
+    
+    <!-- 启动RViz可视化（可选）
+    <group if="false">
+        <node name="rviz" pkg="rviz" type="rviz" args="-d $(find auto_navigation)/config/navigation.rviz" />
+    </group> -->
+    
+</launch>

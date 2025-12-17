@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- SmartMaster阿克曼结构专用导航启动文件 - 带噪点过滤 -->
+  
+  <!-- 启动基础组件 -->
+  <include file="$(find dzactuator)/launch/bringup.launch" />
+  
+  <!-- 启动AMCL定位 -->
+  <include file="$(find dzactuator)/launch/amcl.launch" />
+  
+  <!-- 启动导航 -->
+  <include file="$(find dzactuator)/launch/dznavigation.launch" />
+  
+  <!-- 启动判断系统 -->
+  <include file="$(find dzactuator)/launch/dzjudgment.launch" />
+  
+  <!-- 启动视觉检测 -->
+  <include file="$(find dzactuator)/launch/dzrknnpt.launch" />
+  
+  <!-- 启动自动导航 - 带噪点过滤参数 -->
+  <include file="$(find auto_navigation)/launch/auto_navigation.launch">
+    <arg name="auto_execute" value="true" />
+    <arg name="goal_timeout" value="120.0" />
+    <arg name="max_retries" value="3" />
+    <arg name="goal_tolerance" value="0.15" />
+  </include>
+  
+  <!-- 噪点过滤参数 -->
+  <rosparam param="/move_base/global_costmap/obstacle_layer/scan/min_obstacle_range">0.15</rosparam>
+  <rosparam param="/move_base/global_costmap/obstacle_layer/scan/max_obstacle_range">8.0</rosparam>
+  <rosparam param="/move_base/global_costmap/obstacle_layer/scan/obstacle_filter_window">3</rosparam>
+  <rosparam param="/move_base/global_costmap/obstacle_layer/scan/obstacle_filter_threshold">0.1</rosparam>
+  
+  <rosparam param="/move_base/local_costmap/obstacle_layer/scan/min_obstacle_range">0.15</rosparam>
+  <rosparam param="/move_base/local_costmap/obstacle_layer/scan/max_obstacle_range">8.0</rosparam>
+  <rosparam param="/move_base/local_costmap/obstacle_layer/scan/obstacle_filter_window">3</rosparam>
+  <rosparam param="/move_base/local_costmap/obstacle_layer/scan/obstacle_filter_threshold">0.1</rosparam>
+  
+  <!-- TEB噪点过滤参数 -->
+  <rosparam param="/move_base/TebLocalPlannerROS/obstacle_filter_enabled">true</rosparam>
+  <rosparam param="/move_base/TebLocalPlannerROS/obstacle_filter_window">3</rosparam>
+  <rosparam param="/move_base/TebLocalPlannerROS/obstacle_filter_threshold">0.1</rosparam>
+  <rosparam param="/move_base/TebLocalPlannerROS/min_obstacle_points">2</rosparam>
+  
+  <!-- 膨胀层优化 -->
+  <rosparam param="/move_base/global_costmap/inflation_layer/cost_scaling_factor">5.0</rosparam>
+  <rosparam param="/move_base/global_costmap/inflation_layer/inflation_radius">0.2</rosparam>
+  <rosparam param="/move_base/local_costmap/inflation_layer/cost_scaling_factor">5.0</rosparam>
+  <rosparam param="/move_base/local_costmap/inflation_layer/inflation_radius">0.2</rosparam>
+  
+</launch> 

@@ -1,0 +1,2 @@
+auto_navigation:clear_costmap_recovery:dzactuator:dzjudgment:dzsavepath:move_base:navigation_msgs/map_msgs:navigation_msgs/move_base_msgs:rknn_pt:rplidar_ros
+-DCATKIN_DEVEL_PREFIX=/home/duzhong/dzacs/devel -DCMAKE_INSTALL_PREFIX=/home/duzhong/dzacs/install -G Unix Makefiles

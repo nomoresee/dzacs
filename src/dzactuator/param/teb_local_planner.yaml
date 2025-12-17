@@ -1,0 +1,116 @@
+TebLocalPlannerROS:
+ 
+ odom_topic: odom
+ map_frame: map
+ 
+ #Trajectory
+ teb_autosize: True 
+ dt_ref: 0.3
+ dt_hysteresis: 0.03
+ global_plan_overwrite_orientation: True 
+ allow_init_with_backwards_motion: True 
+ max_global_plan_lookahead_dist: 3.0 
+ feasibility_check_no_poses: 5 
+ 
+ # 路径平滑参数
+ enable_smoothing: True
+ smoothing_factor: 0.3  # 路径平滑因子
+ path_smoothing: True
+ 
+ # Robot - 根据SmartMaster硬件参数调整
+ max_vel_x: 1.0  # 最高速度1m/s
+ max_vel_y: 0 
+ max_vel_x_backwards: 0.5  # 后退速度限制
+ max_vel_theta: 0.5  # 角速度限制，考虑阿克曼转向
+ acc_lim_x: 0.3  # 加速度限制
+ acc_lim_y: 0  
+ acc_lim_theta: 0.2  # 角加速度限制
+ max_vel_trans: 1.0  # 最大平移速度
+ 
+ # 根据硬件参数调整
+ wheelbase: 0.15  # 轴距150mm
+ min_turning_radius: 0.20  # 最小转弯半径240-260mm，取250mm
+ 
+ cmd_angle_instead_rotvel: False
+ 
+ # 根据实际尺寸调整footprint
+ footprint_model:
+  type: "polygon"
+  vertices: [[-0.14, -0.055], [-0.14, 0.055], [0.14, 0.055], [0.14, -0.055]]  # 长度278mm，宽度140mm
+
+ xy_goal_tolerance: 0.2  #gai
+ yaw_goal_tolerance: 0.1 #gai
+ free_goal_vel: False #gai
+ 
+ # Obstacles
+ min_obstacle_dist: 0.15  # 增加安全距离 gai85
+ include_costmap_obstacles: True 
+ costmap_obstacles_behind_robot_dist: 1.5  #default:1.5  0.0~20.0
+ obstacle_poses_affected: 15   
+ costmap_converter_plugin: ""
+ costmap_converter_spin_thread: True
+ costmap_converter_rate: 5
+ include_dynamic_obstacles: True #gai 
+ dynamic_obstacle_inflation_dist: 0.1  # 根据阿克曼结构调整 85
+ 
+ # 噪点过滤参数
+ obstacle_filter_enabled: True
+ obstacle_filter_window: 3  # 障碍物滤波窗口
+ obstacle_filter_threshold: 0.1  # 障碍物滤波阈值
+ min_obstacle_points: 2  # 最小障碍物点数，过滤孤立噪点
+ 
+ # Optimization  
+ no_inner_iterations: 2 #85
+ no_outer_iterations: 2  #85
+ optimization_activate: True 
+ optimization_verbose: False 
+ penalty_epsilon: 0.05
+ obstacle_cost_exponent: 4
+ weight_max_vel_x: 1  
+ weight_max_vel_theta: 1 
+ weight_acc_lim_x: 2  
+ weight_acc_lim_theta: 1  
+ weight_kinematics_nh: 1000
+ weight_kinematics_forward_drive: 2
+ weight_kinematics_turning_radius: 5 
+ weight_optimaltime: 5  # 增加时间优化权重
+ weight_shortest_path: 80  # 增加最短路径权重，减少路径长度
+ weight_obstacle: 50  # 降低障碍物权重，减少过度避障
+ weight_inflation: 0.1  # 降低膨胀权重
+ weight_dynamic_obstacle: 10
+ weight_dynamic_obstacle_inflation: 0.2  
+ weight_viapoint: 1  
+ weight_adapt_factor: 2 
+ 
+ # Homotopy Class Planner
+ enable_homotopy_class_planning: True
+ enable_multithreading: True
+ max_number_classes: 2
+ selection_cost_hysteresis: 2.0 
+ selection_prefer_initial_plan: 0.95
+ selection_obst_cost_scale: 1.0
+ selection_alternative_time_cost: False
+ 
+ roadmap_graph_no_samples: 15
+ roadmap_graph_area_width: 5
+ roadmap_graph_area_length_scale: 1.0
+ h_signature_prescaler: 0.5
+ h_signature_threshold: 0.1
+ obstacle_heading_threshold: 0.45
+ switching_blocking_period: 0.0
+ viapoints_all_candidates: True
+ delete_detours_backwards: False #false,卡的时候倒车
+ max_ratio_detours_duration_best_duration: 3.0
+ visualize_hc_graph: False
+ visualize_with_time_as_z_axis_scale: False
+ 
+ # Recovery
+ 
+ shrink_horizon_backup: True
+ shrink_horizon_min_duration: 5 #85  10
+ oscillation_recovery: True 
+ oscillation_v_eps: 0.1
+ oscillation_omega_eps: 0.1
+ oscillation_recovery_min_duration: 10
+ oscillation_filter_duration: 5 
+ 

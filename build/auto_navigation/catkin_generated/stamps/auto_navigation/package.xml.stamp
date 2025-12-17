@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>auto_navigation</name>
+  <version>0.0.0</version>
+  <description>自动导航节点包，用于自动接受导航点并发布导航命令</description>
+  <maintainer email="duzhong@example.com">duzhong</maintainer>
+  <license>TODO</license>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>move_base_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>actionlib</exec_depend>
+  <exec_depend>move_base_msgs</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+</package> 

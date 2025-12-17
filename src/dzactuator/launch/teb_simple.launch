@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<launch>
+
+  <!-- 启动基础系统（串口、传感器等） -->
+  <include file="$(find dzactuator)/launch/bringup.launch" />
+
+  <!-- 启动move_base节点，但只使用TEB局部规划器 -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    
+    <!-- 强制使用TEB局部规划器 -->
+    <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+    
+    <!-- 加载costmap参数 -->
+    <rosparam file="$(find dzactuator)/param/costmap_common.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find dzactuator)/param/costmap_common.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find dzactuator)/param/local_costmap.yaml" command="load" />
+    <rosparam file="$(find dzactuator)/param/global_costmap.yaml" command="load" />
+    
+    <!-- 加载全局规划器参数 -->
+    <rosparam command="load" file="$(find dzactuator)/param/base_global_planner.yaml" />
+    
+    <!-- 加载TEB局部规划器参数 -->
+    <rosparam command="load" file="$(find dzactuator)/param/teb_local_planner.yaml" />
+    
+    <!-- 加载move_base基础参数 -->
+    <rosparam file="$(find dzactuator)/param/move_base_params.yaml" command="load" />
+    
+  </node>
+
+  <!-- 启动RViz进行可视化 -->
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find dzactuator)/rviz/teb_complete.rviz" />
+
+</launch> 

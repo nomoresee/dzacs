@@ -1,0 +1,59 @@
+# 自动导航配置文件
+
+# 基本参数
+auto_navigation_node:
+  auto_execute: true
+  goal_timeout: 60.0
+  max_retries: 3
+  goal_tolerance: 0.1
+  
+# 目标队列参数
+goal_queue:
+  max_size: 10
+  priority_enabled: true
+  
+# 导航参数
+navigation:
+  # 速度限制
+  max_linear_velocity: 0.3
+  max_angular_velocity: 0.2
+  
+  # 安全参数
+  min_obstacle_distance: 0.5
+  safety_timeout: 30.0
+  
+# 路径规划参数
+path_planning:
+  # 全局规划
+  global_planner: "navfn/NavfnROS"
+  global_planning_frequency: 1.0
+  
+  # 局部规划
+  local_planner: "teb_local_planner/TebLocalPlannerROS"
+  local_planning_frequency: 10.0
+  
+# 恢复行为参数
+recovery:
+  # 恢复行为列表
+  behaviors:
+    - name: "conservative_reset"
+      type: "clear_costmap_recovery/ClearCostmapRecovery"
+    - name: "clearing_rotation"
+      type: "rotate_recovery/RotateRecovery"
+    - name: "clearing_move"
+      type: "move_slow_and_clear/MoveSlowAndClear"
+  
+  # 恢复参数
+  conservative_reset:
+    reset_distance: 1.0
+    layer_names: ["obstacle_layer"]
+  
+  aggressive_reset:
+    reset_distance: 3.0
+    layer_names: ["obstacle_layer"]
+  
+  move_slow_and_clear:
+    clearing_distance: 0.1
+    limited_trans_speed: 0.1
+    limited_rot_speed: 0.4
+    limited_distance: 0.3 

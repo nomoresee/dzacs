@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- 启动自定义move_base，启用动态导航模式 -->
+  <node pkg="move_base" type="move_base" name="move_base" output="screen">
+    <!-- 禁用预设路径模式，启用动态导航 -->
+    <param name="saveMapping" value="false" />
+    <param name="base_global_planner" value="navfn/NavfnROS" />
+    <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+    
+    <!-- 加载参数文件 -->
+    <rosparam file="$(find dzactuator)/param/costmap_common.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find dzactuator)/param/costmap_common.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find dzactuator)/param/local_costmap.yaml" command="load" />
+    <rosparam file="$(find dzactuator)/param/global_costmap.yaml" command="load" />
+    <rosparam file="$(find dzactuator)/param/teb_local_planner.yaml" command="load" />
+    
+    <!-- 设置话题重映射 -->
+    <remap from="cmd_vel" to="pursuitAngle" />
+    <remap from="odom" to="odom" />
+    <remap from="scan" to="scan" />
+  </node>
+</launch> 
