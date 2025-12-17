@@ -42,6 +42,14 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg)
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "det_node");
+  // Ensure ROS time is initialized before the first call to ros::Time::now()
+  ros::Time::init();
+  ros::start();
+  // 如果使用模拟时间，在继续前等待 clock 消息生效
+  if (!ros::Time::isSystemTime())
+  {
+    ros::Time::waitForValid();
+  }
   ros::NodeHandle nh;
   last_detection_print_time = ros::Time::now();
 
