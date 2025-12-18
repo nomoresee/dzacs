@@ -7,7 +7,4 @@
 # new environment variables
 
 # modified environment variables
-export LD_LIBRARY_PATH='/home/duzhong/catkin_ws/devel/lib:/opt/ros/noetic/lib'
-export PKG_CONFIG_PATH='/home/duzhong/catkin_ws/devel/lib/pkgconfig:/opt/ros/noetic/lib/pkgconfig'
 export PWD='/home/duzhong/dzacs/build'
-export PYTHONPATH='/home/duzhong/catkin_ws/devel/lib/python3/dist-packages:/opt/ros/noetic/lib/python3/dist-packages'

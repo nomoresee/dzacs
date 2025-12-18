@@ -530,7 +530,7 @@ void turn_on_robot::CaremaMontorControl(){
       static int direction_0 = -1;  // 控制扫描方向：1表示正向，-1表示反向
       static int direction_1 = -1;  // 控制扫描方向：1表示正向，-1表示反向
 
-      static int step = 80;        // 每次移动的步长
+      static int step = 50;        // 每次移动的步长
       static int scan_interval = 0; // 控制扫描速度的计数器
 
       moveBaseControl.Position_0 = 2047;
@@ -567,8 +567,8 @@ void turn_on_robot::CaremaMontorControl(){
       }
 
       // 设置电机速度
-      moveBaseControl.Speed_0 = 2000;
-      moveBaseControl.Speed_1 = 2000;
+      moveBaseControl.Speed_0 = 1500;
+      moveBaseControl.Speed_1 = 1500;
     //}
     // else if(stop_point_signal_msg == 0 ){
     //     moveBaseControl.Position_0 = 2047;
@@ -637,12 +637,12 @@ double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose){
     static double integral = 0.0;
     static double filtered_derivative = 0.0;
 
-    static constexpr double kp = 240.0;              // 稳定的比例增益
-    static constexpr double ki = 1.46;            // 更低的积分增益
-    static constexpr double kd = 1.02;             // 减小的微分增益
-    static constexpr double max_speed = 18000.0;    // 最大速度限制
+    static constexpr double kp = 140.0;              // 稳定的比例增益
+    static constexpr double ki = 0.9;            // 更低的积分增益
+    static constexpr double kd = 0.5;             // 减小的微分增益
+    static constexpr double max_speed = 7000;    // 最大速度限制
     static constexpr double sampling_time = 0.01;  // 采样时间 (10Hz)
-    static double offset = 20.0;
+    static double offset = 7.5;
     static double beta = 0.0;
     // 计算误差
     double error = static_cast<double>(target_pose - current_pose);
