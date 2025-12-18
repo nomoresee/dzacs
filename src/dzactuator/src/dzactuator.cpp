@@ -618,8 +618,8 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
     moveBaseControl.Position_0 = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset / 2));
     moveBaseControl.Position_1 = curYuntai_feedback_data.Position_1 + (temp_msg.data[0] / 2);
 
-    moveBaseControl.Speed_0 = CaremaSpeedControl(moveBaseControl.Position_0, curYuntai_feedback_data.Position_0);
-    moveBaseControl.Speed_1 = CaremaSpeedControl(moveBaseControl.Position_1, curYuntai_feedback_data.Position_1);
+    moveBaseControl.Speed_0 = CaremaSpeedControl(moveBaseControl.Position_0, curYuntai_feedback_data.Position_0, GimbalAxis::Pitch);
+    moveBaseControl.Speed_1 = CaremaSpeedControl(moveBaseControl.Position_1, curYuntai_feedback_data.Position_1, GimbalAxis::Yaw);
 
     if(abs(static_cast<int>(filtered_pitch_offset)) < 10 && abs(temp_msg.data[0]) <10){
       std_msgs::UInt8 shotdata;
@@ -640,56 +640,76 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
   }
 }
 
-double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose){
-    // 静态变量用于存储 PID 状态
-    static double prev_error = 0.0;
-    static double prev_pose = 0.0;
-    static double integral = 0.0;
-    static double filtered_derivative = 0.0;
+double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose,GimbalAxis axis){
+    struct PidState
+    {
+        double prev_error = 0.0;
+        double integral = 0.0;
+        double filtered_derivative = 0.0;
+    };
 
-    static constexpr double kp = 140.0;              // 稳定的比例增益
-    static constexpr double ki = 0.9;            // 更低的积分增益
-    static constexpr double kd = 0.5;             // 减小的微分增益
-    static constexpr double max_speed = 7000;    // 最大速度限制
+    static PidState pitch_state;
+    static PidState yaw_state;
+
+    const bool is_pitch = axis == GimbalAxis::Pitch;
+    PidState &state = is_pitch ? pitch_state : yaw_state;
+
+    struct Gains
+    {
+        double kp;
+        double ki;
+        double kd;
+        double max_speed;
+        double offset;
+        double deadband;
+        double derivative_limit;
+    };
+
+    const Gains gains = is_pitch ? Gains{88.0, 0.7, 0.22, 4200.0, 3.5, 2.0, 450.0}
+                                 : Gains{150.0, 0.9, 0.55, 9000.0, 8.0, 1.0, 600.0};
+
     static constexpr double sampling_time = 0.01;  // 采样时间 (10Hz)
-    static double offset = 7.5;
-    static double beta = 0.0;
+
     // 计算误差
     double error = static_cast<double>(target_pose - current_pose);
 
+    if(std::abs(error) < gains.deadband)
+    {
+        state.integral = 0.0;
+        state.filtered_derivative = 0.0;
+        state.prev_error = error;
+        return 0.0;
+    }
+
     // 更新积分项（带限幅）
-    
-    //积分分离
     if(std::abs(error)>25)
-    {integral=0.0;}
+    {state.integral=0.0;}
     else
-    {integral += error * sampling_time;}
-    integral = clamp(integral,-max_speed / (2.0 * ki), max_speed / (2.0 * ki));
+    {state.integral += error * sampling_time;}
+    state.integral = clamp(state.integral,-gains.max_speed / (2.0 * gains.ki), gains.max_speed / (2.0 * gains.ki));
+
     //微分项更新并滤波
-    double derivative = (error - prev_error) / sampling_time;
-    // double derivative=(prev_pose-current_pose)/ sampling_time;
-    filtered_derivative = 0.8 * filtered_derivative +0.2 * derivative;
+    double derivative = (error - state.prev_error) / sampling_time;
+    derivative = clamp(derivative, -gains.derivative_limit, gains.derivative_limit);
+    state.filtered_derivative = 0.8 * state.filtered_derivative +0.2 * derivative;
+
     // PID 控制计算
-    double speed = kp * error + ki * integral   + kd * filtered_derivative;
-    // double speed = kp * error ;
-    //死区
-    // if(std::abs(error)<1)
-    // {speed=0.0;}
+    double speed = gains.kp * error + gains.ki * state.integral   + gains.kd * state.filtered_derivative;
+
     //补偿
     if(error>0)
-    {speed+=offset;}
+    {speed+=gains.offset;}
     else if(error<0)
-    {speed-=offset;}
+    {speed-=gains.offset;}
     // 对速度取绝对值
     speed = std::abs(speed);
 
     // 使用 std::clamp 限幅
-    speed = clamp(speed, 0.0, max_speed);
+    speed = clamp(speed, 0.0, gains.max_speed);
 
     // 更新前一次误差
-    prev_error = error;
-    prev_pose=current_pose;
-    printf("error:%.2f,speed:%.2f\n",error,speed);
+    state.prev_error = error;
+    printf("axis:%s,error:%.2f,speed:%.2f\n", is_pitch ? "pitch" : "yaw",error,speed);
     return speed;
 }
 

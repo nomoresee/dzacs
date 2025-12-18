@@ -196,6 +196,12 @@ T clamp(T value, T min, T max) {
     return value < min ? min : (value > max ? max : value);
 }
 
+enum class GimbalAxis
+{
+	Pitch,
+	Yaw
+};
+
 // The robot chassis class uses constructors to initialize data, publish topics, etc
 // 机器人底盘类，使用构造函数初始化数据和发布话题等
 class turn_on_robot
@@ -254,7 +260,7 @@ public:
 	void Average_filtering();
 
 	double normalizeAngle(double angle);
-	double CaremaSpeedControl(int target_pose,int current_pose);
+	double CaremaSpeedControl(int target_pose,int current_pose,GimbalAxis axis);
 	void CaremaMontorControl();
 
 	int limitGimbalMotor0Position(int position);
