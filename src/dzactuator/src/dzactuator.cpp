@@ -596,6 +596,16 @@ void turn_on_robot::callback_voice_status(const std_msgs::UInt8::ConstPtr &msg){
 void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::ConstPtr &msg)
 {
   std_msgs::Int32MultiArray temp_msg = *msg;
+  static double prev_pitch_offset = 0.0;
+  static bool has_prev_pitch_offset = false;
+  double filtered_pitch_offset = temp_msg.data[1];
+
+  if (has_prev_pitch_offset)
+  {
+    filtered_pitch_offset = 0.6 * prev_pitch_offset + 0.4 * static_cast<double>(temp_msg.data[1]);
+  }
+  has_prev_pitch_offset = true;
+  prev_pitch_offset = filtered_pitch_offset;
   // if (temp_msg.data[2] == 1 && stop_point_signal_msg == 1)
   if (temp_msg.data[2] == 1)
   { // 检测到目标
@@ -605,13 +615,13 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
 
     // 瞄准目标
     // moveBaseControl.Position_0 = curYuntai_feedback_data.Position_0 + (temp_msg.data[1] / 2);
-    moveBaseControl.Position_0 = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + (temp_msg.data[1] / 2));
+    moveBaseControl.Position_0 = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset / 2));
     moveBaseControl.Position_1 = curYuntai_feedback_data.Position_1 + (temp_msg.data[0] / 2);
 
     moveBaseControl.Speed_0 = CaremaSpeedControl(moveBaseControl.Position_0, curYuntai_feedback_data.Position_0);
     moveBaseControl.Speed_1 = CaremaSpeedControl(moveBaseControl.Position_1, curYuntai_feedback_data.Position_1);
 
-    if(abs(temp_msg.data[1]) < 10 && abs(temp_msg.data[0]) <10){
+    if(abs(static_cast<int>(filtered_pitch_offset)) < 10 && abs(temp_msg.data[0]) <10){
       std_msgs::UInt8 shotdata;
       shotdata.data =1;
       pub_LaserShot_Command.publish(shotdata);
