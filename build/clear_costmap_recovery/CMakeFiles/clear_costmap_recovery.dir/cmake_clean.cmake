@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../devel/lib/libclear_costmap_recovery.pdb"
-  "../devel/lib/libclear_costmap_recovery.so"
+  "/home/duzhong/dzacs/devel/lib/libclear_costmap_recovery.pdb"
+  "/home/duzhong/dzacs/devel/lib/libclear_costmap_recovery.so"
   "CMakeFiles/clear_costmap_recovery.dir/src/clear_costmap_recovery.cpp.o"
 )
 

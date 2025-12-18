@@ -62,6 +62,9 @@ Boost_SYSTEM_LIBRARY_RELEASE:FILEPATH=/usr/lib/aarch64-linux-gnu/libboost_system
 //List of ';' separated packages to exclude
 CATKIN_BLACKLIST_PACKAGES:STRING=
 
+//catkin devel space
+CATKIN_DEVEL_PREFIX:PATH=/home/duzhong/dzacs/devel
+
 //Catkin enable testing
 CATKIN_ENABLE_TESTING:BOOL=ON
 
@@ -81,8 +84,9 @@ CMAKE_ADDR2LINE:FILEPATH=/usr/bin/addr2line
 //Path to a program.
 CMAKE_AR:FILEPATH=/usr/bin/ar
 
-//No help, variable specified on the command line.
-CMAKE_BUILD_TYPE:STRING=Debug
+//Choose the type of build, options are: None Debug Release RelWithDebInfo
+// MinSizeRel ...
+CMAKE_BUILD_TYPE:STRING=
 
 //Enable/Disable color output during build.
 CMAKE_COLOR_MAKEFILE:BOOL=ON
@@ -157,8 +161,8 @@ CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=
 //Flags used by the linker during RELWITHDEBINFO builds.
 CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 
-//No help, variable specified on the command line.
-CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE
+//Enable/Disable output of compile commands during generation.
+CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=OFF
 
 //User executables (bin)
 CMAKE_INSTALL_BINDIR:PATH=bin
@@ -197,7 +201,7 @@ CMAKE_INSTALL_MANDIR:PATH=
 CMAKE_INSTALL_OLDINCLUDEDIR:PATH=/usr/include
 
 //Install path prefix, prepended onto install directories.
-CMAKE_INSTALL_PREFIX:PATH=/usr/local
+CMAKE_INSTALL_PREFIX:PATH=/home/duzhong/dzacs/install
 
 //Run-time variable data (LOCALSTATEDIR/run)
 CMAKE_INSTALL_RUNSTATEDIR:PATH=
@@ -715,7 +719,7 @@ class_loader_DIR:PATH=/opt/ros/noetic/share/class_loader/cmake
 clear_costmap_recovery_BINARY_DIR:STATIC=/home/duzhong/dzacs/build/clear_costmap_recovery
 
 //The directory containing a CMake configuration file for clear_costmap_recovery.
-clear_costmap_recovery_DIR:PATH=/home/duzhong/dzacs/build/devel/share/clear_costmap_recovery/cmake
+clear_costmap_recovery_DIR:PATH=/home/duzhong/dzacs/devel/share/clear_costmap_recovery/cmake
 
 //Dependencies for the target
 clear_costmap_recovery_LIB_DEPENDS:STATIC=general;/opt/ros/noetic/lib/libcostmap_2d.so;general;/opt/ros/noetic/lib/liblayers.so;general;/opt/ros/noetic/lib/libdynamic_reconfigure_config_init_mutex.so;general;/opt/ros/noetic/lib/liblaser_geometry.so;general;/opt/ros/noetic/lib/libtf.so;general;/opt/ros/noetic/lib/libvoxel_grid.so;general;/opt/ros/noetic/lib/libclass_loader.so;general;/usr/lib/aarch64-linux-gnu/libPocoFoundation.so;general;/usr/lib/aarch64-linux-gnu/libdl.so;general;/opt/ros/noetic/lib/libroslib.so;general;/opt/ros/noetic/lib/librospack.so;general;/usr/lib/aarch64-linux-gnu/libpython3.8.so;general;/usr/lib/aarch64-linux-gnu/libboost_program_options.so.1.71.0;general;/usr/lib/aarch64-linux-gnu/libtinyxml2.so;general;/opt/ros/noetic/lib/libtf2_ros.so;general;/opt/ros/noetic/lib/libactionlib.so;general;/opt/ros/noetic/lib/libmessage_filters.so;general;/opt/ros/noetic/lib/libroscpp.so;general;/usr/lib/aarch64-linux-gnu/libpthread.so;general;/usr/lib/aarch64-linux-gnu/libboost_chrono.so.1.71.0;general;/usr/lib/aarch64-linux-gnu/libboost_filesystem.so.1.71.0;general;/opt/ros/noetic/lib/librosconsole.so;general;/opt/ros/noetic/lib/librosconsole_log4cxx.so;general;/opt/ros/noetic/lib/librosconsole_backend_interface.so;general;/usr/lib/aarch64-linux-gnu/liblog4cxx.so;general;/usr/lib/aarch64-linux-gnu/libboost_regex.so.1.71.0;general;/opt/ros/noetic/lib/libxmlrpcpp.so;general;/opt/ros/noetic/lib/libtf2.so;general;/opt/ros/noetic/lib/libroscpp_serialization.so;general;/opt/ros/noetic/lib/librostime.so;general;/usr/lib/aarch64-linux-gnu/libboost_date_time.so.1.71.0;general;/opt/ros/noetic/lib/libcpp_common.so;general;/usr/lib/aarch64-linux-gnu/libboost_system.so.1.71.0;general;/usr/lib/aarch64-linux-gnu/libboost_thread.so.1.71.0;general;/usr/lib/aarch64-linux-gnu/libconsole_bridge.so.0.4;
@@ -839,7 +843,7 @@ lib:FILEPATH=/usr/lib/liborocos-kdl.so
 map_msgs_BINARY_DIR:STATIC=/home/duzhong/dzacs/build/navigation_msgs/map_msgs
 
 //The directory containing a CMake configuration file for map_msgs.
-map_msgs_DIR:PATH=/home/duzhong/dzacs/build/devel/share/map_msgs/cmake
+map_msgs_DIR:PATH=/home/duzhong/dzacs/devel/share/map_msgs/cmake
 
 //Value Computed by CMake
 map_msgs_SOURCE_DIR:STATIC=/home/duzhong/dzacs/src/navigation_msgs/map_msgs
@@ -866,7 +870,7 @@ move_base_SOURCE_DIR:STATIC=/home/duzhong/dzacs/src/move_base
 move_base_msgs_BINARY_DIR:STATIC=/home/duzhong/dzacs/build/navigation_msgs/move_base_msgs
 
 //The directory containing a CMake configuration file for move_base_msgs.
-move_base_msgs_DIR:PATH=/home/duzhong/dzacs/build/devel/share/move_base_msgs/cmake
+move_base_msgs_DIR:PATH=/home/duzhong/dzacs/devel/share/move_base_msgs/cmake
 
 //Value Computed by CMake
 move_base_msgs_SOURCE_DIR:STATIC=/home/duzhong/dzacs/src/navigation_msgs/move_base_msgs
@@ -1674,7 +1678,7 @@ _Boost_NAMESPACE_LAST:INTERNAL=boost
 //Last used Boost_USE_MULTITHREADED value.
 _Boost_USE_MULTITHREADED_LAST:INTERNAL=TRUE
 //CMAKE_INSTALL_PREFIX during last run
-_GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=/usr/local
+_GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=/home/duzhong/dzacs/install
 __pkg_config_arguments_PC_EIGEN:INTERNAL=eigen3
 __pkg_config_arguments_PC_FLANN:INTERNAL=flann
 __pkg_config_arguments_PC_OPENNI:INTERNAL=QUIET;libopenni

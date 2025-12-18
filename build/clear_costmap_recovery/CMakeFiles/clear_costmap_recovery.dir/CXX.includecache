@@ -6,6 +6,24 @@
 
 #IncludeRegexTransform: 
 
+/home/duzhong/dzacs/devel/include/map_msgs/OccupancyGridUpdate.h
+string
+-
+vector
+-
+memory
+-
+ros/types.h
+-
+ros/serialization.h
+-
+ros/builtin_message_traits.h
+-
+ros/message_operations.h
+-
+std_msgs/Header.h
+-
+
 /home/duzhong/dzacs/src/clear_costmap_recovery/include/clear_costmap_recovery/clear_costmap_recovery.h
 nav_core/recovery_behavior.h
 -
@@ -1638,23 +1656,5 @@ string
 vector
 -
 time.h
--
-
-devel/include/map_msgs/OccupancyGridUpdate.h
-string
--
-vector
--
-memory
--
-ros/types.h
--
-ros/serialization.h
--
-ros/builtin_message_traits.h
--
-ros/message_operations.h
--
-std_msgs/Header.h
 -
 

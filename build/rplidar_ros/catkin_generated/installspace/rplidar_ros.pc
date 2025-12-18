@@ -1,4 +1,4 @@
-prefix=/usr/local
+prefix=/home/duzhong/dzacs/install
 
 Name: rplidar_ros
 Description: Description of rplidar_ros

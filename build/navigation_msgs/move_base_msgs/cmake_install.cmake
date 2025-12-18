@@ -2,7 +2,7 @@
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/usr/local")
+  set(CMAKE_INSTALL_PREFIX "/home/duzhong/dzacs/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -12,7 +12,7 @@ if(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
     string(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
            CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
   else()
-    set(CMAKE_INSTALL_CONFIG_NAME "Debug")
+    set(CMAKE_INSTALL_CONFIG_NAME "")
   endif()
   message(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
 endif()
@@ -51,13 +51,13 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/move_base_msgs/msg" TYPE FILE FILES
-    "/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseAction.msg"
-    "/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseActionGoal.msg"
-    "/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseActionResult.msg"
-    "/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseActionFeedback.msg"
-    "/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseGoal.msg"
-    "/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseResult.msg"
-    "/home/duzhong/dzacs/build/devel/share/move_base_msgs/msg/MoveBaseFeedback.msg"
+    "/home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseAction.msg"
+    "/home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseActionGoal.msg"
+    "/home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseActionResult.msg"
+    "/home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseActionFeedback.msg"
+    "/home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseGoal.msg"
+    "/home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseResult.msg"
+    "/home/duzhong/dzacs/devel/share/move_base_msgs/msg/MoveBaseFeedback.msg"
     )
 endif()
 
@@ -66,27 +66,27 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/duzhong/dzacs/build/devel/include/move_base_msgs")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/home/duzhong/dzacs/devel/include/move_base_msgs")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/roseus/ros" TYPE DIRECTORY FILES "/home/duzhong/dzacs/build/devel/share/roseus/ros/move_base_msgs")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/roseus/ros" TYPE DIRECTORY FILES "/home/duzhong/dzacs/devel/share/roseus/ros/move_base_msgs")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/common-lisp/ros" TYPE DIRECTORY FILES "/home/duzhong/dzacs/build/devel/share/common-lisp/ros/move_base_msgs")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/common-lisp/ros" TYPE DIRECTORY FILES "/home/duzhong/dzacs/devel/share/common-lisp/ros/move_base_msgs")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/gennodejs/ros" TYPE DIRECTORY FILES "/home/duzhong/dzacs/build/devel/share/gennodejs/ros/move_base_msgs")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/gennodejs/ros" TYPE DIRECTORY FILES "/home/duzhong/dzacs/devel/share/gennodejs/ros/move_base_msgs")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  execute_process(COMMAND "/usr/bin/python3" -m compileall "/home/duzhong/dzacs/build/devel/lib/python3/dist-packages/move_base_msgs")
+  execute_process(COMMAND "/usr/bin/python3" -m compileall "/home/duzhong/dzacs/devel/lib/python3/dist-packages/move_base_msgs")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/python3/dist-packages" TYPE DIRECTORY FILES "/home/duzhong/dzacs/build/devel/lib/python3/dist-packages/move_base_msgs")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/python3/dist-packages" TYPE DIRECTORY FILES "/home/duzhong/dzacs/devel/lib/python3/dist-packages/move_base_msgs")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)

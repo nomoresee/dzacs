@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../devel/lib/dzsavepath/dzsavepath"
-  "../devel/lib/dzsavepath/dzsavepath.pdb"
+  "/home/duzhong/dzacs/devel/lib/dzsavepath/dzsavepath"
+  "/home/duzhong/dzacs/devel/lib/dzsavepath/dzsavepath.pdb"
   "CMakeFiles/dzsavepath.dir/src/dzsavepath.cpp.o"
   "CMakeFiles/dzsavepath.dir/src/savepath.cpp.o"
 )
