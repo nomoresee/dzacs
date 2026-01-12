@@ -2,6 +2,7 @@
 #include "dzactuator.h"
 #include "Quaternion_Solution.h"
 
+#include <cmath>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/convert.h>
 #include <tf2/utils.h>
@@ -521,7 +522,7 @@ void turn_on_robot::callback_monter_control(const geometry_msgs::Twist::ConstPtr
   moveBaseControl.Set_ID_Num = 1;
   // printf("callback_monter_control\n");
 }
-
+//用于云台舵机的速度调控
 void turn_on_robot::CaremaMontorControl(){  
     if(find_center == false)
     {
@@ -530,14 +531,14 @@ void turn_on_robot::CaremaMontorControl(){
       static int direction_0 = -1;  // 控制扫描方向：1表示正向，-1表示反向
       static int direction_1 = -1;  // 控制扫描方向：1表示正向，-1表示反向
 
-      static int step = 50;        // 每次移动的步长
+      static int step = 75;        // 每次移动的步长（50->75，扫视速度约提升50%）
       static int scan_interval = 0; // 控制扫描速度的计数器
 
       moveBaseControl.Position_0 = 2047;
 
       // 每隔一定周期调整位置，避免50Hz过于频繁地发送位置命令
       if (scan_interval++ >= 1)
-      { // 每1秒更新位置（50Hz -> 50次 = 1秒）
+      { // 每2次循环更新一次（50Hz -> 50次 = 1秒）
         scan_interval = 0;
 
         // 更新电机1的位置
@@ -567,8 +568,8 @@ void turn_on_robot::CaremaMontorControl(){
       }
 
       // 设置电机速度
-      moveBaseControl.Speed_0 = 1500;
-      moveBaseControl.Speed_1 = 1500;
+      moveBaseControl.Speed_0 = 2000;//Pitch_Speed
+      moveBaseControl.Speed_1 = 2000;//Yaw_Speed
     //}
     // else if(stop_point_signal_msg == 0 ){
     //     moveBaseControl.Position_0 = 2047;
@@ -597,15 +598,51 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
 {
   std_msgs::Int32MultiArray temp_msg = *msg;
   static double prev_pitch_offset = 0.0;
+  static double prev_yaw_offset = 0.0;
   static bool has_prev_pitch_offset = false;
+  static bool has_prev_yaw_offset = false;
+  static int last_pitch_command = GIMBAL_MOTOR0_CENTER_POSITION;
+  static int last_yaw_command = 2047;
   double filtered_pitch_offset = temp_msg.data[1];
+  double filtered_yaw_offset = temp_msg.data[0];
 
   if (has_prev_pitch_offset)
   {
     filtered_pitch_offset = 0.6 * prev_pitch_offset + 0.4 * static_cast<double>(temp_msg.data[1]);
   }
+  if (has_prev_yaw_offset)
+  {
+    filtered_yaw_offset = 0.6 * prev_yaw_offset + 0.4 * static_cast<double>(temp_msg.data[0]);
+  }
   has_prev_pitch_offset = true;
+  has_prev_yaw_offset = true;
   prev_pitch_offset = filtered_pitch_offset;
+  prev_yaw_offset = filtered_yaw_offset;
+
+  const double pitch_deadband = 3.0;
+  const double yaw_deadband = 3.0;
+  if (std::abs(filtered_pitch_offset) < pitch_deadband)
+  {
+    filtered_pitch_offset = 0.0;
+  }
+  if (std::abs(filtered_yaw_offset) < yaw_deadband)
+  {
+    filtered_yaw_offset = 0.0;
+  }
+
+  auto applySlewLimit = [](int target, int current, int max_step)
+  {
+    const int delta = target - current;
+    if (delta > max_step)
+    {
+      return current + max_step;
+    }
+    if (delta < -max_step)
+    {
+      return current - max_step;
+    }
+    return target;
+  };
   // if (temp_msg.data[2] == 1 && stop_point_signal_msg == 1)
   if (temp_msg.data[2] == 1)
   { // 检测到目标
@@ -614,9 +651,12 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
     // printf("callback--find_center =%d\n",find_center);
 
     // 瞄准目标
-    // moveBaseControl.Position_0 = curYuntai_feedback_data.Position_0 + (temp_msg.data[1] / 2);
-    moveBaseControl.Position_0 = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset / 2));
-    moveBaseControl.Position_1 = curYuntai_feedback_data.Position_1 + (temp_msg.data[0] / 2);
+    const int desired_pitch = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset / 2));
+    const int desired_yaw = curYuntai_feedback_data.Position_1 + static_cast<int>(filtered_yaw_offset / 2);
+    last_pitch_command = applySlewLimit(desired_pitch, last_pitch_command, 40);
+    last_yaw_command = applySlewLimit(desired_yaw, last_yaw_command, 55);
+    moveBaseControl.Position_0 = last_pitch_command;
+    moveBaseControl.Position_1 = last_yaw_command;
 
     moveBaseControl.Speed_0 = CaremaSpeedControl(moveBaseControl.Position_0, curYuntai_feedback_data.Position_0, GimbalAxis::Pitch);
     moveBaseControl.Speed_1 = CaremaSpeedControl(moveBaseControl.Position_1, curYuntai_feedback_data.Position_1, GimbalAxis::Yaw);
@@ -665,8 +705,8 @@ double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose,Gimbal
         double derivative_limit;
     };
 
-    const Gains gains = is_pitch ? Gains{88.0, 0.7, 0.22, 4200.0, 3.5, 2.0, 450.0}
-                                 : Gains{150.0, 0.9, 0.55, 9000.0, 8.0, 1.0, 600.0};
+    const Gains gains = is_pitch ? Gains{300, 0.7, 0.22, 4200.0, 3.5, 2.0, 450.0}
+                                 : Gains{500, 0.9, 0.55, 9000.0, 8.0, 1.0, 600.0};//前面pitch 后面yaw 分别对应kp,ki,kd,max_speed,offset,deadband,derivative_limit
 
     static constexpr double sampling_time = 0.01;  // 采样时间 (10Hz)
 
