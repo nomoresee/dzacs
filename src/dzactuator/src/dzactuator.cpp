@@ -531,7 +531,7 @@ void turn_on_robot::CaremaMontorControl(){
       static int direction_0 = -1;  // 控制扫描方向：1表示正向，-1表示反向
       static int direction_1 = -1;  // 控制扫描方向：1表示正向，-1表示反向
 
-      static int step = 75;        // 每次移动的步长（50->75，扫视速度约提升50%）
+      static int step = 50;        // 每次移动的步长（50->75，扫视速度约提升50%）
       static int scan_interval = 0; // 控制扫描速度的计数器
 
       moveBaseControl.Position_0 = 2047;
@@ -653,13 +653,15 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
     // 瞄准目标
     const int desired_pitch = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset / 2));
     const int desired_yaw = curYuntai_feedback_data.Position_1 + static_cast<int>(filtered_yaw_offset / 2);
-    last_pitch_command = applySlewLimit(desired_pitch, last_pitch_command, 40);
-    last_yaw_command = applySlewLimit(desired_yaw, last_yaw_command, 55);
+    last_pitch_command = applySlewLimit(desired_pitch, last_pitch_command, 120);//位置变化最大限制幅度
+    last_yaw_command = applySlewLimit(desired_yaw, last_yaw_command, 120);
     moveBaseControl.Position_0 = last_pitch_command;
     moveBaseControl.Position_1 = last_yaw_command;
 
     moveBaseControl.Speed_0 = CaremaSpeedControl(moveBaseControl.Position_0, curYuntai_feedback_data.Position_0, GimbalAxis::Pitch);
     moveBaseControl.Speed_1 = CaremaSpeedControl(moveBaseControl.Position_1, curYuntai_feedback_data.Position_1, GimbalAxis::Yaw);
+
+    printf("Detected target: find_center=%d, Speed_0=%.2f, Speed_1=%.2f\n", find_center, moveBaseControl.Speed_0, moveBaseControl.Speed_1);
 
     if(abs(static_cast<int>(filtered_pitch_offset)) < 10 && abs(temp_msg.data[0]) <10){
       std_msgs::UInt8 shotdata;
@@ -705,8 +707,8 @@ double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose,Gimbal
         double derivative_limit;
     };
 
-    const Gains gains = is_pitch ? Gains{300, 0.7, 0.22, 4200.0, 3.5, 2.0, 450.0}
-                                 : Gains{500, 0.9, 0.55, 9000.0, 8.0, 1.0, 600.0};//前面pitch 后面yaw 分别对应kp,ki,kd,max_speed,offset,deadband,derivative_limit
+    const Gains gains = is_pitch ? Gains{350,200,1000,9000.0,0,1.0,600.0}
+                                 : Gains{350,200,1000,9000.0,0,1.0,600.0};//前面pitch 后面yaw 分别对应kp,ki,kd,max_speed,offset,deadband,derivative_limit
 
     static constexpr double sampling_time = 0.01;  // 采样时间 (10Hz)
 
@@ -726,7 +728,11 @@ double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose,Gimbal
     {state.integral=0.0;}
     else
     {state.integral += error * sampling_time;}
-    state.integral = clamp(state.integral,-gains.max_speed / (2.0 * gains.ki), gains.max_speed / (2.0 * gains.ki));
+    if (gains.ki != 0.0) {
+        state.integral = clamp(state.integral, -gains.max_speed / (2.0 * gains.ki), gains.max_speed / (2.0 * gains.ki));
+    } else {
+        state.integral = 0.0;  // 如果ki=0，清零积分
+    }
 
     //微分项更新并滤波
     double derivative = (error - state.prev_error) / sampling_time;
@@ -735,6 +741,8 @@ double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose,Gimbal
 
     // PID 控制计算
     double speed = gains.kp * error + gains.ki * state.integral   + gains.kd * state.filtered_derivative;
+
+    std::cout << "DEBUG: kp=" << gains.kp << ", ki=" << gains.ki << ", kd=" << gains.kd << ", integral=" << state.integral << ", filtered_derivative=" << state.filtered_derivative << ", offset=" << gains.offset << std::endl;
 
     //补偿
     if(error>0)

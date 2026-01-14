@@ -53,15 +53,15 @@ CMAKE_BINARY_DIR = /home/duzhong/dzacs/build
 # Include the progress variables for this target.
 include dzjudgment/CMakeFiles/dzjudgment_generate_messages_eus.dir/progress.make
 
-dzjudgment/CMakeFiles/dzjudgment_generate_messages_eus: /home/duzhong/dzacs/devel/share/roseus/ros/dzjudgment/manifest.l
+dzjudgment/CMakeFiles/dzjudgment_generate_messages_eus: devel/share/roseus/ros/dzjudgment/manifest.l
 
 
-/home/duzhong/dzacs/devel/share/roseus/ros/dzjudgment/manifest.l: /opt/ros/noetic/lib/geneus/gen_eus.py
+devel/share/roseus/ros/dzjudgment/manifest.l: /opt/ros/noetic/lib/geneus/gen_eus.py
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating EusLisp manifest code for dzjudgment"
-	cd /home/duzhong/dzacs/build/dzjudgment && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/geneus/cmake/../../../lib/geneus/gen_eus.py -m -o /home/duzhong/dzacs/devel/share/roseus/ros/dzjudgment dzjudgment std_msgs
+	cd /home/duzhong/dzacs/build/dzjudgment && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/geneus/cmake/../../../lib/geneus/gen_eus.py -m -o /home/duzhong/dzacs/build/devel/share/roseus/ros/dzjudgment dzjudgment std_msgs
 
 dzjudgment_generate_messages_eus: dzjudgment/CMakeFiles/dzjudgment_generate_messages_eus
-dzjudgment_generate_messages_eus: /home/duzhong/dzacs/devel/share/roseus/ros/dzjudgment/manifest.l
+dzjudgment_generate_messages_eus: devel/share/roseus/ros/dzjudgment/manifest.l
 dzjudgment_generate_messages_eus: dzjudgment/CMakeFiles/dzjudgment_generate_messages_eus.dir/build.make
 
 .PHONY : dzjudgment_generate_messages_eus

@@ -1,0 +1,109 @@
+{
+	"backtrace" : 4,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_custom_target",
+			"include",
+			"generate_messages",
+			"add_dependencies"
+		],
+		"files" : 
+		[
+			"/home/duzhong/dzacs/build/auto_navigation/cmake/auto_navigation-genmsg.cmake",
+			"/opt/ros/noetic/share/genmsg/cmake/genmsg-extras.cmake",
+			"auto_navigation/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 2
+			},
+			{
+				"command" : 2,
+				"file" : 2,
+				"line" : 23,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 307,
+				"parent" : 1
+			},
+			{
+				"file" : 0,
+				"parent" : 2
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 14,
+				"parent" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 224,
+				"parent" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 183,
+				"parent" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 101,
+				"parent" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 142,
+				"parent" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 60,
+				"parent" : 3
+			}
+		]
+	},
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 5,
+			"id" : "auto_navigation_generate_messages_py::@16d0e44f55f7064935cf"
+		},
+		{
+			"backtrace" : 6,
+			"id" : "auto_navigation_generate_messages_nodejs::@16d0e44f55f7064935cf"
+		},
+		{
+			"backtrace" : 7,
+			"id" : "auto_navigation_generate_messages_eus::@16d0e44f55f7064935cf"
+		},
+		{
+			"backtrace" : 8,
+			"id" : "auto_navigation_generate_messages_lisp::@16d0e44f55f7064935cf"
+		},
+		{
+			"backtrace" : 9,
+			"id" : "auto_navigation_generate_messages_cpp::@16d0e44f55f7064935cf"
+		}
+	],
+	"id" : "auto_navigation_generate_messages::@16d0e44f55f7064935cf",
+	"name" : "auto_navigation_generate_messages",
+	"paths" : 
+	{
+		"build" : "auto_navigation",
+		"source" : "auto_navigation"
+	},
+	"sources" : [],
+	"type" : "UTILITY"
+}

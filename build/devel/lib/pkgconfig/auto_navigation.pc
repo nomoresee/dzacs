@@ -1,0 +1,8 @@
+prefix=/home/duzhong/dzacs/build/devel
+
+Name: auto_navigation
+Description: Description of auto_navigation
+Version: 0.0.0
+Cflags: -I/home/duzhong/dzacs/build/devel/include
+Libs: -L${prefix}/lib 
+Requires: rospy std_msgs geometry_msgs nav_msgs actionlib move_base_msgs message_runtime

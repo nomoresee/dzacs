@@ -1,4 +1,4 @@
-prefix=/home/duzhong/dzacs/install
+prefix=/usr/local
 
 Name: clear_costmap_recovery
 Description: Description of clear_costmap_recovery

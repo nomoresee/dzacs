@@ -1,4 +1,4 @@
-prefix=/home/duzhong/dzacs/install
+prefix=/usr/local
 
 Name: map_msgs
 Description: Description of map_msgs

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js"
-  "/home/duzhong/dzacs/devel/share/gennodejs/ros/auto_navigation/msg/NavigationStatus.js"
+  "../devel/share/gennodejs/ros/auto_navigation/msg/NavigationGoal.js"
+  "../devel/share/gennodejs/ros/auto_navigation/msg/NavigationStatus.js"
   "CMakeFiles/auto_navigation_generate_messages_nodejs"
 )
 

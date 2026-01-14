@@ -1,9 +1,9 @@
 file(REMOVE_RECURSE
-  "/home/duzhong/dzacs/devel/include/move_base/MoveBaseConfig.h"
-  "/home/duzhong/dzacs/devel/lib/python3/dist-packages/move_base/cfg/MoveBaseConfig.py"
-  "/home/duzhong/dzacs/devel/share/move_base/docs/MoveBaseConfig-usage.dox"
-  "/home/duzhong/dzacs/devel/share/move_base/docs/MoveBaseConfig.dox"
-  "/home/duzhong/dzacs/devel/share/move_base/docs/MoveBaseConfig.wikidoc"
+  "../devel/include/move_base/MoveBaseConfig.h"
+  "../devel/lib/python3/dist-packages/move_base/cfg/MoveBaseConfig.py"
+  "../devel/share/move_base/docs/MoveBaseConfig-usage.dox"
+  "../devel/share/move_base/docs/MoveBaseConfig.dox"
+  "../devel/share/move_base/docs/MoveBaseConfig.wikidoc"
   "CMakeFiles/move_base_gencfg"
 )
 

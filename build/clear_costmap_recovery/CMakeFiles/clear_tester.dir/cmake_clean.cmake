@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/duzhong/dzacs/devel/lib/clear_costmap_recovery/clear_tester"
-  "/home/duzhong/dzacs/devel/lib/clear_costmap_recovery/clear_tester.pdb"
+  "../devel/lib/clear_costmap_recovery/clear_tester"
+  "../devel/lib/clear_costmap_recovery/clear_tester.pdb"
   "CMakeFiles/clear_tester.dir/test/clear_tester.cpp.o"
 )
 
