@@ -563,7 +563,7 @@ void turn_on_robot::CaremaMontorControl(){
         // else if(moveBaseControl.Position_0 <=1847)
         // {
         //   moveBaseControl.Position_0=1847;
-        //   direction_1= 1;
+        //   direction_1= 1; 
         // }
       }
 
@@ -653,8 +653,8 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
     // 瞄准目标
     const int desired_pitch = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset / 2));
     const int desired_yaw = curYuntai_feedback_data.Position_1 + static_cast<int>(filtered_yaw_offset / 2);
-    last_pitch_command = applySlewLimit(desired_pitch, last_pitch_command, 120);//位置变化最大限制幅度
-    last_yaw_command = applySlewLimit(desired_yaw, last_yaw_command, 120);
+    last_pitch_command = applySlewLimit(desired_pitch, last_pitch_command, 75);//位置变化最大限制幅度
+    last_yaw_command = applySlewLimit(desired_yaw, last_yaw_command, 75);
     moveBaseControl.Position_0 = last_pitch_command;
     moveBaseControl.Position_1 = last_yaw_command;
 
@@ -707,8 +707,8 @@ double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose,Gimbal
         double derivative_limit;
     };
 
-    const Gains gains = is_pitch ? Gains{350,200,1000,9000.0,0,1.0,600.0}
-                                 : Gains{350,200,1000,9000.0,0,1.0,600.0};//前面pitch 后面yaw 分别对应kp,ki,kd,max_speed,offset,deadband,derivative_limit
+    const Gains gains = is_pitch ? Gains{300,11.2,11.8,9000.0,4.5,1.0,600.0}
+                                 : Gains{300,11.2,11.8,9000.0,8,1.0,600.0};//前面pitch 后面yaw 分别对应kp,ki,kd,max_speed,offset,deadband,derivative_limit
 
     static constexpr double sampling_time = 0.01;  // 采样时间 (10Hz)
 
