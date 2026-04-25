@@ -149,6 +149,12 @@ add_executable(det_node
         src/det/preprocess.cc
         src/det/rkpt.cc)
 
+add_executable(det_node_25
+	src/det_node_25.cc
+	src/det/postprocess_25.cc
+	src/det/preprocess.cc
+	src/det/rkpt_25.cc)
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -162,6 +168,14 @@ add_executable(det_node
 ## Specify libraries to link a library or executable target against
 target_link_libraries(
   det_node
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${RKNN_RT_LIB}
+  ${RGA_LIB}
+)
+
+target_link_libraries(
+  det_node_25
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${RKNN_RT_LIB}
@@ -185,6 +199,10 @@ target_link_libraries(
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
 install(TARGETS det_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(TARGETS det_node_25
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

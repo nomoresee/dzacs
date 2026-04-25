@@ -4,5 +4,5 @@ PROJECT_PKG_CONFIG_INCLUDE_DIRS = "${prefix}/include".split(';') if "${prefix}/i
 PROJECT_CATKIN_DEPENDS = "rospy;std_msgs;geometry_msgs;nav_msgs;actionlib;move_base_msgs;message_runtime".replace(';', ' ')
 PKG_CONFIG_LIBRARIES_WITH_PREFIX = "".split(';') if "" != "" else []
 PROJECT_NAME = "auto_navigation"
-PROJECT_SPACE_DIR = "/usr/local"
+PROJECT_SPACE_DIR = "/home/duzhong/dzacs/install"
 PROJECT_VERSION = "0.0.0"

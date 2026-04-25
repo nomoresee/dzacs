@@ -202,6 +202,17 @@ enum class GimbalAxis
 	Yaw
 };
 
+enum class GimbalState
+{
+	INIT,
+	TRACKING,
+	LOST_HOLD,
+	REACQUIRE,
+	SEARCH_LOCAL,
+	SEARCH_GLOBAL,
+	LOCKED_FIRE
+};
+
 // The robot chassis class uses constructors to initialize data, publish topics, etc
 // 机器人底盘类，使用构造函数初始化数据和发布话题等
 class turn_on_robot
@@ -260,8 +271,18 @@ public:
 	void Average_filtering();
 
 	double normalizeAngle(double angle);
-	double CaremaSpeedControl(int target_pose,int current_pose,GimbalAxis axis);
+	double CaremaSpeedControl(double target_pose, double current_pose, double current_vel, GimbalAxis axis);
+	void gimbal_control(float target_yaw, float target_pitch);
 	void CaremaMontorControl();
+	void CaremaMontorControlLegacy();
+	void UpdateGimbalState(bool has_target);
+	void TrackTargetVisualServo(double filtered_yaw_offset, double filtered_pitch_offset);
+	void LostHoldSearch();
+	void ReacquireSearch();
+	void LocalWideSearch();
+	void GlobalSnakeSearch();
+	void CheckFireCondition(double filtered_yaw_offset, double filtered_pitch_offset);
+	void StopFireCommand();
 
 	int limitGimbalMotor0Position(int position);
 
@@ -308,6 +329,39 @@ public:
 	bool return_center;
 
 	curYuntai_feedback curYuntai_feedback_data;
+	double gimbal_dt;
+	double predict_time;
+	double Kp_img_yaw;
+	double Kd_img_yaw;
+	double Kp_img_pitch;
+	double Kd_img_pitch;
+	double K_body_yaw;
+	double K_body_pitch;
+	int last_target_yaw;
+	int last_target_pitch;
+	double target_yaw_vel_est;
+	double target_pitch_vel_est;
+	double last_error_yaw;
+	double last_error_pitch;
+	double error_yaw_vel_f;
+	double error_pitch_vel_f;
+	int lost_count;
+	int track_count;
+	int lock_count;
+	int lost_target_count;
+	int track_target_count;
+	int search_direction;
+	int search_pitch_direction;
+	int search_pitch_offset;
+	int search_layer;
+	int gimbal_search_state;
+	int gimbal_search_direction;
+	int gimbal_pitch_direction;
+	int gimbal_pitch_offset;
+	int gimbal_global_layer;
+	int stable_target_count;
+	bool has_last_target;
+	GimbalState gimbal_state;
 	
 	// add for pub_Battery_Percentage 20230216 whq
 	bool montion_flag = false; //小车是否在运动

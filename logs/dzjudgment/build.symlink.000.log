@@ -1,0 +1,8 @@
+Symlinking /home/duzhong/dzacs/devel/share/dzjudgment/cmake/dzjudgmentConfig.cmake
+Symlinking /home/duzhong/dzacs/devel/share/dzjudgment/cmake/dzjudgmentConfig-version.cmake
+Symlinking /home/duzhong/dzacs/devel/share/dzjudgment/cmake/dzjudgment-msg-extras.cmake
+Symlinking /home/duzhong/dzacs/devel/share/dzjudgment/cmake/dzjudgment-msg-paths.cmake
+Symlinking /home/duzhong/dzacs/devel/share/roseus/ros/dzjudgment/manifest.l
+Symlinking /home/duzhong/dzacs/devel/lib/pkgconfig/dzjudgment.pc
+Symlinking /home/duzhong/dzacs/devel/lib/dzjudgment/dzjudgment
+Symlinking /home/duzhong/dzacs/devel/lib/python3/dist-packages/dzjudgment/__init__.py

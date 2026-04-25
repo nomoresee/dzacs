@@ -2027,6 +2027,19 @@ map_msgs_gencpp/fast:
 .PHONY : map_msgs_gencpp/fast
 
 #=============================================================================
+# Target rules for targets named det_node_25
+
+# Build rule for target.
+det_node_25: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 det_node_25
+.PHONY : det_node_25
+
+# fast build rule for target.
+det_node_25/fast:
+	$(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/build
+.PHONY : det_node_25/fast
+
+#=============================================================================
 # Target rules for targets named det_node
 
 # Build rule for target.
@@ -2090,6 +2103,19 @@ _catkin_empty_exported_target: cmake_check_build_system
 _catkin_empty_exported_target/fast:
 	$(MAKE) -f dzactuator/CMakeFiles/_catkin_empty_exported_target.dir/build.make dzactuator/CMakeFiles/_catkin_empty_exported_target.dir/build
 .PHONY : _catkin_empty_exported_target/fast
+
+#=============================================================================
+# Target rules for targets named voice_module
+
+# Build rule for target.
+voice_module: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 voice_module
+.PHONY : voice_module
+
+# fast build rule for target.
+voice_module/fast:
+	$(MAKE) -f voice_module/CMakeFiles/voice_module.dir/build.make voice_module/CMakeFiles/voice_module.dir/build
+.PHONY : voice_module/fast
 
 #=============================================================================
 # Target rules for targets named dynamic_reconfigure_generate_messages_nodejs
@@ -3066,11 +3092,13 @@ help:
 	@echo "... _map_msgs_generate_messages_check_deps_SaveMap"
 	@echo "... map_msgs_generate_messages_cpp"
 	@echo "... map_msgs_gencpp"
+	@echo "... det_node_25"
 	@echo "... det_node"
 	@echo "... rplidarNodeClient"
 	@echo "... rplidarNode"
 	@echo "... dzactuator_node"
 	@echo "... _catkin_empty_exported_target"
+	@echo "... voice_module"
 	@echo "... dynamic_reconfigure_generate_messages_nodejs"
 	@echo "... costmap_2d_generate_messages_py"
 	@echo "... dynamic_reconfigure_generate_messages_py"

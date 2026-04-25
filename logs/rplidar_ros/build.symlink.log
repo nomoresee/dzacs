@@ -1,0 +1,5 @@
+Symlinking /home/duzhong/dzacs/devel/share/rplidar_ros/cmake/rplidar_rosConfig.cmake
+Symlinking /home/duzhong/dzacs/devel/share/rplidar_ros/cmake/rplidar_rosConfig-version.cmake
+Symlinking /home/duzhong/dzacs/devel/lib/pkgconfig/rplidar_ros.pc
+Symlinking /home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNode
+Symlinking /home/duzhong/dzacs/devel/lib/rplidar_ros/rplidarNodeClient

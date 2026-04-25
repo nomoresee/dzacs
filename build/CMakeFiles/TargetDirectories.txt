@@ -211,6 +211,7 @@
 /home/duzhong/dzacs/build/rknn_pt/CMakeFiles/rebuild_cache.dir
 /home/duzhong/dzacs/build/rknn_pt/CMakeFiles/edit_cache.dir
 /home/duzhong/dzacs/build/rknn_pt/CMakeFiles/test.dir
+/home/duzhong/dzacs/build/rknn_pt/CMakeFiles/det_node_25.dir
 /home/duzhong/dzacs/build/rknn_pt/CMakeFiles/det_node.dir
 /home/duzhong/dzacs/build/rplidar_ros/CMakeFiles/install/strip.dir
 /home/duzhong/dzacs/build/rplidar_ros/CMakeFiles/install/local.dir
@@ -230,6 +231,14 @@
 /home/duzhong/dzacs/build/dzactuator/CMakeFiles/test.dir
 /home/duzhong/dzacs/build/dzactuator/CMakeFiles/dzactuator_node.dir
 /home/duzhong/dzacs/build/dzactuator/CMakeFiles/_catkin_empty_exported_target.dir
+/home/duzhong/dzacs/build/voice_module/CMakeFiles/install/strip.dir
+/home/duzhong/dzacs/build/voice_module/CMakeFiles/install/local.dir
+/home/duzhong/dzacs/build/voice_module/CMakeFiles/install.dir
+/home/duzhong/dzacs/build/voice_module/CMakeFiles/list_install_components.dir
+/home/duzhong/dzacs/build/voice_module/CMakeFiles/rebuild_cache.dir
+/home/duzhong/dzacs/build/voice_module/CMakeFiles/edit_cache.dir
+/home/duzhong/dzacs/build/voice_module/CMakeFiles/test.dir
+/home/duzhong/dzacs/build/voice_module/CMakeFiles/voice_module.dir
 /home/duzhong/dzacs/build/clear_costmap_recovery/CMakeFiles/install/strip.dir
 /home/duzhong/dzacs/build/clear_costmap_recovery/CMakeFiles/install/local.dir
 /home/duzhong/dzacs/build/clear_costmap_recovery/CMakeFiles/install.dir

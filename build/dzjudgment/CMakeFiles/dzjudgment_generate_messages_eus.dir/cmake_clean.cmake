@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "../devel/share/roseus/ros/dzjudgment/manifest.l"
+  "/home/duzhong/dzacs/devel/share/roseus/ros/dzjudgment/manifest.l"
   "CMakeFiles/dzjudgment_generate_messages_eus"
 )
 

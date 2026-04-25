@@ -2,12 +2,132 @@
 #include "dzactuator.h"
 #include "Quaternion_Solution.h"
 
+#include <algorithm>
 #include <cmath>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/convert.h>
 #include <tf2/utils.h>
 
 sensor_msgs::Imu Mpu6050;
+
+namespace
+{
+struct PidState
+{
+  double prev_error = 0.0;
+  double integral = 0.0;
+  double filtered_derivative = 0.0;
+};
+
+struct PidGains
+{
+  double kp;
+  double ki;
+  double kd;
+  double deadband;
+  double derivative_limit;
+  double integral_limit;
+  double output_limit;
+};
+
+struct Kalman1D
+{
+  double q = 0.02;  // process noise
+  double r = 0.8;   // measurement noise
+  double x = 0.0;   // state
+  double p = 1.0;   // covariance
+  bool initialized = false;
+
+  Kalman1D() = default;
+  Kalman1D(double q_, double r_, double x_, double p_, bool initialized_)
+    : q(q_), r(r_), x(x_), p(p_), initialized(initialized_)
+  {
+  }
+
+  double update(double measurement)
+  {
+    if (!initialized)
+    {
+      x = measurement;
+      initialized = true;
+      return x;
+    }
+    p += q;
+    const double k = p / (p + r);
+    x += k * (measurement - x);
+    p *= (1.0 - k);
+    return x;
+  }
+};
+
+double runPid(PidState &state, const PidGains &gains, const double error, const double dt)
+{
+  if (std::abs(error) < gains.deadband)
+  {
+    state.integral = 0.0;
+    state.filtered_derivative = 0.0;
+    state.prev_error = error;
+    return 0.0;
+  }
+
+  state.integral += error * dt;
+  state.integral = clamp(state.integral, -gains.integral_limit, gains.integral_limit);
+
+  double derivative = (error - state.prev_error) / dt;
+  derivative = clamp(derivative, -gains.derivative_limit, gains.derivative_limit);
+  state.filtered_derivative = 0.75 * state.filtered_derivative + 0.25 * derivative;
+
+  double output = gains.kp * error + gains.ki * state.integral + gains.kd * state.filtered_derivative;
+  output = clamp(output, -gains.output_limit, gains.output_limit);
+  state.prev_error = error;
+  return output;
+}
+
+double wrapEncoderError(const double error)
+{
+  constexpr double period = 4096.0;
+  double wrapped = std::fmod(error + period * 0.5, period);
+  if (wrapped < 0.0)
+  {
+    wrapped += period;
+  }
+  return wrapped - period * 0.5;
+}
+
+void getMahonyMadgwickYawPitch(double &yaw_deg, double &pitch_deg)
+{
+  tf2::Quaternion q;
+  tf2::fromMsg(Mpu6050.orientation, q);
+  double roll = 0.0;
+  tf2::Matrix3x3(q).getRPY(roll, pitch_deg, yaw_deg);
+  yaw_deg *= 57.295779513;
+  pitch_deg *= 57.295779513;
+
+  const double ax = Mpu6050.linear_acceleration.x;
+  const double ay = Mpu6050.linear_acceleration.y;
+  const double az = Mpu6050.linear_acceleration.z;
+  if (std::abs(az) > 1e-6)
+  {
+    const double pitch_acc = std::atan2(-ax, std::sqrt(ay * ay + az * az)) * 57.295779513;
+    // 用加速度做 Madgwick 风格误差修正，抑制 pitch 漂移。
+    pitch_deg = 0.88 * pitch_deg + 0.12 * pitch_acc;
+  }
+}
+
+int applySlewLimit(int target, int current, int max_step)
+{
+  const int delta = target - current;
+  if (delta > max_step)
+  {
+    return current + max_step;
+  }
+  if (delta < -max_step)
+  {
+    return current - max_step;
+  }
+  return target;
+}
+} // namespace
 
 turn_on_robot::turn_on_robot() : Power_voltage(0)
 {
@@ -32,6 +152,39 @@ turn_on_robot::turn_on_robot() : Power_voltage(0)
   stop_point_signal_msg = 0;
   find_center = false;
   return_center = false;
+  gimbal_dt = 0.02;
+  predict_time = 0.10;
+  Kp_img_yaw = 0.80;
+  Kd_img_yaw = 0.08;
+  Kp_img_pitch = 0.50;
+  Kd_img_pitch = 0.05;
+  K_body_yaw = 0.30;
+  K_body_pitch = 0.0;
+  last_target_yaw = 2047;
+  last_target_pitch = GIMBAL_MOTOR0_CENTER_POSITION;
+  target_yaw_vel_est = 0.0;
+  target_pitch_vel_est = 0.0;
+  last_error_yaw = 0.0;
+  last_error_pitch = 0.0;
+  error_yaw_vel_f = 0.0;
+  error_pitch_vel_f = 0.0;
+  lost_count = 0;
+  track_count = 0;
+  lock_count = 0;
+  lost_target_count = 0;
+  track_target_count = 0;
+  search_direction = 1;
+  search_pitch_direction = 1;
+  search_pitch_offset = 0;
+  search_layer = 0;
+  gimbal_search_state = 0;
+  gimbal_search_direction = 1;
+  gimbal_pitch_direction = 1;
+  gimbal_pitch_offset = 0;
+  gimbal_global_layer = 0;
+  stable_target_count = 0;
+  has_last_target = false;
+  gimbal_state = GimbalState::INIT;
   memset(&Robot_Pos, 0, sizeof(Robot_Pos));
   memset(&Robot_Vel, 0, sizeof(Robot_Vel));
   memset(&Receive_Data, 0, sizeof(Receive_Data));
@@ -523,7 +676,7 @@ void turn_on_robot::callback_monter_control(const geometry_msgs::Twist::ConstPtr
   // printf("callback_monter_control\n");
 }
 //用于云台舵机的速度调控
-void turn_on_robot::CaremaMontorControl(){  
+void turn_on_robot::CaremaMontorControlLegacy(){  
     if(find_center == false)
     {
       // if(stop_point_signal_msg == 1 ){
@@ -582,6 +735,44 @@ void turn_on_robot::CaremaMontorControl(){
 
 
 
+void turn_on_robot::CaremaMontorControl()
+{
+  switch (gimbal_state)
+  {
+  case GimbalState::INIT:
+    moveBaseControl.Position_0 = limitGimbalMotor0Position(GIMBAL_MOTOR0_CENTER_POSITION);
+    moveBaseControl.Position_1 = 2047;
+    moveBaseControl.Speed_0 = 2000;
+    moveBaseControl.Speed_1 = 2000;
+    break;
+  case GimbalState::TRACKING:
+    break;
+  case GimbalState::LOST_HOLD:
+    LostHoldSearch();
+    break;
+  case GimbalState::REACQUIRE:
+    ReacquireSearch();
+    break;
+  case GimbalState::SEARCH_LOCAL:
+    LocalWideSearch();
+    break;
+  case GimbalState::SEARCH_GLOBAL:
+    GlobalSnakeSearch();
+    break;
+  case GimbalState::LOCKED_FIRE:
+    gimbal_state = GimbalState::TRACKING;
+    break;
+  default:
+    moveBaseControl.Position_0 = limitGimbalMotor0Position(GIMBAL_MOTOR0_CENTER_POSITION);
+    moveBaseControl.Position_1 = 2047;
+    moveBaseControl.Speed_0 = 2000;
+    moveBaseControl.Speed_1 = 2000;
+    break;
+  }
+}
+
+
+
 
 void turn_on_robot::callback_voice_feedback(const std_msgs::String::ConstPtr &msg){
   ROS_INFO("收到语音反馈: %s", msg->data.c_str());
@@ -594,33 +785,230 @@ void turn_on_robot::callback_voice_status(const std_msgs::UInt8::ConstPtr &msg){
 
 
 
+void turn_on_robot::UpdateGimbalState(bool has_target)
+{
+  if (has_target)
+  {
+    lost_count = 0;
+    lost_target_count = 0;
+    ++track_count;
+    ++track_target_count;
+    gimbal_state = GimbalState::TRACKING;
+    return;
+  }
+
+  track_count = 0;
+  track_target_count = 0;
+  ++lost_count;
+  lost_target_count = lost_count;
+
+  if (lost_count < 10)
+  {
+    gimbal_state = GimbalState::LOST_HOLD;
+  }
+  else if (lost_count < 40)
+  {
+    gimbal_state = GimbalState::REACQUIRE;
+  }
+  else if (lost_count < 120)
+  {
+    gimbal_state = GimbalState::SEARCH_LOCAL;
+  }
+  else
+  {
+    gimbal_state = GimbalState::SEARCH_GLOBAL;
+  }
+}
+
+void turn_on_robot::TrackTargetVisualServo(double filtered_yaw_offset, double filtered_pitch_offset)
+{
+  const double dt = gimbal_dt;
+  const double error_yaw_vel = (filtered_yaw_offset - last_error_yaw) / dt;
+  const double error_pitch_vel = (filtered_pitch_offset - last_error_pitch) / dt;
+
+  error_yaw_vel_f = 0.7 * error_yaw_vel_f + 0.3 * error_yaw_vel;
+  error_pitch_vel_f = 0.7 * error_pitch_vel_f + 0.3 * error_pitch_vel;
+  last_error_yaw = filtered_yaw_offset;
+  last_error_pitch = filtered_pitch_offset;
+
+  last_target_yaw = curYuntai_feedback_data.Position_1;
+  last_target_pitch = curYuntai_feedback_data.Position_0;
+  has_last_target = true;
+
+  const double pred_yaw_error = filtered_yaw_offset + error_yaw_vel_f * predict_time;
+  const double pred_pitch_error = filtered_pitch_offset + error_pitch_vel_f * predict_time;
+  const double yaw_body_comp = -K_body_yaw * Mpu6050.angular_velocity.z;
+  const double pitch_body_comp = -K_body_pitch * Mpu6050.angular_velocity.y;
+
+  double yaw_rate_cmd = Kp_img_yaw * pred_yaw_error + Kd_img_yaw * error_yaw_vel_f + yaw_body_comp;
+  double pitch_rate_cmd = Kp_img_pitch * pred_pitch_error + Kd_img_pitch * error_pitch_vel_f + pitch_body_comp;
+  yaw_rate_cmd = clamp(yaw_rate_cmd, -2200.0, 2200.0);
+  pitch_rate_cmd = clamp(pitch_rate_cmd, -1600.0, 1600.0);
+
+  const int target_yaw = clamp(
+      curYuntai_feedback_data.Position_1 + static_cast<int>(yaw_rate_cmd * dt),
+      824, 3272);
+  const int target_pitch = limitGimbalMotor0Position(
+      curYuntai_feedback_data.Position_0 + static_cast<int>(pitch_rate_cmd * dt));
+
+  gimbal_control(static_cast<float>(target_yaw), static_cast<float>(target_pitch));
+}
+
+void turn_on_robot::LostHoldSearch()
+{
+  const double lost_time = lost_count * gimbal_dt;
+  const int target_yaw = clamp(
+      last_target_yaw + static_cast<int>(error_yaw_vel_f * lost_time * 0.10),
+      824, 3272);
+  const int target_pitch = limitGimbalMotor0Position(
+      last_target_pitch + static_cast<int>(error_pitch_vel_f * lost_time * 0.10));
+
+  moveBaseControl.Position_1 = target_yaw;
+  moveBaseControl.Position_0 = target_pitch;
+  moveBaseControl.Speed_1 = 2500;
+  moveBaseControl.Speed_0 = 1800;
+}
+
+void turn_on_robot::ReacquireSearch()
+{
+  const int yaw_min = std::max(last_target_yaw - 350, 824);
+  const int yaw_max = std::min(last_target_yaw + 350, 3272);
+
+  moveBaseControl.Position_1 += search_direction * 130;
+  if (moveBaseControl.Position_1 >= yaw_max)
+  {
+    moveBaseControl.Position_1 = yaw_max;
+    search_direction = -1;
+    search_pitch_offset += search_pitch_direction * 60;
+  }
+  else if (moveBaseControl.Position_1 <= yaw_min)
+  {
+    moveBaseControl.Position_1 = yaw_min;
+    search_direction = 1;
+    search_pitch_offset += search_pitch_direction * 60;
+  }
+
+  if (search_pitch_offset > 120)
+  {
+    search_pitch_offset = 120;
+    search_pitch_direction = -1;
+  }
+  else if (search_pitch_offset < -120)
+  {
+    search_pitch_offset = -120;
+    search_pitch_direction = 1;
+  }
+
+  moveBaseControl.Position_0 = limitGimbalMotor0Position(last_target_pitch + search_pitch_offset);
+  moveBaseControl.Speed_1 = 4800;
+  moveBaseControl.Speed_0 = 3000;
+}
+
+void turn_on_robot::LocalWideSearch()
+{
+  const int yaw_min = std::max(last_target_yaw - 700, 824);
+  const int yaw_max = std::min(last_target_yaw + 700, 3272);
+
+  moveBaseControl.Position_1 += search_direction * 100;
+  if (moveBaseControl.Position_1 >= yaw_max)
+  {
+    moveBaseControl.Position_1 = yaw_max;
+    search_direction = -1;
+    search_pitch_offset += search_pitch_direction * 100;
+  }
+  else if (moveBaseControl.Position_1 <= yaw_min)
+  {
+    moveBaseControl.Position_1 = yaw_min;
+    search_direction = 1;
+    search_pitch_offset += search_pitch_direction * 100;
+  }
+
+  if (search_pitch_offset > 250)
+  {
+    search_pitch_offset = 250;
+    search_pitch_direction = -1;
+  }
+  else if (search_pitch_offset < -250)
+  {
+    search_pitch_offset = -250;
+    search_pitch_direction = 1;
+  }
+
+  moveBaseControl.Position_0 = limitGimbalMotor0Position(last_target_pitch + search_pitch_offset);
+  moveBaseControl.Speed_1 = 4000;
+  moveBaseControl.Speed_0 = 2600;
+}
+
+void turn_on_robot::GlobalSnakeSearch()
+{
+  static const int pitch_layers[] = {-300, -180, -60, 60, 180, 300};
+  const int layer_count = sizeof(pitch_layers) / sizeof(pitch_layers[0]);
+
+  moveBaseControl.Position_1 += search_direction * 80;
+  if (moveBaseControl.Position_1 >= 3272)
+  {
+    moveBaseControl.Position_1 = 3272;
+    search_direction = -1;
+    search_layer = (search_layer + 1) % layer_count;
+  }
+  else if (moveBaseControl.Position_1 <= 824)
+  {
+    moveBaseControl.Position_1 = 824;
+    search_direction = 1;
+    search_layer = (search_layer + 1) % layer_count;
+  }
+
+  moveBaseControl.Position_0 = limitGimbalMotor0Position(
+      GIMBAL_MOTOR0_CENTER_POSITION + pitch_layers[search_layer]);
+  moveBaseControl.Speed_1 = 3200;
+  moveBaseControl.Speed_0 = 2200;
+}
+
+void turn_on_robot::CheckFireCondition(double filtered_yaw_offset, double filtered_pitch_offset)
+{
+  const bool target_stable = std::abs(filtered_yaw_offset) < 10.0 &&
+                             std::abs(filtered_pitch_offset) < 10.0 &&
+                             std::abs(error_yaw_vel_f) < 180.0 &&
+                             std::abs(error_pitch_vel_f) < 180.0;
+  lock_count = target_stable ? lock_count + 1 : 0;
+  stable_target_count = lock_count;
+
+  if (lock_count >= 5)
+  {
+    std_msgs::UInt8 shotdata;
+    shotdata.data = 1;
+    pub_LaserShot_Command.publish(shotdata);
+    shotdata.data = 0;
+    pub_LaserShot_Command.publish(shotdata);
+    gimbal_state = GimbalState::LOCKED_FIRE;
+  }
+}
+
+void turn_on_robot::StopFireCommand()
+{
+  lock_count = 0;
+  stable_target_count = 0;
+
+  std_msgs::UInt8 shotdata;
+  shotdata.data = 0;
+  pub_LaserShot_Command.publish(shotdata);
+}
+
 void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::ConstPtr &msg)
 {
   std_msgs::Int32MultiArray temp_msg = *msg;
-  static double prev_pitch_offset = 0.0;
-  static double prev_yaw_offset = 0.0;
-  static bool has_prev_pitch_offset = false;
-  static bool has_prev_yaw_offset = false;
-  static int last_pitch_command = GIMBAL_MOTOR0_CENTER_POSITION;
-  static int last_yaw_command = 2047;
-  double filtered_pitch_offset = temp_msg.data[1];
-  double filtered_yaw_offset = temp_msg.data[0];
-
-  if (has_prev_pitch_offset)
+  if (temp_msg.data.size() < 3)
   {
-    filtered_pitch_offset = 0.6 * prev_pitch_offset + 0.4 * static_cast<double>(temp_msg.data[1]);
+    return;
   }
-  if (has_prev_yaw_offset)
-  {
-    filtered_yaw_offset = 0.6 * prev_yaw_offset + 0.4 * static_cast<double>(temp_msg.data[0]);
-  }
-  has_prev_pitch_offset = true;
-  has_prev_yaw_offset = true;
-  prev_pitch_offset = filtered_pitch_offset;
-  prev_yaw_offset = filtered_yaw_offset;
 
-  const double pitch_deadband = 3.0;
-  const double yaw_deadband = 3.0;
+  static Kalman1D pitch_offset_kf{0.05, 2.0, 0.0, 1.0, false};
+  static Kalman1D yaw_offset_kf{0.05, 2.0, 0.0, 1.0, false};
+  double filtered_pitch_offset = pitch_offset_kf.update(static_cast<double>(temp_msg.data[1]));
+  double filtered_yaw_offset = yaw_offset_kf.update(static_cast<double>(temp_msg.data[0]));
+
+  const double pitch_deadband = 3.0;//死区
+  const double yaw_deadband = 3.0;//死区
   if (std::abs(filtered_pitch_offset) < pitch_deadband)
   {
     filtered_pitch_offset = 0.0;
@@ -630,36 +1018,100 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
     filtered_yaw_offset = 0.0;
   }
 
-  auto applySlewLimit = [](int target, int current, int max_step)
+  const bool has_target = (temp_msg.data[2] == 1);
+  UpdateGimbalState(has_target);
+  if (has_target)
   {
-    const int delta = target - current;
-    if (delta > max_step)
-    {
-      return current + max_step;
-    }
-    if (delta < -max_step)
-    {
-      return current - max_step;
-    }
-    return target;
-  };
-  // if (temp_msg.data[2] == 1 && stop_point_signal_msg == 1)
+    find_center = true;
+    search_pitch_offset = 0;
+    gimbal_pitch_offset = 0;
+    TrackTargetVisualServo(filtered_yaw_offset, filtered_pitch_offset);
+    CheckFireCondition(filtered_yaw_offset, filtered_pitch_offset);
+  }
+  else
+  {
+    find_center = false;
+    StopFireCommand();
+  }
+  return;
+}
+
+#if 0
   if (temp_msg.data[2] == 1)
   { // 检测到目标
     find_center = true;
-    // std::cout << "return = " << return_center << std::endl;
-    // printf("callback--find_center =%d\n",find_center);
+    const double dt = 0.02;
+    {
+      constexpr double predict_time = 0.10;
+      constexpr double kp_img_yaw = 0.80;
+      constexpr double kd_img_yaw = 0.08;
+      constexpr double kp_img_pitch = 0.50;
+      constexpr double kd_img_pitch = 0.05;
+      constexpr double k_body_yaw = 0.30;
+      constexpr double max_yaw_step = 180.0;
+      constexpr double max_pitch_step = 110.0;
 
-    // 瞄准目标
-    const int desired_pitch = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset / 2));
-    const int desired_yaw = curYuntai_feedback_data.Position_1 + static_cast<int>(filtered_yaw_offset / 2);
-    last_pitch_command = applySlewLimit(desired_pitch, last_pitch_command, 75);//位置变化最大限制幅度
-    last_yaw_command = applySlewLimit(desired_yaw, last_yaw_command, 75);
-    moveBaseControl.Position_0 = last_pitch_command;
-    moveBaseControl.Position_1 = last_yaw_command;
+      const double error_yaw_vel = (filtered_yaw_offset - last_error_yaw) / dt;
+      const double error_pitch_vel = (filtered_pitch_offset - last_error_pitch) / dt;
+      error_yaw_vel_f = 0.7 * error_yaw_vel_f + 0.3 * error_yaw_vel;
+      error_pitch_vel_f = 0.7 * error_pitch_vel_f + 0.3 * error_pitch_vel;
+      last_error_yaw = filtered_yaw_offset;
+      last_error_pitch = filtered_pitch_offset;
 
-    moveBaseControl.Speed_0 = CaremaSpeedControl(moveBaseControl.Position_0, curYuntai_feedback_data.Position_0, GimbalAxis::Pitch);
-    moveBaseControl.Speed_1 = CaremaSpeedControl(moveBaseControl.Position_1, curYuntai_feedback_data.Position_1, GimbalAxis::Yaw);
+      const double pred_yaw_error = filtered_yaw_offset + error_yaw_vel_f * predict_time;
+      const double pred_pitch_error = filtered_pitch_offset + error_pitch_vel_f * predict_time;
+      const double yaw_body_compensation = -k_body_yaw * Mpu6050.angular_velocity.z;
+
+      const double yaw_step = clamp(kp_img_yaw * pred_yaw_error +
+                                       kd_img_yaw * error_yaw_vel_f +
+                                       yaw_body_compensation,
+                                   -max_yaw_step, max_yaw_step);
+      const double pitch_step = clamp(kp_img_pitch * pred_pitch_error +
+                                         kd_img_pitch * error_pitch_vel_f,
+                                     -max_pitch_step, max_pitch_step);
+
+      const float desired_yaw = static_cast<float>(
+          clamp(static_cast<int>(curYuntai_feedback_data.Position_1 + yaw_step), 824, 3272));
+      const float desired_pitch = static_cast<float>(
+          limitGimbalMotor0Position(static_cast<int>(curYuntai_feedback_data.Position_0 + pitch_step)));
+
+      if (has_last_target)
+      {
+        target_yaw_vel_est = 0.7 * target_yaw_vel_est + 0.3 * ((desired_yaw - last_target_yaw) / dt);
+        target_pitch_vel_est = 0.7 * target_pitch_vel_est + 0.3 * ((desired_pitch - last_target_pitch) / dt);
+      }
+      last_target_yaw = static_cast<int>(desired_yaw);
+      last_target_pitch = static_cast<int>(desired_pitch);
+      has_last_target = true;
+      lost_target_count = 0;
+      track_target_count++;
+      gimbal_search_state = 0;
+      gimbal_pitch_offset = 0;
+      gimbal_state = GimbalState::TRACKING;
+
+      const bool target_stable = std::abs(filtered_yaw_offset) < 10.0 &&
+                                 std::abs(filtered_pitch_offset) < 10.0 &&
+                                 std::abs(error_yaw_vel_f) < 180.0 &&
+                                 std::abs(error_pitch_vel_f) < 180.0;
+      stable_target_count = target_stable ? stable_target_count + 1 : 0;
+      if (stable_target_count >= 4)
+      {
+        gimbal_state = GimbalState::LOCKED_FIRE;
+      }
+
+      std_msgs::UInt8 shotdata;
+      shotdata.data = stable_target_count >= 4 ? 1 : 0;
+      pub_LaserShot_Command.publish(shotdata);
+
+      gimbal_control(desired_yaw, desired_pitch);
+      return;
+    }
+    const float desired_pitch = static_cast<float>(
+        limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset * 0.55)));
+    // 水平追踪提速：yaw 放大系数大于 pitch，提升横向目标捕获能力。
+    const float desired_pitch = static_cast<float>(limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset * 0.55)));
+    const float desired_yaw = static_cast<float>(curYuntai_feedback_data.Position_1 + static_cast<int>(filtered_yaw_offset * 0.95));
+    gimbal_control(desired_yaw, desired_pitch);
 
     printf("Detected target: find_center=%d, Speed_0=%.2f, Speed_1=%.2f\n", find_center, moveBaseControl.Speed_0, moveBaseControl.Speed_1);
 
@@ -675,90 +1127,95 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
   else if (temp_msg.data[2] == 0)
   { // 未检测到目标
     find_center = false;
+    track_target_count = 0;
+    stable_target_count = 0;
     
     std_msgs::UInt8 shotdata;
     shotdata.data =0;
     pub_LaserShot_Command.publish(shotdata);
   }
 }
+#endif
 
-double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose,GimbalAxis axis){
-    struct PidState
-    {
-        double prev_error = 0.0;
-        double integral = 0.0;
-        double filtered_derivative = 0.0;
-    };
+void turn_on_robot::gimbal_control(float target_yaw, float target_pitch)
+{
+  static PidState yaw_angle_state;
+  static PidState pitch_angle_state;
+  static PidState yaw_speed_state;
+  static PidState pitch_speed_state;
+  static Kalman1D yaw_vel_kf{0.08, 3.0, 0.0, 1.0, false};
+  static Kalman1D pitch_vel_kf{0.08, 3.0, 0.0, 1.0, false};
+  static int last_pitch_command = GIMBAL_MOTOR0_CENTER_POSITION;
+  static int last_yaw_command = 2047;
+  static const PidGains yaw_angle_gains{3.6, 0.02, 0.80, 0.8, 1200.0, 220.0, 2200.0};
+  static const PidGains pitch_angle_gains{3.0, 0.015, 0.65, 0.8, 1200.0, 180.0, 1800.0};
+  static const PidGains yaw_speed_gains{2.8, 0.02, 0.45, 0.8, 1000.0, 180.0, 9000.0};
+  static const PidGains pitch_speed_gains{2.2, 0.015, 0.35, 0.8, 1000.0, 150.0, 8000.0};
 
-    static PidState pitch_state;
-    static PidState yaw_state;
+  static constexpr double dt = 0.02; // 与主循环 50Hz 对齐
+  static const PidGains angle_gains{3.8, 0.04, 0.9, 0.6, 1200.0, 260.0, 1800.0};//角度PID增益
+  static const PidGains speed_gains{2.4, 0.03, 0.45, 0.6, 1000.0, 220.0, 9000.0};//速度PID增益
+  static constexpr double yaw_speed_boost = 1.30;//yaw速度放大系数
+  static constexpr double max_out = 9000.0;//最大输出
 
-    const bool is_pitch = axis == GimbalAxis::Pitch;
-    PidState &state = is_pitch ? pitch_state : yaw_state;
+  /* ===================== 1. 读取反馈 ===================== */
+  const double yaw_now_raw = static_cast<double>(curYuntai_feedback_data.Position_1);
+  const double pitch_now_raw = static_cast<double>(curYuntai_feedback_data.Position_0);
+  const double yaw_vel = yaw_vel_kf.update(static_cast<double>(curYuntai_feedback_data.Speed_1));
+  const double pitch_vel = pitch_vel_kf.update(static_cast<double>(curYuntai_feedback_data.Speed_0));
 
-    struct Gains
-    {
-        double kp;
-        double ki;
-        double kd;
-        double max_speed;
-        double offset;
-        double deadband;
-        double derivative_limit;
-    };
+  double imu_yaw = 0.0;
+  double imu_pitch = 0.0;
+  getMahonyMadgwickYawPitch(imu_yaw, imu_pitch);
+  const double yaw_now = yaw_now_raw + 0.15 * imu_yaw;
+  const double pitch_now = pitch_now_raw + 0.15 * imu_pitch;
 
-    const Gains gains = is_pitch ? Gains{300,11.2,11.8,9000.0,4.5,1.0,600.0}
-                                 : Gains{300,11.2,11.8,9000.0,8,1.0,600.0};//前面pitch 后面yaw 分别对应kp,ki,kd,max_speed,offset,deadband,derivative_limit
+  /* ===================== 2. 误差计算 ===================== */
+  const double yaw_err = wrapEncoderError(static_cast<double>(target_yaw) - yaw_now);
+  const double pitch_err = clamp(static_cast<double>(target_pitch) - pitch_now, -1200.0, 1200.0);
 
-    static constexpr double sampling_time = 0.01;  // 采样时间 (10Hz)
+  /* ===================== 3. 外环（角度 PID）===================== */
+  const double yaw_vel_ref = runPid(yaw_angle_state, yaw_angle_gains, yaw_err, dt);
+  const double pitch_vel_ref = runPid(pitch_angle_state, pitch_angle_gains, pitch_err, dt);
 
-    // 计算误差
-    double error = static_cast<double>(target_pose - current_pose);
+  /* ===================== 4. 内环（速度 PID）===================== */
+  double yaw_out = runPid(yaw_speed_state, yaw_speed_gains, yaw_vel_ref - yaw_vel, dt);
+  double pitch_out = runPid(pitch_speed_state, pitch_speed_gains, pitch_vel_ref - pitch_vel, dt);
 
-    if(std::abs(error) < gains.deadband)
-    {
-        state.integral = 0.0;
-        state.filtered_derivative = 0.0;
-        state.prev_error = error;
-        return 0.0;
-    }
+  /* ===================== 5. 限幅保护 ===================== */
+  yaw_out = clamp(yaw_out, -max_out, max_out);
+  pitch_out = clamp(pitch_out, -max_out, max_out);
 
-    // 更新积分项（带限幅）
-    if(std::abs(error)>25)
-    {state.integral=0.0;}
-    else
-    {state.integral += error * sampling_time;}
-    if (gains.ki != 0.0) {
-        state.integral = clamp(state.integral, -gains.max_speed / (2.0 * gains.ki), gains.max_speed / (2.0 * gains.ki));
-    } else {
-        state.integral = 0.0;  // 如果ki=0，清零积分
-    }
+  const int cmd_pitch = limitGimbalMotor0Position(applySlewLimit(static_cast<int>(target_pitch), last_pitch_command, 85));
+  const int cmd_yaw = clamp(applySlewLimit(static_cast<int>(target_yaw), last_yaw_command, 130), 824, 3272);
+  last_pitch_command = cmd_pitch;
+  last_yaw_command = cmd_yaw;
 
-    //微分项更新并滤波
-    double derivative = (error - state.prev_error) / sampling_time;
-    derivative = clamp(derivative, -gains.derivative_limit, gains.derivative_limit);
-    state.filtered_derivative = 0.8 * state.filtered_derivative +0.2 * derivative;
+  /* ===================== 6. 输出执行 ===================== */
+  moveBaseControl.Position_0 = cmd_pitch;
+  moveBaseControl.Position_1 = cmd_yaw;
+  moveBaseControl.Speed_0 = static_cast<int>(std::abs(pitch_out));
+  moveBaseControl.Speed_1 = static_cast<int>(std::abs(yaw_out));
+}
 
-    // PID 控制计算
-    double speed = gains.kp * error + gains.ki * state.integral   + gains.kd * state.filtered_derivative;
+double turn_on_robot::CaremaSpeedControl(double target_pose, double current_pose, double current_vel, GimbalAxis axis)
+{
+  static PidState pitch_speed_state;
+  static PidState yaw_speed_state;
+  static Kalman1D pitch_vel_kf{0.08, 3.0, 0.0, 1.0, false};
+  static Kalman1D yaw_vel_kf{0.08, 3.0, 0.0, 1.0, false};
+  static const PidGains speed_gains{2.4, 0.03, 0.45, 0.6, 1000.0, 220.0, 9000.0};
+  static constexpr double dt = 0.02;
 
-    std::cout << "DEBUG: kp=" << gains.kp << ", ki=" << gains.ki << ", kd=" << gains.kd << ", integral=" << state.integral << ", filtered_derivative=" << state.filtered_derivative << ", offset=" << gains.offset << std::endl;
+  const bool is_pitch = axis == GimbalAxis::Pitch;
+  PidState &state = is_pitch ? pitch_speed_state : yaw_speed_state;
+  Kalman1D &vel_kf = is_pitch ? pitch_vel_kf : yaw_vel_kf;
 
-    //补偿
-    if(error>0)
-    {speed+=gains.offset;}
-    else if(error<0)
-    {speed-=gains.offset;}
-    // 对速度取绝对值
-    speed = std::abs(speed);
-
-    // 使用 std::clamp 限幅
-    speed = clamp(speed, 0.0, gains.max_speed);
-
-    // 更新前一次误差
-    state.prev_error = error;
-    printf("axis:%s,error:%.2f,speed:%.2f\n", is_pitch ? "pitch" : "yaw",error,speed);
-    return speed;
+  const double pose_err = is_pitch ? (target_pose - current_pose) : wrapEncoderError(target_pose - current_pose);
+  const double vel_feedback = vel_kf.update(current_vel);
+  const double axis_boost = is_pitch ? 1.0 : 1.30;
+  const double speed = runPid(state, speed_gains, pose_err - vel_feedback * 0.2, dt) * axis_boost;
+  return clamp(std::abs(speed), 0.0, speed_gains.output_limit);
 }
 
 void turn_on_robot::sendCarInfoKernel()
@@ -1096,7 +1553,7 @@ void turn_on_robot::Publish_Battery_Percentage()
     }
     else
       count_B = 0;
-
+        
     if (count_B > 200)
       count_B = 0;
     // 下降时低10次就下降

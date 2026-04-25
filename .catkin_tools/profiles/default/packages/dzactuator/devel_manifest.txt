@@ -1,0 +1,6 @@
+dzactuator
+/home/duzhong/dzacs/devel/.private/dzactuator/cmake.lock /home/duzhong/dzacs/devel/./cmake.lock
+/home/duzhong/dzacs/devel/.private/dzactuator/share/dzactuator/cmake/dzactuatorConfig-version.cmake /home/duzhong/dzacs/devel/share/dzactuator/cmake/dzactuatorConfig-version.cmake
+/home/duzhong/dzacs/devel/.private/dzactuator/share/dzactuator/cmake/dzactuatorConfig.cmake /home/duzhong/dzacs/devel/share/dzactuator/cmake/dzactuatorConfig.cmake
+/home/duzhong/dzacs/devel/.private/dzactuator/lib/pkgconfig/dzactuator.pc /home/duzhong/dzacs/devel/lib/pkgconfig/dzactuator.pc
+/home/duzhong/dzacs/devel/.private/dzactuator/lib/dzactuator/dzactuator_node /home/duzhong/dzacs/devel/lib/dzactuator/dzactuator_node

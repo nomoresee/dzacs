@@ -9,9 +9,9 @@
     <arg name="goal_tolerance" default="0.1" />
     
     <!-- 返航基地坐标参数 -->
-    <arg name="base_x" default="1.07" />
-    <arg name="base_y" default="3.48" />
-    <arg name="base_yaw" default="-1.57" />
+    <arg name="base_x" default="0" />
+    <arg name="base_y" default="0" />
+    <arg name="base_yaw" default="-1" />
     
     <!-- 启动自动导航节点 -->
     <node name="auto_navigation_node" pkg="auto_navigation" type="auto_navigation_node.py" output="screen">

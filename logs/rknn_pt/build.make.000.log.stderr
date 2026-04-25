@@ -1,0 +1,4 @@
+make[2]: *** No rule to make target '/home/duzhong/dzacs/src/rknn_pt/rknn_pt/lib/librknnrt.so', needed by '/home/duzhong/dzacs/devel/.private/rknn_pt/lib/rknn_pt/det_node'.  Stop.
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [CMakeFiles/Makefile2:410: CMakeFiles/det_node.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

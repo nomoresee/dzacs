@@ -1,0 +1,10 @@
+dzjudgment
+/home/duzhong/dzacs/devel/.private/dzjudgment/cmake.lock /home/duzhong/dzacs/devel/./cmake.lock
+/home/duzhong/dzacs/devel/.private/dzjudgment/share/dzjudgment/cmake/dzjudgmentConfig.cmake /home/duzhong/dzacs/devel/share/dzjudgment/cmake/dzjudgmentConfig.cmake
+/home/duzhong/dzacs/devel/.private/dzjudgment/share/dzjudgment/cmake/dzjudgmentConfig-version.cmake /home/duzhong/dzacs/devel/share/dzjudgment/cmake/dzjudgmentConfig-version.cmake
+/home/duzhong/dzacs/devel/.private/dzjudgment/share/dzjudgment/cmake/dzjudgment-msg-extras.cmake /home/duzhong/dzacs/devel/share/dzjudgment/cmake/dzjudgment-msg-extras.cmake
+/home/duzhong/dzacs/devel/.private/dzjudgment/share/dzjudgment/cmake/dzjudgment-msg-paths.cmake /home/duzhong/dzacs/devel/share/dzjudgment/cmake/dzjudgment-msg-paths.cmake
+/home/duzhong/dzacs/devel/.private/dzjudgment/share/roseus/ros/dzjudgment/manifest.l /home/duzhong/dzacs/devel/share/roseus/ros/dzjudgment/manifest.l
+/home/duzhong/dzacs/devel/.private/dzjudgment/lib/pkgconfig/dzjudgment.pc /home/duzhong/dzacs/devel/lib/pkgconfig/dzjudgment.pc
+/home/duzhong/dzacs/devel/.private/dzjudgment/lib/dzjudgment/dzjudgment /home/duzhong/dzacs/devel/lib/dzjudgment/dzjudgment
+/home/duzhong/dzacs/devel/.private/dzjudgment/lib/python3/dist-packages/dzjudgment/__init__.py /home/duzhong/dzacs/devel/lib/python3/dist-packages/dzjudgment/__init__.py

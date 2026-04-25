@@ -1,0 +1,13 @@
+[01m[K/home/duzhong/dzacs/src/dzactuator/src/dzactuator.cpp:[m[K In member function ‘[01m[Kvoid turn_on_robot::callback_offset_center(const ConstPtr&)[m[K’:
+[01m[K/home/duzhong/dzacs/src/dzactuator/src/dzactuator.cpp:664:57:[m[K [01;35m[Kwarning: [m[Kformat ‘[01m[K%f[m[K’ expects argument of type ‘[01m[Kdouble[m[K’, but argument 3 has type ‘[01m[Kint[m[K’ [[01;35m[K-Wformat=[m[K]
+  664 |     printf("Detected target: find_center=%d, Speed_0=[01;35m[K%.2f[m[K, Speed_1=%.2f\n", find_center, [32m[KmoveBaseControl.Speed_0[m[K, moveBaseControl.Speed_1);
+      |                                                      [01;35m[K~~~^[m[K                                [32m[K~~~~~~~~~~~~~~~~~~~~~~~[m[K
+      |                                                         [01;35m[K|[m[K                                                [32m[K|[m[K
+      |                                                         [01;35m[Kdouble[m[K                                           [32m[Kint[m[K
+      |                                                      [32m[K%.2d[m[K
+[01m[K/home/duzhong/dzacs/src/dzactuator/src/dzactuator.cpp:664:71:[m[K [01;35m[Kwarning: [m[Kformat ‘[01m[K%f[m[K’ expects argument of type ‘[01m[Kdouble[m[K’, but argument 4 has type ‘[01m[Kint[m[K’ [[01;35m[K-Wformat=[m[K]
+  664 |     printf("Detected target: find_center=%d, Speed_0=%.2f, Speed_1=[01;35m[K%.2f[m[K\n", find_center, moveBaseControl.Speed_0, [32m[KmoveBaseControl.Speed_1[m[K);
+      |                                                                    [01;35m[K~~~^[m[K                                           [32m[K~~~~~~~~~~~~~~~~~~~~~~~[m[K
+      |                                                                       [01;35m[K|[m[K                                                           [32m[K|[m[K
+      |                                                                       [01;35m[Kdouble[m[K                                                      [32m[Kint[m[K
+      |                                                                    [32m[K%.2d[m[K

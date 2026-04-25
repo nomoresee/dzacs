@@ -168,6 +168,21 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
+rknn_pt/CMakeFiles/det_node_25.dir/rule:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f CMakeFiles/Makefile2 rknn_pt/CMakeFiles/det_node_25.dir/rule
+.PHONY : rknn_pt/CMakeFiles/det_node_25.dir/rule
+
+# Convenience name for target.
+det_node_25: rknn_pt/CMakeFiles/det_node_25.dir/rule
+
+.PHONY : det_node_25
+
+# fast build rule for target.
+det_node_25/fast:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/build
+.PHONY : det_node_25/fast
+
+# Convenience name for target.
 rknn_pt/CMakeFiles/det_node.dir/rule:
 	cd /home/duzhong/dzacs/build && $(MAKE) -f CMakeFiles/Makefile2 rknn_pt/CMakeFiles/det_node.dir/rule
 .PHONY : rknn_pt/CMakeFiles/det_node.dir/rule
@@ -209,12 +224,40 @@ src/det/postprocess.cc.s:
 	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node.dir/build.make rknn_pt/CMakeFiles/det_node.dir/src/det/postprocess.cc.s
 .PHONY : src/det/postprocess.cc.s
 
+src/det/postprocess_25.o: src/det/postprocess_25.cc.o
+
+.PHONY : src/det/postprocess_25.o
+
+# target to build an object file
+src/det/postprocess_25.cc.o:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/src/det/postprocess_25.cc.o
+.PHONY : src/det/postprocess_25.cc.o
+
+src/det/postprocess_25.i: src/det/postprocess_25.cc.i
+
+.PHONY : src/det/postprocess_25.i
+
+# target to preprocess a source file
+src/det/postprocess_25.cc.i:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/src/det/postprocess_25.cc.i
+.PHONY : src/det/postprocess_25.cc.i
+
+src/det/postprocess_25.s: src/det/postprocess_25.cc.s
+
+.PHONY : src/det/postprocess_25.s
+
+# target to generate assembly for a file
+src/det/postprocess_25.cc.s:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/src/det/postprocess_25.cc.s
+.PHONY : src/det/postprocess_25.cc.s
+
 src/det/preprocess.o: src/det/preprocess.cc.o
 
 .PHONY : src/det/preprocess.o
 
 # target to build an object file
 src/det/preprocess.cc.o:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/src/det/preprocess.cc.o
 	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node.dir/build.make rknn_pt/CMakeFiles/det_node.dir/src/det/preprocess.cc.o
 .PHONY : src/det/preprocess.cc.o
 
@@ -224,6 +267,7 @@ src/det/preprocess.i: src/det/preprocess.cc.i
 
 # target to preprocess a source file
 src/det/preprocess.cc.i:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/src/det/preprocess.cc.i
 	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node.dir/build.make rknn_pt/CMakeFiles/det_node.dir/src/det/preprocess.cc.i
 .PHONY : src/det/preprocess.cc.i
 
@@ -233,6 +277,7 @@ src/det/preprocess.s: src/det/preprocess.cc.s
 
 # target to generate assembly for a file
 src/det/preprocess.cc.s:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/src/det/preprocess.cc.s
 	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node.dir/build.make rknn_pt/CMakeFiles/det_node.dir/src/det/preprocess.cc.s
 .PHONY : src/det/preprocess.cc.s
 
@@ -263,6 +308,33 @@ src/det/rkpt.cc.s:
 	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node.dir/build.make rknn_pt/CMakeFiles/det_node.dir/src/det/rkpt.cc.s
 .PHONY : src/det/rkpt.cc.s
 
+src/det/rkpt_25.o: src/det/rkpt_25.cc.o
+
+.PHONY : src/det/rkpt_25.o
+
+# target to build an object file
+src/det/rkpt_25.cc.o:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/src/det/rkpt_25.cc.o
+.PHONY : src/det/rkpt_25.cc.o
+
+src/det/rkpt_25.i: src/det/rkpt_25.cc.i
+
+.PHONY : src/det/rkpt_25.i
+
+# target to preprocess a source file
+src/det/rkpt_25.cc.i:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/src/det/rkpt_25.cc.i
+.PHONY : src/det/rkpt_25.cc.i
+
+src/det/rkpt_25.s: src/det/rkpt_25.cc.s
+
+.PHONY : src/det/rkpt_25.s
+
+# target to generate assembly for a file
+src/det/rkpt_25.cc.s:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/src/det/rkpt_25.cc.s
+.PHONY : src/det/rkpt_25.cc.s
+
 src/det_node.o: src/det_node.cc.o
 
 .PHONY : src/det_node.o
@@ -290,6 +362,33 @@ src/det_node.cc.s:
 	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node.dir/build.make rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.s
 .PHONY : src/det_node.cc.s
 
+src/det_node_25.o: src/det_node_25.cc.o
+
+.PHONY : src/det_node_25.o
+
+# target to build an object file
+src/det_node_25.cc.o:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/src/det_node_25.cc.o
+.PHONY : src/det_node_25.cc.o
+
+src/det_node_25.i: src/det_node_25.cc.i
+
+.PHONY : src/det_node_25.i
+
+# target to preprocess a source file
+src/det_node_25.cc.i:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/src/det_node_25.cc.i
+.PHONY : src/det_node_25.cc.i
+
+src/det_node_25.s: src/det_node_25.cc.s
+
+.PHONY : src/det_node_25.s
+
+# target to generate assembly for a file
+src/det_node_25.cc.s:
+	cd /home/duzhong/dzacs/build && $(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/src/det_node_25.cc.s
+.PHONY : src/det_node_25.cc.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -303,19 +402,29 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... test"
+	@echo "... det_node_25"
 	@echo "... det_node"
 	@echo "... src/det/postprocess.o"
 	@echo "... src/det/postprocess.i"
 	@echo "... src/det/postprocess.s"
+	@echo "... src/det/postprocess_25.o"
+	@echo "... src/det/postprocess_25.i"
+	@echo "... src/det/postprocess_25.s"
 	@echo "... src/det/preprocess.o"
 	@echo "... src/det/preprocess.i"
 	@echo "... src/det/preprocess.s"
 	@echo "... src/det/rkpt.o"
 	@echo "... src/det/rkpt.i"
 	@echo "... src/det/rkpt.s"
+	@echo "... src/det/rkpt_25.o"
+	@echo "... src/det/rkpt_25.i"
+	@echo "... src/det/rkpt_25.s"
 	@echo "... src/det_node.o"
 	@echo "... src/det_node.i"
 	@echo "... src/det_node.s"
+	@echo "... src/det_node_25.o"
+	@echo "... src/det_node_25.i"
+	@echo "... src/det_node_25.s"
 .PHONY : help
 
 
