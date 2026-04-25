@@ -822,36 +822,71 @@ void turn_on_robot::UpdateGimbalState(bool has_target)
 
 void turn_on_robot::TrackTargetVisualServo(double filtered_yaw_offset, double filtered_pitch_offset)
 {
-  const double dt = gimbal_dt;
+  // 视觉伺服：把像素偏移直接映射成云台编码器位置步进，让目标回到画面中心。
+  // 关键修正点：
+  //   1) 输出当作"每次回调下发的编码器位移(ticks)"，不再 *dt——
+  //      否则 50Hz 下 *0.02 会把步进量压成原来的 1/50，目标在屏幕边缘也几乎不动。
+  //   2) 直接覆盖 moveBaseControl.Position_*/Speed_*，绕开内层 PID 在小误差时给出近 0 速度的问题。
+  //   3) 舵机速度按像素误差大小自适应：偏差大→快速归中；偏差小→降速防过冲。
+  const double dt = std::max(gimbal_dt, 0.001);
+
+  // 像素偏移的速度估计（前馈，处理移动目标）
   const double error_yaw_vel = (filtered_yaw_offset - last_error_yaw) / dt;
   const double error_pitch_vel = (filtered_pitch_offset - last_error_pitch) / dt;
-
   error_yaw_vel_f = 0.7 * error_yaw_vel_f + 0.3 * error_yaw_vel;
   error_pitch_vel_f = 0.7 * error_pitch_vel_f + 0.3 * error_pitch_vel;
   last_error_yaw = filtered_yaw_offset;
   last_error_pitch = filtered_pitch_offset;
-
-  last_target_yaw = curYuntai_feedback_data.Position_1;
-  last_target_pitch = curYuntai_feedback_data.Position_0;
   has_last_target = true;
 
+  // 含目标移动预测的像素误差（lead the target）
   const double pred_yaw_error = filtered_yaw_offset + error_yaw_vel_f * predict_time;
   const double pred_pitch_error = filtered_pitch_offset + error_pitch_vel_f * predict_time;
-  const double yaw_body_comp = -K_body_yaw * Mpu6050.angular_velocity.z;
-  const double pitch_body_comp = -K_body_pitch * Mpu6050.angular_velocity.y;
+  // 机身角速度前馈（IMU 单位 rad/s → deg/s 后再乘系数）
+  const double yaw_body_comp = -K_body_yaw * Mpu6050.angular_velocity.z * 57.3;
+  const double pitch_body_comp = -K_body_pitch * Mpu6050.angular_velocity.y * 57.3;
 
-  double yaw_rate_cmd = Kp_img_yaw * pred_yaw_error + Kd_img_yaw * error_yaw_vel_f + yaw_body_comp;
-  double pitch_rate_cmd = Kp_img_pitch * pred_pitch_error + Kd_img_pitch * error_pitch_vel_f + pitch_body_comp;
-  yaw_rate_cmd = clamp(yaw_rate_cmd, -2200.0, 2200.0);
-  pitch_rate_cmd = clamp(pitch_rate_cmd, -1600.0, 1600.0);
+  // 像素 → 编码器位置步进（单位：编码器 ticks，不是 ticks/s）
+  double yaw_step = Kp_img_yaw * pred_yaw_error + Kd_img_yaw * error_yaw_vel_f + yaw_body_comp;
+  double pitch_step = Kp_img_pitch * pred_pitch_error + Kd_img_pitch * error_pitch_vel_f + pitch_body_comp;
 
-  const int target_yaw = clamp(
-      curYuntai_feedback_data.Position_1 + static_cast<int>(yaw_rate_cmd * dt),
-      824, 3272);
-  const int target_pitch = limitGimbalMotor0Position(
-      curYuntai_feedback_data.Position_0 + static_cast<int>(pitch_rate_cmd * dt));
+  // 单次回调最大位移（防止大跳变冲击舵机；舵机内部还有自己的限速）
+  yaw_step = clamp(yaw_step, -300.0, 300.0);
+  pitch_step = clamp(pitch_step, -200.0, 200.0);
 
-  gimbal_control(static_cast<float>(target_yaw), static_cast<float>(target_pitch));
+  // 浮点残差累加：保留亚单位精度，避免小数被截断后小偏移永远不动
+  static double yaw_residual = 0.0;
+  static double pitch_residual = 0.0;
+  yaw_residual += yaw_step;
+  pitch_residual += pitch_step;
+  const int yaw_delta = static_cast<int>(yaw_residual);
+  const int pitch_delta = static_cast<int>(pitch_residual);
+  yaw_residual -= yaw_delta;
+  pitch_residual -= pitch_delta;
+
+  const int current_yaw = curYuntai_feedback_data.Position_1;
+  const int current_pitch = curYuntai_feedback_data.Position_0;
+  const int target_yaw = clamp(current_yaw + yaw_delta, 824, 3272);
+  const int target_pitch = limitGimbalMotor0Position(current_pitch + pitch_delta);
+  last_target_yaw = target_yaw;
+  last_target_pitch = target_pitch;
+
+  // 自适应舵机速度：误差越大转速越快，越接近中心越降速防过冲
+  const double abs_yaw_err = std::abs(pred_yaw_error);
+  const double abs_pitch_err = std::abs(pred_pitch_error);
+  const int yaw_servo_speed = (abs_yaw_err > 60.0) ? 6500
+                            : (abs_yaw_err > 20.0) ? 4000
+                            : (abs_yaw_err > 5.0)  ? 2200
+                                                   : 1200;
+  const int pitch_servo_speed = (abs_pitch_err > 60.0) ? 5000
+                              : (abs_pitch_err > 20.0) ? 3000
+                              : (abs_pitch_err > 5.0)  ? 1800
+                                                       : 1000;
+
+  moveBaseControl.Position_1 = target_yaw;
+  moveBaseControl.Position_0 = target_pitch;
+  moveBaseControl.Speed_1 = yaw_servo_speed;
+  moveBaseControl.Speed_0 = pitch_servo_speed;
 }
 
 void turn_on_robot::LostHoldSearch()
@@ -879,29 +914,30 @@ void turn_on_robot::ReacquireSearch()
   {
     moveBaseControl.Position_1 = yaw_max;
     search_direction = -1;
-    search_pitch_offset += search_pitch_direction * 60;
+    search_pitch_offset += search_pitch_direction * 25;
   }
   else if (moveBaseControl.Position_1 <= yaw_min)
   {
     moveBaseControl.Position_1 = yaw_min;
     search_direction = 1;
-    search_pitch_offset += search_pitch_direction * 60;
+    search_pitch_offset += search_pitch_direction * 25;
   }
 
-  if (search_pitch_offset > 120)
+  // pitch 只做小幅上下摆动（车体水平扫视时俯仰偏差不会很大）
+  if (search_pitch_offset > 50)
   {
-    search_pitch_offset = 120;
+    search_pitch_offset = 50;
     search_pitch_direction = -1;
   }
-  else if (search_pitch_offset < -120)
+  else if (search_pitch_offset < -50)
   {
-    search_pitch_offset = -120;
+    search_pitch_offset = -50;
     search_pitch_direction = 1;
   }
 
   moveBaseControl.Position_0 = limitGimbalMotor0Position(last_target_pitch + search_pitch_offset);
   moveBaseControl.Speed_1 = 4800;
-  moveBaseControl.Speed_0 = 3000;
+  moveBaseControl.Speed_0 = 1800;
 }
 
 void turn_on_robot::LocalWideSearch()
@@ -914,34 +950,36 @@ void turn_on_robot::LocalWideSearch()
   {
     moveBaseControl.Position_1 = yaw_max;
     search_direction = -1;
-    search_pitch_offset += search_pitch_direction * 100;
+    search_pitch_offset += search_pitch_direction * 40;
   }
   else if (moveBaseControl.Position_1 <= yaw_min)
   {
     moveBaseControl.Position_1 = yaw_min;
     search_direction = 1;
-    search_pitch_offset += search_pitch_direction * 100;
+    search_pitch_offset += search_pitch_direction * 40;
   }
 
-  if (search_pitch_offset > 250)
+  // pitch 只做小幅上下摆动
+  if (search_pitch_offset > 90)
   {
-    search_pitch_offset = 250;
+    search_pitch_offset = 90;
     search_pitch_direction = -1;
   }
-  else if (search_pitch_offset < -250)
+  else if (search_pitch_offset < -90)
   {
-    search_pitch_offset = -250;
+    search_pitch_offset = -90;
     search_pitch_direction = 1;
   }
 
   moveBaseControl.Position_0 = limitGimbalMotor0Position(last_target_pitch + search_pitch_offset);
   moveBaseControl.Speed_1 = 4000;
-  moveBaseControl.Speed_0 = 2600;
+  moveBaseControl.Speed_0 = 1600;
 }
 
 void turn_on_robot::GlobalSnakeSearch()
 {
-  static const int pitch_layers[] = {-300, -180, -60, 60, 180, 300};
+  // pitch 只做小幅分层（车体水平扫视时俯仰偏差不大），3 层覆盖 ±100 范围
+  static const int pitch_layers[] = {-100, 0, 100};
   const int layer_count = sizeof(pitch_layers) / sizeof(pitch_layers[0]);
 
   moveBaseControl.Position_1 += search_direction * 80;
@@ -961,7 +999,7 @@ void turn_on_robot::GlobalSnakeSearch()
   moveBaseControl.Position_0 = limitGimbalMotor0Position(
       GIMBAL_MOTOR0_CENTER_POSITION + pitch_layers[search_layer]);
   moveBaseControl.Speed_1 = 3200;
-  moveBaseControl.Speed_0 = 2200;
+  moveBaseControl.Speed_0 = 1500;
 }
 
 void turn_on_robot::CheckFireCondition(double filtered_yaw_offset, double filtered_pitch_offset)
@@ -1002,10 +1040,34 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
     return;
   }
 
+  static bool visual_params_loaded = false;
+  static int image_width = 640;
+  static int image_height = 480;
+  static bool visual_input_is_center_point = true;
+  if (!visual_params_loaded)
+  {
+    ros::NodeHandle private_nh("~");
+    private_nh.param("visual_image_width", image_width, image_width);
+    private_nh.param("visual_image_height", image_height, image_height);
+    private_nh.param("visual_input_is_center_point", visual_input_is_center_point, visual_input_is_center_point);
+    visual_params_loaded = true;
+  }
+
+  const bool has_target = (temp_msg.data[2] == 1);
+  const double image_center_x = static_cast<double>(image_width) * 0.5;
+  const double image_center_y = static_cast<double>(image_height) * 0.5;
+  double raw_yaw_offset = static_cast<double>(temp_msg.data[0]);
+  double raw_pitch_offset = static_cast<double>(temp_msg.data[1]);
+  if (visual_input_is_center_point)
+  {
+    raw_yaw_offset -= image_center_x;
+    raw_pitch_offset -= image_center_y;
+  }
+
   static Kalman1D pitch_offset_kf{0.05, 2.0, 0.0, 1.0, false};
   static Kalman1D yaw_offset_kf{0.05, 2.0, 0.0, 1.0, false};
-  double filtered_pitch_offset = pitch_offset_kf.update(static_cast<double>(temp_msg.data[1]));
-  double filtered_yaw_offset = yaw_offset_kf.update(static_cast<double>(temp_msg.data[0]));
+  double filtered_pitch_offset = pitch_offset_kf.update(raw_pitch_offset);
+  double filtered_yaw_offset = yaw_offset_kf.update(raw_yaw_offset);
 
   const double pitch_deadband = 3.0;//死区
   const double yaw_deadband = 3.0;//死区
@@ -1018,7 +1080,6 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
     filtered_yaw_offset = 0.0;
   }
 
-  const bool has_target = (temp_msg.data[2] == 1);
   UpdateGimbalState(has_target);
   if (has_target)
   {
@@ -1043,9 +1104,9 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
     const double dt = 0.02;
     {
       constexpr double predict_time = 0.10;
-      constexpr double kp_img_yaw = 0.80;
+      constexpr double kp_img_yaw = -0.80;
       constexpr double kd_img_yaw = 0.08;
-      constexpr double kp_img_pitch = 0.50;
+      constexpr double kp_img_pitch = -0.50;
       constexpr double kd_img_pitch = 0.05;
       constexpr double k_body_yaw = 0.30;
       constexpr double max_yaw_step = 180.0;

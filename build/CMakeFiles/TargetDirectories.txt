@@ -211,7 +211,6 @@
 /home/duzhong/dzacs/build/rknn_pt/CMakeFiles/rebuild_cache.dir
 /home/duzhong/dzacs/build/rknn_pt/CMakeFiles/edit_cache.dir
 /home/duzhong/dzacs/build/rknn_pt/CMakeFiles/test.dir
-/home/duzhong/dzacs/build/rknn_pt/CMakeFiles/det_node_25.dir
 /home/duzhong/dzacs/build/rknn_pt/CMakeFiles/det_node.dir
 /home/duzhong/dzacs/build/rplidar_ros/CMakeFiles/install/strip.dir
 /home/duzhong/dzacs/build/rplidar_ros/CMakeFiles/install/local.dir

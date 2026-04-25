@@ -2027,19 +2027,6 @@ map_msgs_gencpp/fast:
 .PHONY : map_msgs_gencpp/fast
 
 #=============================================================================
-# Target rules for targets named det_node_25
-
-# Build rule for target.
-det_node_25: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 det_node_25
-.PHONY : det_node_25
-
-# fast build rule for target.
-det_node_25/fast:
-	$(MAKE) -f rknn_pt/CMakeFiles/det_node_25.dir/build.make rknn_pt/CMakeFiles/det_node_25.dir/build
-.PHONY : det_node_25/fast
-
-#=============================================================================
 # Target rules for targets named det_node
 
 # Build rule for target.
@@ -3092,7 +3079,6 @@ help:
 	@echo "... _map_msgs_generate_messages_check_deps_SaveMap"
 	@echo "... map_msgs_generate_messages_cpp"
 	@echo "... map_msgs_gencpp"
-	@echo "... det_node_25"
 	@echo "... det_node"
 	@echo "... rplidarNodeClient"
 	@echo "... rplidarNode"

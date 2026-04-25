@@ -24,7 +24,6 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/home/duzhong/dzacs/src/rknn_pt/include/rga"
   "/home/duzhong/dzacs/src/rknn_pt/include/rknn_api"
   "/home/duzhong/dzacs/src/rknn_pt/include/det"
-  "/home/duzhong/catkin_ws/src/vision_opencv/cv_bridge/include"
   "/opt/ros/noetic/include"
   "/opt/ros/noetic/share/xmlrpcpp/cmake/../../../include/xmlrpcpp"
   "/usr/include/opencv4"

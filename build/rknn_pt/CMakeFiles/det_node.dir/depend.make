@@ -423,13 +423,13 @@ rknn_pt/CMakeFiles/det_node.dir/src/det/rkpt.cc.o: /usr/include/opencv4/opencv2/
 rknn_pt/CMakeFiles/det_node.dir/src/det/rkpt.cc.o: /usr/include/opencv4/opencv2/viz/vizcore.hpp
 rknn_pt/CMakeFiles/det_node.dir/src/det/rkpt.cc.o: /usr/include/opencv4/opencv2/viz/widgets.hpp
 
-rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.o: /home/duzhong/catkin_ws/src/vision_opencv/cv_bridge/include/cv_bridge/cv_bridge.h
 rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.o: /home/duzhong/dzacs/src/rknn_pt/include/ThreadPool.hpp
 rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.o: /home/duzhong/dzacs/src/rknn_pt/include/det/postprocess.h
 rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.o: /home/duzhong/dzacs/src/rknn_pt/include/det/rkpt.hpp
 rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.o: /home/duzhong/dzacs/src/rknn_pt/include/rknnPool.hpp
 rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.o: /home/duzhong/dzacs/src/rknn_pt/include/rknn_api/rknn_api.h
 rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.o: /home/duzhong/dzacs/src/rknn_pt/src/det_node.cc
+rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.o: /opt/ros/noetic/include/cv_bridge/cv_bridge.h
 rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.o: /opt/ros/noetic/include/image_transport/camera_publisher.h
 rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.o: /opt/ros/noetic/include/image_transport/camera_subscriber.h
 rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.o: /opt/ros/noetic/include/image_transport/exception.h

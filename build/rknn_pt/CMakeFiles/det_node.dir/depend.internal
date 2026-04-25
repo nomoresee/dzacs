@@ -424,13 +424,13 @@ rknn_pt/CMakeFiles/det_node.dir/src/det/rkpt.cc.o
  /usr/include/opencv4/opencv2/viz/vizcore.hpp
  /usr/include/opencv4/opencv2/viz/widgets.hpp
 rknn_pt/CMakeFiles/det_node.dir/src/det_node.cc.o
- /home/duzhong/catkin_ws/src/vision_opencv/cv_bridge/include/cv_bridge/cv_bridge.h
  /home/duzhong/dzacs/src/rknn_pt/include/ThreadPool.hpp
  /home/duzhong/dzacs/src/rknn_pt/include/det/postprocess.h
  /home/duzhong/dzacs/src/rknn_pt/include/det/rkpt.hpp
  /home/duzhong/dzacs/src/rknn_pt/include/rknnPool.hpp
  /home/duzhong/dzacs/src/rknn_pt/include/rknn_api/rknn_api.h
  /home/duzhong/dzacs/src/rknn_pt/src/det_node.cc
+ /opt/ros/noetic/include/cv_bridge/cv_bridge.h
  /opt/ros/noetic/include/image_transport/camera_publisher.h
  /opt/ros/noetic/include/image_transport/camera_subscriber.h
  /opt/ros/noetic/include/image_transport/exception.h

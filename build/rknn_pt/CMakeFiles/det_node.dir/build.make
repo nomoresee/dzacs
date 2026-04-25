@@ -124,7 +124,7 @@ det_node_EXTERNAL_OBJECTS =
 /home/duzhong/dzacs/devel/lib/rknn_pt/det_node: rknn_pt/CMakeFiles/det_node.dir/src/det/preprocess.cc.o
 /home/duzhong/dzacs/devel/lib/rknn_pt/det_node: rknn_pt/CMakeFiles/det_node.dir/src/det/rkpt.cc.o
 /home/duzhong/dzacs/devel/lib/rknn_pt/det_node: rknn_pt/CMakeFiles/det_node.dir/build.make
-/home/duzhong/dzacs/devel/lib/rknn_pt/det_node: /home/duzhong/catkin_ws/devel/lib/libcv_bridge.so
+/home/duzhong/dzacs/devel/lib/rknn_pt/det_node: /opt/ros/noetic/lib/libcv_bridge.so
 /home/duzhong/dzacs/devel/lib/rknn_pt/det_node: /usr/lib/aarch64-linux-gnu/libopencv_calib3d.so.4.2.0
 /home/duzhong/dzacs/devel/lib/rknn_pt/det_node: /usr/lib/aarch64-linux-gnu/libopencv_dnn.so.4.2.0
 /home/duzhong/dzacs/devel/lib/rknn_pt/det_node: /usr/lib/aarch64-linux-gnu/libopencv_features2d.so.4.2.0

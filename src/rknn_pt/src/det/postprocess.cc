@@ -11,7 +11,7 @@
 #include <set>
 #include <vector>
 
-static const char *labels[OBJ_CLASS_NUM] = {"red_target", "blue_target"};
+static const char *labels[OBJ_CLASS_NUM] = {"light"};
 
 const int anchor0[6] = {10, 13, 16, 30, 33, 23};
 const int anchor1[6] = {30, 61, 62, 45, 59, 119};
@@ -307,12 +307,7 @@ void show_draw_results(DetectResultsGroup &results_group)
   for (const auto& res : results_group.dets)
   {
     sprintf(text, "%s", res.det_name.c_str());
-    int class_id = 0;
-    if (res.det_name == "red_target")
-      class_id = 0;
-    else if (res.det_name == "blue_target")
-      class_id = 1;
-    cv::rectangle(results_group.cur_img, res.box, randColor[class_id], 2, 8, 0);
+    cv::rectangle(results_group.cur_img, res.box, randColor[1], 2, 8, 0);
     cv::putText(results_group.cur_img, text, cv::Point(res.box.x, res.box.y + 12), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255, 255, 255));
     
     int cv_center_x = res.box.x + res.box.width / 2;

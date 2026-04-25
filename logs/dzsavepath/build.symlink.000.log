@@ -1,8 +1,0 @@
-Symlinking /home/duzhong/dzacs/devel/share/roseus/ros/dzsavepath/manifest.l
-Symlinking /home/duzhong/dzacs/devel/share/dzsavepath/cmake/dzsavepath-msg-paths.cmake
-Symlinking /home/duzhong/dzacs/devel/share/dzsavepath/cmake/dzsavepath-msg-extras.cmake
-Symlinking /home/duzhong/dzacs/devel/share/dzsavepath/cmake/dzsavepathConfig.cmake
-Symlinking /home/duzhong/dzacs/devel/share/dzsavepath/cmake/dzsavepathConfig-version.cmake
-Symlinking /home/duzhong/dzacs/devel/lib/pkgconfig/dzsavepath.pc
-Symlinking /home/duzhong/dzacs/devel/lib/python3/dist-packages/dzsavepath/__init__.py
-Symlinking /home/duzhong/dzacs/devel/lib/dzsavepath/dzsavepath

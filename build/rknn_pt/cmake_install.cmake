@@ -64,30 +64,10 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/rknn_pt/det_node")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/rknn_pt/det_node"
-         OLD_RPATH "/home/duzhong/catkin_ws/devel/lib:/opt/ros/noetic/lib:/home/duzhong/dzacs/src/rknn_pt/lib:"
+         OLD_RPATH "/opt/ros/noetic/lib:/home/duzhong/dzacs/src/rknn_pt/lib:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/rknn_pt/det_node")
-    endif()
-  endif()
-endif()
-
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/rknn_pt/det_node_25" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/rknn_pt/det_node_25")
-    file(RPATH_CHECK
-         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/rknn_pt/det_node_25"
-         RPATH "")
-  endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/rknn_pt" TYPE EXECUTABLE FILES "/home/duzhong/dzacs/devel/lib/rknn_pt/det_node_25")
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/rknn_pt/det_node_25" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/rknn_pt/det_node_25")
-    file(RPATH_CHANGE
-         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/rknn_pt/det_node_25"
-         OLD_RPATH "/home/duzhong/catkin_ws/devel/lib:/opt/ros/noetic/lib:/home/duzhong/dzacs/src/rknn_pt/lib:"
-         NEW_RPATH "")
-    if(CMAKE_INSTALL_DO_STRIP)
-      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/rknn_pt/det_node_25")
     endif()
   endif()
 endif()
