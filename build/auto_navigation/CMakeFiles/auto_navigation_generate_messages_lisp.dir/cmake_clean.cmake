@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../devel/share/common-lisp/ros/auto_navigation/msg/NavigationGoal.lisp"
-  "../devel/share/common-lisp/ros/auto_navigation/msg/NavigationStatus.lisp"
+  "/home/duzhong/dzacs/devel/share/common-lisp/ros/auto_navigation/msg/NavigationGoal.lisp"
+  "/home/duzhong/dzacs/devel/share/common-lisp/ros/auto_navigation/msg/NavigationStatus.lisp"
   "CMakeFiles/auto_navigation_generate_messages_lisp"
 )
 

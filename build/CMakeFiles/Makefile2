@@ -62,6 +62,7 @@ all: navigation_msgs/map_msgs/all
 all: rknn_pt/all
 all: rplidar_ros/all
 all: dzactuator/all
+all: voice_module/all
 all: clear_costmap_recovery/all
 all: move_base/all
 
@@ -77,6 +78,7 @@ preinstall: navigation_msgs/map_msgs/preinstall
 preinstall: rknn_pt/preinstall
 preinstall: rplidar_ros/preinstall
 preinstall: dzactuator/preinstall
+preinstall: voice_module/preinstall
 preinstall: clear_costmap_recovery/preinstall
 preinstall: move_base/preinstall
 
@@ -97,6 +99,7 @@ clean: navigation_msgs/map_msgs/clean
 clean: rknn_pt/clean
 clean: rplidar_ros/clean
 clean: dzactuator/clean
+clean: voice_module/clean
 clean: clear_costmap_recovery/clean
 clean: move_base/clean
 
@@ -538,6 +541,24 @@ rplidar_ros/clean: rplidar_ros/CMakeFiles/rplidarNode.dir/clean
 .PHONY : rplidar_ros/clean
 
 #=============================================================================
+# Directory level rules for directory voice_module
+
+# Recursive "all" directory target.
+voice_module/all: voice_module/CMakeFiles/voice_module.dir/all
+
+.PHONY : voice_module/all
+
+# Recursive "preinstall" directory target.
+voice_module/preinstall:
+
+.PHONY : voice_module/preinstall
+
+# Recursive "clean" directory target.
+voice_module/clean: voice_module/CMakeFiles/voice_module.dir/clean
+
+.PHONY : voice_module/clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/doxygen.dir
 
 # All Build rule for target.
@@ -576,7 +597,7 @@ CMakeFiles/run_tests.dir/all: clear_costmap_recovery/CMakeFiles/_run_tests_clear
 
 # Build rule for subdir invocation for target.
 CMakeFiles/run_tests.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 35
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 34
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/run_tests.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : CMakeFiles/run_tests.dir/rule
@@ -630,7 +651,7 @@ CMakeFiles/tests.dir/all: clear_costmap_recovery/CMakeFiles/clear_tester.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/tests.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 35
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 34
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/tests.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : CMakeFiles/tests.dir/rule
@@ -680,12 +701,12 @@ gtest/googlemock/CMakeFiles/gmock_main.dir/all: gtest/googlemock/CMakeFiles/gmoc
 gtest/googlemock/CMakeFiles/gmock_main.dir/all: gtest/googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) -f gtest/googlemock/CMakeFiles/gmock_main.dir/build.make gtest/googlemock/CMakeFiles/gmock_main.dir/depend
 	$(MAKE) -f gtest/googlemock/CMakeFiles/gmock_main.dir/build.make gtest/googlemock/CMakeFiles/gmock_main.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=21,22 "Built target gmock_main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=21 "Built target gmock_main"
 .PHONY : gtest/googlemock/CMakeFiles/gmock_main.dir/all
 
 # Build rule for subdir invocation for target.
 gtest/googlemock/CMakeFiles/gmock_main.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 gtest/googlemock/CMakeFiles/gmock_main.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : gtest/googlemock/CMakeFiles/gmock_main.dir/rule
@@ -734,12 +755,12 @@ gtest/googlemock/CMakeFiles/gmock.dir/clean:
 gtest/googletest/CMakeFiles/gtest_main.dir/all: gtest/googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) -f gtest/googletest/CMakeFiles/gtest_main.dir/build.make gtest/googletest/CMakeFiles/gtest_main.dir/depend
 	$(MAKE) -f gtest/googletest/CMakeFiles/gtest_main.dir/build.make gtest/googletest/CMakeFiles/gtest_main.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=24 "Built target gtest_main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=23,24 "Built target gtest_main"
 .PHONY : gtest/googletest/CMakeFiles/gtest_main.dir/all
 
 # Build rule for subdir invocation for target.
 gtest/googletest/CMakeFiles/gtest_main.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 gtest/googletest/CMakeFiles/gtest_main.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : gtest/googletest/CMakeFiles/gtest_main.dir/rule
@@ -761,7 +782,7 @@ gtest/googletest/CMakeFiles/gtest_main.dir/clean:
 gtest/googletest/CMakeFiles/gtest.dir/all:
 	$(MAKE) -f gtest/googletest/CMakeFiles/gtest.dir/build.make gtest/googletest/CMakeFiles/gtest.dir/depend
 	$(MAKE) -f gtest/googletest/CMakeFiles/gtest.dir/build.make gtest/googletest/CMakeFiles/gtest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=23 "Built target gtest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=22 "Built target gtest"
 .PHONY : gtest/googletest/CMakeFiles/gtest.dir/all
 
 # Build rule for subdir invocation for target.
@@ -882,7 +903,7 @@ navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_lisp.
 navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_lisp.dir/all: navigation_msgs/move_base_msgs/CMakeFiles/_move_base_msgs_generate_messages_check_deps_MoveBaseActionFeedback.dir/all
 	$(MAKE) -f navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_lisp.dir/build.make navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_lisp.dir/depend
 	$(MAKE) -f navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_lisp.dir/build.make navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_lisp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=70,71,72,73,74,75 "Built target move_base_msgs_generate_messages_lisp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=69,70,71,72,73,74 "Built target move_base_msgs_generate_messages_lisp"
 .PHONY : navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_lisp.dir/all
 
 # Build rule for subdir invocation for target.
@@ -914,7 +935,7 @@ navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_geneus.dir/all: navigat
 
 # Build rule for subdir invocation for target.
 navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_geneus.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 6
 	$(MAKE) -f CMakeFiles/Makefile2 navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_geneus.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_geneus.dir/rule
@@ -949,12 +970,12 @@ navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_eus.d
 navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_eus.dir/all: navigation_msgs/move_base_msgs/CMakeFiles/_move_base_msgs_generate_messages_check_deps_MoveBaseActionFeedback.dir/all
 	$(MAKE) -f navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_eus.dir/build.make navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_eus.dir/depend
 	$(MAKE) -f navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_eus.dir/build.make navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_eus.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=63,64,65,66,67,68,69 "Built target move_base_msgs_generate_messages_eus"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=63,64,65,66,67,68 "Built target move_base_msgs_generate_messages_eus"
 .PHONY : navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_eus.dir/all
 
 # Build rule for subdir invocation for target.
 navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_eus.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 6
 	$(MAKE) -f CMakeFiles/Makefile2 navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_eus.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_eus.dir/rule
@@ -1043,7 +1064,7 @@ navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodej
 navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs.dir/all: navigation_msgs/move_base_msgs/CMakeFiles/_move_base_msgs_generate_messages_check_deps_MoveBaseActionFeedback.dir/all
 	$(MAKE) -f navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs.dir/build.make navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs.dir/depend
 	$(MAKE) -f navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs.dir/build.make navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=76,77,78,79,80 "Built target move_base_msgs_generate_messages_nodejs"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=75,76,77,78,79 "Built target move_base_msgs_generate_messages_nodejs"
 .PHONY : navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_nodejs.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1794,7 +1815,7 @@ navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages.dir/a
 
 # Build rule for subdir invocation for target.
 navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 31
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 30
 	$(MAKE) -f CMakeFiles/Makefile2 navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages.dir/rule
@@ -1829,7 +1850,7 @@ navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_py.di
 navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_py.dir/all: navigation_msgs/move_base_msgs/CMakeFiles/_move_base_msgs_generate_messages_check_deps_MoveBaseActionFeedback.dir/all
 	$(MAKE) -f navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_py.dir/build.make navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_py.dir/depend
 	$(MAKE) -f navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_py.dir/build.make navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_py.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=81,82,83,84,85,86,87 "Built target move_base_msgs_generate_messages_py"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=80,81,82,83,84,85,86 "Built target move_base_msgs_generate_messages_py"
 .PHONY : navigation_msgs/move_base_msgs/CMakeFiles/move_base_msgs_generate_messages_py.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3043,12 +3064,12 @@ dzjudgment/CMakeFiles/dzjudgment.dir/all: dzjudgment/CMakeFiles/tf2_msgs_generat
 dzjudgment/CMakeFiles/dzjudgment.dir/all: dzjudgment/CMakeFiles/tf2_msgs_generate_messages_nodejs.dir/all
 	$(MAKE) -f dzjudgment/CMakeFiles/dzjudgment.dir/build.make dzjudgment/CMakeFiles/dzjudgment.dir/depend
 	$(MAKE) -f dzjudgment/CMakeFiles/dzjudgment.dir/build.make dzjudgment/CMakeFiles/dzjudgment.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=16 "Built target dzjudgment"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=15,16 "Built target dzjudgment"
 .PHONY : dzjudgment/CMakeFiles/dzjudgment.dir/all
 
 # Build rule for subdir invocation for target.
 dzjudgment/CMakeFiles/dzjudgment.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 dzjudgment/CMakeFiles/dzjudgment.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : dzjudgment/CMakeFiles/dzjudgment.dir/rule
@@ -3670,7 +3691,7 @@ dzsavepath/CMakeFiles/dzsavepath_generate_messages.dir/all: dzsavepath/CMakeFile
 
 # Build rule for subdir invocation for target.
 dzsavepath/CMakeFiles/dzsavepath_generate_messages.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 dzsavepath/CMakeFiles/dzsavepath_generate_messages.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : dzsavepath/CMakeFiles/dzsavepath_generate_messages.dir/rule
@@ -3776,12 +3797,12 @@ dzsavepath/CMakeFiles/dzsavepath_generate_messages_eus.dir/all: navigation_msgs/
 dzsavepath/CMakeFiles/dzsavepath_generate_messages_eus.dir/all: navigation_msgs/move_base_msgs/CMakeFiles/geometry_msgs_generate_messages_eus.dir/all
 	$(MAKE) -f dzsavepath/CMakeFiles/dzsavepath_generate_messages_eus.dir/build.make dzsavepath/CMakeFiles/dzsavepath_generate_messages_eus.dir/depend
 	$(MAKE) -f dzsavepath/CMakeFiles/dzsavepath_generate_messages_eus.dir/build.make dzsavepath/CMakeFiles/dzsavepath_generate_messages_eus.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num= "Built target dzsavepath_generate_messages_eus"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=19 "Built target dzsavepath_generate_messages_eus"
 .PHONY : dzsavepath/CMakeFiles/dzsavepath_generate_messages_eus.dir/all
 
 # Build rule for subdir invocation for target.
 dzsavepath/CMakeFiles/dzsavepath_generate_messages_eus.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 dzsavepath/CMakeFiles/dzsavepath_generate_messages_eus.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : dzsavepath/CMakeFiles/dzsavepath_generate_messages_eus.dir/rule
@@ -3808,7 +3829,7 @@ dzsavepath/CMakeFiles/dzsavepath_geneus.dir/all: dzsavepath/CMakeFiles/dzsavepat
 
 # Build rule for subdir invocation for target.
 dzsavepath/CMakeFiles/dzsavepath_geneus.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 dzsavepath/CMakeFiles/dzsavepath_geneus.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : dzsavepath/CMakeFiles/dzsavepath_geneus.dir/rule
@@ -3964,7 +3985,7 @@ dzsavepath/CMakeFiles/dzsavepath.dir/all: dzsavepath/CMakeFiles/dzsavepath_gener
 dzsavepath/CMakeFiles/dzsavepath.dir/all: dzsavepath/CMakeFiles/dzsavepath_generate_messages_py.dir/all
 	$(MAKE) -f dzsavepath/CMakeFiles/dzsavepath.dir/build.make dzsavepath/CMakeFiles/dzsavepath.dir/depend
 	$(MAKE) -f dzsavepath/CMakeFiles/dzsavepath.dir/build.make dzsavepath/CMakeFiles/dzsavepath.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=18,19 "Built target dzsavepath"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=18 "Built target dzsavepath"
 .PHONY : dzsavepath/CMakeFiles/dzsavepath.dir/all
 
 # Build rule for subdir invocation for target.
@@ -4077,7 +4098,7 @@ navigation_msgs/map_msgs/CMakeFiles/map_msgs_genlisp.dir/all: navigation_msgs/ma
 
 # Build rule for subdir invocation for target.
 navigation_msgs/map_msgs/CMakeFiles/map_msgs_genlisp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 5
 	$(MAKE) -f CMakeFiles/Makefile2 navigation_msgs/map_msgs/CMakeFiles/map_msgs_genlisp.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : navigation_msgs/map_msgs/CMakeFiles/map_msgs_genlisp.dir/rule
@@ -4108,7 +4129,7 @@ navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages.dir/all: navigati
 
 # Build rule for subdir invocation for target.
 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 31
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 30
 	$(MAKE) -f CMakeFiles/Makefile2 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages.dir/rule
@@ -4189,7 +4210,7 @@ navigation_msgs/map_msgs/CMakeFiles/map_msgs_geneus.dir/all: navigation_msgs/map
 
 # Build rule for subdir invocation for target.
 navigation_msgs/map_msgs/CMakeFiles/map_msgs_geneus.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 7
 	$(MAKE) -f CMakeFiles/Makefile2 navigation_msgs/map_msgs/CMakeFiles/map_msgs_geneus.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : navigation_msgs/map_msgs/CMakeFiles/map_msgs_geneus.dir/rule
@@ -4412,7 +4433,7 @@ navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_py.dir/all: navig
 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_py.dir/all: navigation_msgs/map_msgs/CMakeFiles/_map_msgs_generate_messages_check_deps_SaveMap.dir/all
 	$(MAKE) -f navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_py.dir/build.make navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_py.dir/depend
 	$(MAKE) -f navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_py.dir/build.make navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_py.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=49,50,51,52,53,54,55 "Built target map_msgs_generate_messages_py"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=48,49,50,51,52,53,54 "Built target map_msgs_generate_messages_py"
 .PHONY : navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_py.dir/all
 
 # Build rule for subdir invocation for target.
@@ -4451,7 +4472,7 @@ navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_nodejs.dir/all: n
 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_nodejs.dir/all: navigation_msgs/map_msgs/CMakeFiles/_map_msgs_generate_messages_check_deps_SaveMap.dir/all
 	$(MAKE) -f navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_nodejs.dir/build.make navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_nodejs.dir/depend
 	$(MAKE) -f navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_nodejs.dir/build.make navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_nodejs.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=43,44,45,46,47,48 "Built target map_msgs_generate_messages_nodejs"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=42,43,44,45,46,47 "Built target map_msgs_generate_messages_nodejs"
 .PHONY : navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_nodejs.dir/all
 
 # Build rule for subdir invocation for target.
@@ -4490,12 +4511,12 @@ navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_lisp.dir/all: nav
 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_lisp.dir/all: navigation_msgs/map_msgs/CMakeFiles/_map_msgs_generate_messages_check_deps_SaveMap.dir/all
 	$(MAKE) -f navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_lisp.dir/build.make navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_lisp.dir/depend
 	$(MAKE) -f navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_lisp.dir/build.make navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_lisp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=37,38,39,40,41,42 "Built target map_msgs_generate_messages_lisp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=37,38,39,40,41 "Built target map_msgs_generate_messages_lisp"
 .PHONY : navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_lisp.dir/all
 
 # Build rule for subdir invocation for target.
 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_lisp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 5
 	$(MAKE) -f CMakeFiles/Makefile2 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_lisp.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_lisp.dir/rule
@@ -4529,12 +4550,12 @@ navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_eus.dir/all: navi
 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_eus.dir/all: navigation_msgs/map_msgs/CMakeFiles/_map_msgs_generate_messages_check_deps_SaveMap.dir/all
 	$(MAKE) -f navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_eus.dir/build.make navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_eus.dir/depend
 	$(MAKE) -f navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_eus.dir/build.make navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_eus.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=31,32,33,34,35,36 "Built target map_msgs_generate_messages_eus"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=30,31,32,33,34,35,36 "Built target map_msgs_generate_messages_eus"
 .PHONY : navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_eus.dir/all
 
 # Build rule for subdir invocation for target.
 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_eus.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 7
 	$(MAKE) -f CMakeFiles/Makefile2 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_eus.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_eus.dir/rule
@@ -4595,12 +4616,12 @@ navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_cpp.dir/all: navi
 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_cpp.dir/all: navigation_msgs/map_msgs/CMakeFiles/_map_msgs_generate_messages_check_deps_SaveMap.dir/all
 	$(MAKE) -f navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_cpp.dir/build.make navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_cpp.dir/depend
 	$(MAKE) -f navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_cpp.dir/build.make navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_cpp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=25,26,27,28,29,30 "Built target map_msgs_generate_messages_cpp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=25,26,27,28,29 "Built target map_msgs_generate_messages_cpp"
 .PHONY : navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_cpp.dir/all
 
 # Build rule for subdir invocation for target.
 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_cpp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 5
 	$(MAKE) -f CMakeFiles/Makefile2 navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_cpp.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : navigation_msgs/map_msgs/CMakeFiles/map_msgs_generate_messages_cpp.dir/rule
@@ -4627,7 +4648,7 @@ navigation_msgs/map_msgs/CMakeFiles/map_msgs_gencpp.dir/all: navigation_msgs/map
 
 # Build rule for subdir invocation for target.
 navigation_msgs/map_msgs/CMakeFiles/map_msgs_gencpp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 5
 	$(MAKE) -f CMakeFiles/Makefile2 navigation_msgs/map_msgs/CMakeFiles/map_msgs_gencpp.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : navigation_msgs/map_msgs/CMakeFiles/map_msgs_gencpp.dir/rule
@@ -4676,12 +4697,12 @@ rknn_pt/CMakeFiles/det_node.dir/clean:
 rplidar_ros/CMakeFiles/rplidarNodeClient.dir/all:
 	$(MAKE) -f rplidar_ros/CMakeFiles/rplidarNodeClient.dir/build.make rplidar_ros/CMakeFiles/rplidarNodeClient.dir/depend
 	$(MAKE) -f rplidar_ros/CMakeFiles/rplidarNodeClient.dir/build.make rplidar_ros/CMakeFiles/rplidarNodeClient.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=99,100 "Built target rplidarNodeClient"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=98 "Built target rplidarNodeClient"
 .PHONY : rplidar_ros/CMakeFiles/rplidarNodeClient.dir/all
 
 # Build rule for subdir invocation for target.
 rplidar_ros/CMakeFiles/rplidarNodeClient.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 rplidar_ros/CMakeFiles/rplidarNodeClient.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : rplidar_ros/CMakeFiles/rplidarNodeClient.dir/rule
@@ -4703,7 +4724,7 @@ rplidar_ros/CMakeFiles/rplidarNodeClient.dir/clean:
 rplidar_ros/CMakeFiles/rplidarNode.dir/all:
 	$(MAKE) -f rplidar_ros/CMakeFiles/rplidarNode.dir/build.make rplidar_ros/CMakeFiles/rplidarNode.dir/depend
 	$(MAKE) -f rplidar_ros/CMakeFiles/rplidarNode.dir/build.make rplidar_ros/CMakeFiles/rplidarNode.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=89,90,91,92,93,94,95,96,97,98 "Built target rplidarNode"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=88,89,90,91,92,93,94,95,96,97 "Built target rplidarNode"
 .PHONY : rplidar_ros/CMakeFiles/rplidarNode.dir/all
 
 # Build rule for subdir invocation for target.
@@ -4730,12 +4751,12 @@ rplidar_ros/CMakeFiles/rplidarNode.dir/clean:
 dzactuator/CMakeFiles/dzactuator_node.dir/all:
 	$(MAKE) -f dzactuator/CMakeFiles/dzactuator_node.dir/build.make dzactuator/CMakeFiles/dzactuator_node.dir/depend
 	$(MAKE) -f dzactuator/CMakeFiles/dzactuator_node.dir/build.make dzactuator/CMakeFiles/dzactuator_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=14,15 "Built target dzactuator_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=14 "Built target dzactuator_node"
 .PHONY : dzactuator/CMakeFiles/dzactuator_node.dir/all
 
 # Build rule for subdir invocation for target.
 dzactuator/CMakeFiles/dzactuator_node.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 dzactuator/CMakeFiles/dzactuator_node.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : dzactuator/CMakeFiles/dzactuator_node.dir/rule
@@ -4776,6 +4797,33 @@ _catkin_empty_exported_target: dzactuator/CMakeFiles/_catkin_empty_exported_targ
 dzactuator/CMakeFiles/_catkin_empty_exported_target.dir/clean:
 	$(MAKE) -f dzactuator/CMakeFiles/_catkin_empty_exported_target.dir/build.make dzactuator/CMakeFiles/_catkin_empty_exported_target.dir/clean
 .PHONY : dzactuator/CMakeFiles/_catkin_empty_exported_target.dir/clean
+
+#=============================================================================
+# Target rules for target voice_module/CMakeFiles/voice_module.dir
+
+# All Build rule for target.
+voice_module/CMakeFiles/voice_module.dir/all:
+	$(MAKE) -f voice_module/CMakeFiles/voice_module.dir/build.make voice_module/CMakeFiles/voice_module.dir/depend
+	$(MAKE) -f voice_module/CMakeFiles/voice_module.dir/build.make voice_module/CMakeFiles/voice_module.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=99,100 "Built target voice_module"
+.PHONY : voice_module/CMakeFiles/voice_module.dir/all
+
+# Build rule for subdir invocation for target.
+voice_module/CMakeFiles/voice_module.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 voice_module/CMakeFiles/voice_module.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
+.PHONY : voice_module/CMakeFiles/voice_module.dir/rule
+
+# Convenience name for target.
+voice_module: voice_module/CMakeFiles/voice_module.dir/rule
+
+.PHONY : voice_module
+
+# clean rule for target.
+voice_module/CMakeFiles/voice_module.dir/clean:
+	$(MAKE) -f voice_module/CMakeFiles/voice_module.dir/build.make voice_module/CMakeFiles/voice_module.dir/clean
+.PHONY : voice_module/CMakeFiles/voice_module.dir/clean
 
 #=============================================================================
 # Target rules for target clear_costmap_recovery/CMakeFiles/dynamic_reconfigure_generate_messages_nodejs.dir
@@ -5034,7 +5082,7 @@ clear_costmap_recovery/CMakeFiles/_run_tests_clear_costmap_recovery_rostest_test
 
 # Build rule for subdir invocation for target.
 clear_costmap_recovery/CMakeFiles/_run_tests_clear_costmap_recovery_rostest_test_clear_tests.launch.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 35
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 34
 	$(MAKE) -f CMakeFiles/Makefile2 clear_costmap_recovery/CMakeFiles/_run_tests_clear_costmap_recovery_rostest_test_clear_tests.launch.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : clear_costmap_recovery/CMakeFiles/_run_tests_clear_costmap_recovery_rostest_test_clear_tests.launch.dir/rule
@@ -5192,7 +5240,7 @@ clear_costmap_recovery/CMakeFiles/clear_costmap_recovery.dir/all: clear_costmap_
 
 # Build rule for subdir invocation for target.
 clear_costmap_recovery/CMakeFiles/clear_costmap_recovery.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 33
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 32
 	$(MAKE) -f CMakeFiles/Makefile2 clear_costmap_recovery/CMakeFiles/clear_costmap_recovery.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : clear_costmap_recovery/CMakeFiles/clear_costmap_recovery.dir/rule
@@ -5246,7 +5294,7 @@ clear_costmap_recovery/CMakeFiles/run_tests_clear_costmap_recovery.dir/all: clea
 
 # Build rule for subdir invocation for target.
 clear_costmap_recovery/CMakeFiles/run_tests_clear_costmap_recovery.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 35
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 34
 	$(MAKE) -f CMakeFiles/Makefile2 clear_costmap_recovery/CMakeFiles/run_tests_clear_costmap_recovery.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : clear_costmap_recovery/CMakeFiles/run_tests_clear_costmap_recovery.dir/rule
@@ -5458,7 +5506,7 @@ clear_costmap_recovery/CMakeFiles/costmap_cleaner.dir/all: clear_costmap_recover
 
 # Build rule for subdir invocation for target.
 clear_costmap_recovery/CMakeFiles/costmap_cleaner.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 32
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 31
 	$(MAKE) -f CMakeFiles/Makefile2 clear_costmap_recovery/CMakeFiles/costmap_cleaner.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : clear_costmap_recovery/CMakeFiles/costmap_cleaner.dir/rule
@@ -5513,7 +5561,7 @@ clear_costmap_recovery/CMakeFiles/clear_tester.dir/all: clear_costmap_recovery/C
 
 # Build rule for subdir invocation for target.
 clear_costmap_recovery/CMakeFiles/clear_tester.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 35
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 34
 	$(MAKE) -f CMakeFiles/Makefile2 clear_costmap_recovery/CMakeFiles/clear_tester.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : clear_costmap_recovery/CMakeFiles/clear_tester.dir/rule
@@ -5540,7 +5588,7 @@ clear_costmap_recovery/CMakeFiles/run_tests_clear_costmap_recovery_rostest_test_
 
 # Build rule for subdir invocation for target.
 clear_costmap_recovery/CMakeFiles/run_tests_clear_costmap_recovery_rostest_test_clear_tests.launch.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 35
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 34
 	$(MAKE) -f CMakeFiles/Makefile2 clear_costmap_recovery/CMakeFiles/run_tests_clear_costmap_recovery_rostest_test_clear_tests.launch.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : clear_costmap_recovery/CMakeFiles/run_tests_clear_costmap_recovery_rostest_test_clear_tests.launch.dir/rule
@@ -5567,7 +5615,7 @@ clear_costmap_recovery/CMakeFiles/_run_tests_clear_costmap_recovery.dir/all: cle
 
 # Build rule for subdir invocation for target.
 clear_costmap_recovery/CMakeFiles/_run_tests_clear_costmap_recovery.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 35
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 34
 	$(MAKE) -f CMakeFiles/Makefile2 clear_costmap_recovery/CMakeFiles/_run_tests_clear_costmap_recovery.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : clear_costmap_recovery/CMakeFiles/_run_tests_clear_costmap_recovery.dir/rule
@@ -5621,7 +5669,7 @@ clear_costmap_recovery/CMakeFiles/run_tests_clear_costmap_recovery_rostest.dir/a
 
 # Build rule for subdir invocation for target.
 clear_costmap_recovery/CMakeFiles/run_tests_clear_costmap_recovery_rostest.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 35
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 34
 	$(MAKE) -f CMakeFiles/Makefile2 clear_costmap_recovery/CMakeFiles/run_tests_clear_costmap_recovery_rostest.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : clear_costmap_recovery/CMakeFiles/run_tests_clear_costmap_recovery_rostest.dir/rule
@@ -5648,7 +5696,7 @@ clear_costmap_recovery/CMakeFiles/_run_tests_clear_costmap_recovery_rostest.dir/
 
 # Build rule for subdir invocation for target.
 clear_costmap_recovery/CMakeFiles/_run_tests_clear_costmap_recovery_rostest.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 35
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 34
 	$(MAKE) -f CMakeFiles/Makefile2 clear_costmap_recovery/CMakeFiles/_run_tests_clear_costmap_recovery_rostest.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : clear_costmap_recovery/CMakeFiles/_run_tests_clear_costmap_recovery_rostest.dir/rule
@@ -5787,12 +5835,12 @@ move_base/CMakeFiles/move_base.dir/all: move_base/CMakeFiles/topic_tools_generat
 move_base/CMakeFiles/move_base.dir/all: move_base/CMakeFiles/navfn_generate_messages_cpp.dir/all
 	$(MAKE) -f move_base/CMakeFiles/move_base.dir/build.make move_base/CMakeFiles/move_base.dir/depend
 	$(MAKE) -f move_base/CMakeFiles/move_base.dir/build.make move_base/CMakeFiles/move_base.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=56 "Built target move_base"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=55 "Built target move_base"
 .PHONY : move_base/CMakeFiles/move_base.dir/all
 
 # Build rule for subdir invocation for target.
 move_base/CMakeFiles/move_base.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 65
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 64
 	$(MAKE) -f CMakeFiles/Makefile2 move_base/CMakeFiles/move_base.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : move_base/CMakeFiles/move_base.dir/rule
@@ -5932,12 +5980,12 @@ move_base/CMakeFiles/move_base_node.dir/all: move_base/CMakeFiles/topic_tools_ge
 move_base/CMakeFiles/move_base_node.dir/all: move_base/CMakeFiles/navfn_generate_messages_cpp.dir/all
 	$(MAKE) -f move_base/CMakeFiles/move_base_node.dir/build.make move_base/CMakeFiles/move_base_node.dir/depend
 	$(MAKE) -f move_base/CMakeFiles/move_base_node.dir/build.make move_base/CMakeFiles/move_base_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=88 "Built target move_base_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=87 "Built target move_base_node"
 .PHONY : move_base/CMakeFiles/move_base_node.dir/all
 
 # Build rule for subdir invocation for target.
 move_base/CMakeFiles/move_base_node.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 66
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 65
 	$(MAKE) -f CMakeFiles/Makefile2 move_base/CMakeFiles/move_base_node.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : move_base/CMakeFiles/move_base_node.dir/rule
@@ -5959,12 +6007,12 @@ move_base/CMakeFiles/move_base_node.dir/clean:
 move_base/CMakeFiles/move_base_gencfg.dir/all:
 	$(MAKE) -f move_base/CMakeFiles/move_base_gencfg.dir/build.make move_base/CMakeFiles/move_base_gencfg.dir/depend
 	$(MAKE) -f move_base/CMakeFiles/move_base_gencfg.dir/build.make move_base/CMakeFiles/move_base_gencfg.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num= "Built target move_base_gencfg"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/duzhong/dzacs/build/CMakeFiles --progress-num=56 "Built target move_base_gencfg"
 .PHONY : move_base/CMakeFiles/move_base_gencfg.dir/all
 
 # Build rule for subdir invocation for target.
 move_base/CMakeFiles/move_base_gencfg.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 move_base/CMakeFiles/move_base_gencfg.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/duzhong/dzacs/build/CMakeFiles 0
 .PHONY : move_base/CMakeFiles/move_base_gencfg.dir/rule

@@ -2092,6 +2092,19 @@ _catkin_empty_exported_target/fast:
 .PHONY : _catkin_empty_exported_target/fast
 
 #=============================================================================
+# Target rules for targets named voice_module
+
+# Build rule for target.
+voice_module: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 voice_module
+.PHONY : voice_module
+
+# fast build rule for target.
+voice_module/fast:
+	$(MAKE) -f voice_module/CMakeFiles/voice_module.dir/build.make voice_module/CMakeFiles/voice_module.dir/build
+.PHONY : voice_module/fast
+
+#=============================================================================
 # Target rules for targets named dynamic_reconfigure_generate_messages_nodejs
 
 # Build rule for target.
@@ -3071,6 +3084,7 @@ help:
 	@echo "... rplidarNode"
 	@echo "... dzactuator_node"
 	@echo "... _catkin_empty_exported_target"
+	@echo "... voice_module"
 	@echo "... dynamic_reconfigure_generate_messages_nodejs"
 	@echo "... costmap_2d_generate_messages_py"
 	@echo "... dynamic_reconfigure_generate_messages_py"

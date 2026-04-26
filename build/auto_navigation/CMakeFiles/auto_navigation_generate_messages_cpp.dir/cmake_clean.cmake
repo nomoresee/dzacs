@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../devel/include/auto_navigation/NavigationGoal.h"
-  "../devel/include/auto_navigation/NavigationStatus.h"
+  "/home/duzhong/dzacs/devel/include/auto_navigation/NavigationGoal.h"
+  "/home/duzhong/dzacs/devel/include/auto_navigation/NavigationStatus.h"
   "CMakeFiles/auto_navigation_generate_messages_cpp"
 )
 

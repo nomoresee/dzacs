@@ -1,4 +1,4 @@
-prefix=/usr/local
+prefix=/home/duzhong/dzacs/install
 
 Name: move_base_msgs
 Description: Description of move_base_msgs

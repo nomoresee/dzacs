@@ -531,7 +531,7 @@ void turn_on_robot::CaremaMontorControl(){
       static int direction_0 = -1;  // 控制扫描方向：1表示正向，-1表示反向
       static int direction_1 = -1;  // 控制扫描方向：1表示正向，-1表示反向
 
-      static int step = 50;        // 每次移动的步长（50->75，扫视速度约提升50%）
+      static int step = 70;        // 每次移动的步长（50->75，扫视速度约提升50%）
       static int scan_interval = 0; // 控制扫描速度的计数器
 
       moveBaseControl.Position_0 = 2047;
@@ -608,11 +608,12 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
 
   if (has_prev_pitch_offset)
   {
-    filtered_pitch_offset = 0.6 * prev_pitch_offset + 0.4 * static_cast<double>(temp_msg.data[1]);
+    filtered_pitch_offset = 0.62
+     * prev_pitch_offset + 0.4 * static_cast<double>(temp_msg.data[1]);
   }
   if (has_prev_yaw_offset)
   {
-    filtered_yaw_offset = 0.6 * prev_yaw_offset + 0.4 * static_cast<double>(temp_msg.data[0]);
+    filtered_yaw_offset = 0.3 * prev_yaw_offset + 0.7* static_cast<double>(temp_msg.data[0]);
   }
   has_prev_pitch_offset = true;
   has_prev_yaw_offset = true;
@@ -629,6 +630,10 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
   {
     filtered_yaw_offset = 0.0;
   }
+
+  ROS_INFO("offsets: filtered_pitch=%.2f filtered_yaw=%.2f int_pitch=%d int_yaw=%d",
+           filtered_pitch_offset, filtered_yaw_offset,
+           static_cast<int>(filtered_pitch_offset), static_cast<int>(filtered_yaw_offset));
 
   auto applySlewLimit = [](int target, int current, int max_step)
   {
@@ -651,23 +656,24 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
     // printf("callback--find_center =%d\n",find_center);
 
     // 瞄准目标
-    const int desired_pitch = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset / 2));
-    const int desired_yaw = curYuntai_feedback_data.Position_1 + static_cast<int>(filtered_yaw_offset / 2);
+    const int desired_pitch = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset/3));
+    const int desired_yaw = curYuntai_feedback_data.Position_1 + static_cast<int>(filtered_yaw_offset/3);
     last_pitch_command = applySlewLimit(desired_pitch, last_pitch_command, 75);//位置变化最大限制幅度
     last_yaw_command = applySlewLimit(desired_yaw, last_yaw_command, 75);
+
     moveBaseControl.Position_0 = last_pitch_command;
     moveBaseControl.Position_1 = last_yaw_command;
 
     moveBaseControl.Speed_0 = CaremaSpeedControl(moveBaseControl.Position_0, curYuntai_feedback_data.Position_0, GimbalAxis::Pitch);
     moveBaseControl.Speed_1 = CaremaSpeedControl(moveBaseControl.Position_1, curYuntai_feedback_data.Position_1, GimbalAxis::Yaw);
 
-    printf("Detected target: find_center=%d, Speed_0=%.2f, Speed_1=%.2f\n", find_center, moveBaseControl.Speed_0, moveBaseControl.Speed_1);
+    printf("Detected target: find_center=%d, filtered_pitch_offset=%.2f, filtered_yaw_offset=%.2f\n", find_center, filtered_pitch_offset, filtered_yaw_offset);
 
-    if(abs(static_cast<int>(filtered_pitch_offset)) < 10 && abs(temp_msg.data[0]) <10){
+    if(abs(static_cast<int>(filtered_pitch_offset)) < 20 && abs(static_cast<int>(filtered_yaw_offset)) < 20){
       std_msgs::UInt8 shotdata;
       shotdata.data =1;
       pub_LaserShot_Command.publish(shotdata);
-      // ros::Duration(0.2).sleep();
+       ros::Duration(0.2).sleep();
       shotdata.data = 0;
       pub_LaserShot_Command.publish(shotdata);
     }
@@ -737,7 +743,7 @@ double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose,Gimbal
     //微分项更新并滤波
     double derivative = (error - state.prev_error) / sampling_time;
     derivative = clamp(derivative, -gains.derivative_limit, gains.derivative_limit);
-    state.filtered_derivative = 0.8 * state.filtered_derivative +0.2 * derivative;
+    state.filtered_derivative = 0.6 * state.filtered_derivative +0.4  * derivative;
 
     // PID 控制计算
     double speed = gains.kp * error + gains.ki * state.integral   + gains.kd * state.filtered_derivative;

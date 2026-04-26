@@ -1,0 +1,8 @@
+prefix=/home/duzhong/dzacs/devel
+
+Name: voice_module
+Description: Description of voice_module
+Version: 1.0.0
+Cflags: -I/home/duzhong/dzacs/src/voice_module/include
+Libs: -L${prefix}/lib 
+Requires: roscpp std_msgs geometry_msgs

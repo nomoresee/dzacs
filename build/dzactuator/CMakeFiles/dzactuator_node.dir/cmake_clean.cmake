@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../devel/lib/dzactuator/dzactuator_node"
-  "../devel/lib/dzactuator/dzactuator_node.pdb"
+  "/home/duzhong/dzacs/devel/lib/dzactuator/dzactuator_node"
+  "/home/duzhong/dzacs/devel/lib/dzactuator/dzactuator_node.pdb"
   "CMakeFiles/dzactuator_node.dir/src/Quaternion_Solution.cpp.o"
   "CMakeFiles/dzactuator_node.dir/src/dzactuator.cpp.o"
 )

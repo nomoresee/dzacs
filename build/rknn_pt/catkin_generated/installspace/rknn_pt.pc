@@ -1,4 +1,4 @@
-prefix=/usr/local
+prefix=/home/duzhong/dzacs/install
 
 Name: rknn_pt
 Description: Description of rknn_pt
