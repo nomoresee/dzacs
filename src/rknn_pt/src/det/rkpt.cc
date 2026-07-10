@@ -101,25 +101,9 @@ RkPt::RkPt(const std::string &model_path)
         box_conf_threshold = BOX_THRESH_25;
         printf("[RkPt] Detected 25-class model (float path)
 ");
-    }      // 默认的NMS阈值
-    box_conf_threshold = BOX_THRESH; // 默认的置信度阈值
-}
 
-int RkPt::init(rknn_context *ctx_in, bool share_weight)
-{
-    printf("Loading model...\n");
-    int model_data_size = 0;
-    model_data = load_model(model_path.c_str(), &model_data_size);
-    // 模型参数复用
-    if (share_weight == true)
-        ret = rknn_dup_context(ctx_in, &ctx);
-    else
-        ret = rknn_init(&ctx, model_data, model_data_size, 0, NULL);
-    if (ret < 0)
-    {
-        printf("rknn_init error ret=%d\n", ret);
-        return -1;
     }
+}
 
     // 设置模型绑定的核心
     rknn_core_mask core_mask;
@@ -135,6 +119,7 @@ int RkPt::init(rknn_context *ctx_in, bool share_weight)
         core_mask = RKNN_NPU_CORE_2;
         break;
     }
+}
     ret = rknn_set_core_mask(ctx, core_mask);
     if (ret < 0)
     {
@@ -281,8 +266,21 @@ DetectResultsGroup RkPt::infer(cv::Mat &orig_img, int cur_frame_id)
 
     // 后处理/Post-processing (float32, no dequantization)
     DetectResultsGroup detect_result_group;
-    post_process_float((float *)outputs[0].buf, (float *)outputs[1].buf, (float *)outputs[2].buf, height, width,
-                       box_conf_threshold, nms_threshold, pads, scale_w, scale_h, &detect_result_group);
+    if (model_type_ == 1) {
+        std::vector<int32_t> qnt_zps;
+        std::vector<float> qnt_scales;
+        for (int i = 0; i < io_num.n_output; i++) {
+            qnt_zps.push_back(output_attrs[i].zp);
+            qnt_scales.push_back(output_attrs[i].scale);
+        }
+        post_process_1((int8_t *)outputs[0].buf, (int8_t *)outputs[1].buf, (int8_t *)outputs[2].buf,
+                       height, width, box_conf_threshold, nms_threshold,
+                       pads, scale_w, scale_h, qnt_zps, qnt_scales, &detect_result_group);
+    } else {
+        post_process_25_f((float *)outputs[0].buf, (float *)outputs[1].buf, (float *)outputs[2].buf,
+                          height, width, box_conf_threshold, nms_threshold,
+                          pads, scale_w, scale_h, &detect_result_group);
+    }
 
     detect_result_group.cur_frame_id = cur_frame_id;
     detect_result_group.cur_img = orig_img.clone();

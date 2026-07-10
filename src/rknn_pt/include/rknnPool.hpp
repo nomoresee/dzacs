@@ -28,6 +28,7 @@ protected:
 public:
     rknnPool(const std::string modelPath, int threadNum);
     int init();
+    int reinit(const std::string& newModelPath);
     // 模型推理/Model inference
     int put(inputType inputData, int cur_frame_id);
     // int put(inputType inputData);
@@ -67,6 +68,32 @@ int rknnPool<rknnModel, inputType, outputType>::init()
             return ret;
     }
 
+    return 0;
+}
+
+template <typename rknnModel, typename inputType, typename outputType>
+int rknnPool<rknnModel, inputType, outputType>::reinit(const std::string& newModelPath)
+{
+    printf("[rknnPool] Reinitializing model...
+");
+    {
+        std::lock_guard<std::mutex> lock(queueMtx);
+        while (!futs.empty()) {
+            try { futs.front().get(); } catch (...) {}
+            futs.pop();
+        }
+    }
+    models.clear();
+    this->modelPath = newModelPath;
+    this->id = 0;
+    for (int i = 0; i < this->threadNum; i++)
+        models.push_back(std::make_shared<rknnModel>(this->modelPath.c_str()));
+    for (int i = 0, ret = 0; i < threadNum; i++) {
+        ret = models[i]->init(models[0]->get_pctx(), i != 0);
+        if (ret != 0) return ret;
+    }
+    printf("[rknnPool] Reinit complete
+");
     return 0;
 }
 

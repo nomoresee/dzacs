@@ -16,8 +16,38 @@
 
 #include "rkpt.hpp"
 #include "rknnPool.hpp"
+#include "rknn_pt/SwitchModel.h"
+#include <string>
+#include <map>
 
 cv::Mat ros_frame;
+
+// Model name to path mapping
+std::map<std::string, std::string> model_map = {
+    {"light_det2", "/home/duzhong/dzacs/src/rknn_pt/model/light_det2.rknn"},
+    {"aug_enhanced_v5s_opt2_v3", "/home/duzhong/dzacs/src/rknn_pt/model/aug_enhanced_v5s_opt2_v3.rknn"}
+};
+std::string pending_model = "";
+bool need_swap = false;
+std::mutex swap_mtx;
+
+// Service callback for model switching
+bool handle_switch_model(rknn_pt::SwitchModel::Request &req,
+                         rknn_pt::SwitchModel::Response &res) {
+    std::lock_guard<std::mutex> lock(swap_mtx);
+    if (model_map.find(req.model_name) == model_map.end()) {
+        res.success = false;
+        res.message = "Unknown model: " + req.model_name + ". Known: light_det2, aug_enhanced_v5s_opt2_v3";
+        ROS_WARN("%s", res.message.c_str());
+        return true;
+    }
+    pending_model = model_map[req.model_name];
+    need_swap = true;
+    res.success = true;
+    res.message = "Will switch to: " + req.model_name;
+    ROS_INFO("%s", res.message.c_str());
+    return true;
+}
 
 void imageCallback(const sensor_msgs::ImageConstPtr &msg)
 {
@@ -41,6 +71,10 @@ int main(int argc, char **argv)
 
   image_transport::ImageTransport it(nh);
   image_transport::Subscriber image_sub = it.subscribe("/usb_cam/image_raw", 1, imageCallback);
+
+  ros::ServiceServer switch_srv = nh.advertiseService("/switch_model", handle_switch_model);
+  ROS_INFO("Switch model service ready at /switch_model");
+  ROS_INFO("  Available models: light_det2, aug_enhanced_v5s_opt2_v3");
 
   std::string model_name = "/home/duzhong/dzacs/src/rknn_pt/model/aug_enhanced_v5s_opt2_v3.rknn";
   // std::string vedio_name = "/home/duzhong/Desktop/8.mp4";
@@ -79,6 +113,23 @@ int main(int argc, char **argv)
   ros::Rate loop_rate(30);
   while (ros::ok())
   {
+    // Check for pending model switch
+    {
+      std::lock_guard<std::mutex> lock(swap_mtx);
+      if (need_swap && !pending_model.empty()) {
+        ROS_INFO("Switching model to: %s", pending_model.c_str());
+        int ret = detectPool.reinit(pending_model);
+        if (ret != 0) {
+          ROS_ERROR("Model switch failed!");
+        } else {
+          frames = 0;
+          ROS_INFO("Model switch complete");
+        }
+        pending_model = "";
+        need_swap = false;
+      }
+    }
+
     std_msgs::Int32MultiArray msg;
 
     // 初始化 layout
