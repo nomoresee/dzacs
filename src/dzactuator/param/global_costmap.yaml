@@ -11,7 +11,7 @@ global_costmap:
   rolling_window: false        # 静态 SLAM 地图常用 false；纯里程计导航可改 true  :contentReference[oaicite:5]{index=5}
   resolution: 0.05             # 室内 5 cm 足矣；0.02 m 会让内存×6 倍  :contentReference[oaicite:6]{index=6}
 
-  plugins:                     # 插件顺序即叠加顺序
-    - {name: static_layer,   type: "costmap_2d::StaticLayer"}      # 地面栅格地图  :contentReference[oaicite:7]{index=7}
-    - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}    # 动态障碍  :contentReference[oaicite:8]{index=8}
-    - {name: inflation_layer,type: "costmap_2d::InflationLayer"}   # 膨胀层  :contentReference[oaicite:9]{index=9}
+  plugins:                     # 插件顺序即叠加顺序（静态地图模式：static + inflation）
+    - {name: static_layer,   type: "costmap_2d::StaticLayer"}      # SLAM 静态墙体
+    - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}    # 保留插件，costmap_common 中 enabled: false
+    - {name: inflation_layer,type: "costmap_2d::InflationLayer"}   # 墙体膨胀缓冲

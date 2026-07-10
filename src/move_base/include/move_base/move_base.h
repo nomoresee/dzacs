@@ -348,7 +348,7 @@ namespace move_base
       double lookahead_distance = 0.5;    // 前瞻距离
       double max_linear_speed = 1.0;      // 最大线速度 - 根据SmartMaster最高速度1m/s
       double max_angular_speed = 0.5;     // 最大角速度 - 考虑阿克曼转向限制
-      double min_linear_speed = 0.1;      // 最小线速度
+      double min_linear_speed = 0.2;      // 最小线速度
       double goal_tolerance = 0.1;        // 目标容差
       double obstacle_safety_distance = 0.25; // 障碍物安全距离 - 根据SmartMaster尺寸调整
     };

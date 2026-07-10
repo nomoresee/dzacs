@@ -15,6 +15,9 @@
 #include "std_msgs/String.h"
 #include <std_msgs/UInt8.h>
 #include <std_msgs/UInt8MultiArray.h>
+#include <std_msgs/Int32MultiArray.h>
+#include <std_msgs/Float32MultiArray.h>
+#include <geometry_msgs/Twist.h>
 
 /* FOREGROUND */
 
@@ -59,6 +62,12 @@ public:
   void callback_LaserShot_Command(const std_msgs::UInt8::ConstPtr &msg);
   void run();
 
+  // 物资扫描控制
+  void callback_scan_command(const std_msgs::String::ConstPtr &msg);
+  void start_material_scan();
+  void stop_material_scan();
+  void control_gimbal_scan();
+
 public:
   int m_baudrate;
   std::string m_serialport;
@@ -66,10 +75,13 @@ public:
   serial::Serial ser;
   // msg
   ros::Subscriber sub_LaserShot_Command;
+  ros::Subscriber sub_scan_command;  // 扫描指令订阅
   ros::Publisher pub_hpandhismsg;
   ros::Publisher pub_all_Material_Number;
   ros::Publisher pub_enemy_Material_Number;
   ros::Publisher pub_self_Material_Number;
+  ros::Publisher pub_scan_mode;  // 扫描模式状态发布
+  ros::Publisher pub_scan_position;  // 扫描位置发布
 
   void recvESP32Info();
   void sendLaserShot();
@@ -87,6 +99,16 @@ public:
   uint8_t ammo = 10;          // 子弹个数
   uint8_t Shooting_Count = 0; // 总的射击次数
   uint8_t previousHeader2 = 0;
+
+  // 物资扫描状态
+  bool scan_mode_active = false;      // 扫描模式是否激活
+  int scan_gimbal_pitch = 2200;      // 扫描时云台pitch位置（抬高）
+  int scan_gimbal_yaw_min = 1000;    // 扫描yaw左限
+  int scan_gimbal_yaw_max = 3100;    // 扫描yaw右限
+  int scan_direction = 1;            // 扫描方向：1向右，-1向左
+  int scan_yaw_position = 2050;     // 当前扫描yaw位置
+  int scan_step = 80;               // 每次扫描移动步长
+  int scan_interval_counter = 0;     // 扫描速度控制计数器
 };
 
 #endif

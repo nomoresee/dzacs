@@ -83,6 +83,8 @@ turn_on_robot::turn_on_robot() : Power_voltage(0)
   sub_offset_center = n.subscribe("offset_center", 1, &turn_on_robot::callback_offset_center, this);                            //识别信息回调
   sub_stop_point_singal = n.subscribe("/move_base/stop_signal",1,&turn_on_robot::callback_stop_point_signal,this);              //停车状态回调
   sub_voice_switch = n.subscribe("/voice_switch",1,&turn_on_robot::callback_voice_switch,this);                                 //语音播报回调
+  sub_material_scan_mode = n.subscribe("material_scan_mode", 1, &turn_on_robot::callback_material_scan_mode, this);               //物资扫描模式回调
+  sub_scan_gimbal_position = n.subscribe("scan_gimbal_position", 1, &turn_on_robot::callback_scan_gimbal_position, this);       //扫描云台位置回调
   // ros::Publisher det_pub = nh.advertise<std_msgs::Int32MultiArray>("/pt_det_topic", 1);
 
   imu_buff.clear();
@@ -433,7 +435,7 @@ void turn_on_robot::callback_movebase_angle(const geometry_msgs::Twist::ConstPtr
   float v = msg->linear.x;
   float w = msg->angular.z;
 
-  moveBaseControl.TargetSpeed = abs(clamp(v * 23 / 0.33, -255.0, 255.0));
+  moveBaseControl.TargetSpeed = abs(clamp(v * 30 / 0.2, -255.0, 255.0));
   moveBaseControl.TargetAngle = w;
   moveBaseControl.TargetAngle += 60;
 
@@ -461,7 +463,7 @@ void turn_on_robot::callback_cmd_vel_angle(const geometry_msgs::Twist::ConstPtr 
   float v = msg->linear.x;
   float w = msg->angular.z;
 
-  moveBaseControl.TargetSpeed = abs(clamp(v * 23 / 0.33, -255.0, 255.0));
+  moveBaseControl.TargetSpeed = abs(clamp(v * 30/0.2, -255.0, 255.0));
   if(!v == 0)
   {
     moveBaseControl.TargetAngle = round(atan(CARL * w / v) * 57.3);
@@ -591,6 +593,35 @@ void turn_on_robot::callback_voice_status(const std_msgs::UInt8::ConstPtr &msg){
   ROS_INFO("语音模块状态: %d", msg->data);
 }
 
+// 物资扫描模式回调
+void turn_on_robot::callback_material_scan_mode(const std_msgs::UInt8::ConstPtr &msg)
+{
+  if (msg->data == 1)
+  {
+    find_center = false;  // 禁用视觉跟踪，进入扫描模式
+    ROS_INFO("[dzactuator] Material scan mode activated");
+  }
+  else
+  {
+    find_center = true;  // 恢复视觉跟踪
+    ROS_INFO("[dzactuator] Material scan mode deactivated");
+  }
+}
+
+// 扫描云台位置回调
+void turn_on_robot::callback_scan_gimbal_position(const std_msgs::Int32MultiArray::ConstPtr &msg)
+{
+  if (msg->data.size() >= 2)
+  {
+    // 设置云台位置进行扫描
+    moveBaseControl.Position_0 = msg->data[0];  // pitch 抬高
+    moveBaseControl.Position_1 = msg->data[1];  // yaw 扫描位置
+    moveBaseControl.Speed_0 = 2000;
+    moveBaseControl.Speed_1 = 2000;
+    moveBaseControl.Fun = 0;
+  }
+}
+
 
 
 
@@ -608,20 +639,20 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
 
   if (has_prev_pitch_offset)
   {
-    filtered_pitch_offset = 0.62
-     * prev_pitch_offset + 0.4 * static_cast<double>(temp_msg.data[1]);
+    filtered_pitch_offset = 0.52
+     * prev_pitch_offset + 0.5 * static_cast<double>(temp_msg.data[1]);
   }
   if (has_prev_yaw_offset)
   {
-    filtered_yaw_offset = 0.3 * prev_yaw_offset + 0.7* static_cast<double>(temp_msg.data[0]);
+    filtered_yaw_offset = 0.1 * prev_yaw_offset + 0.9* static_cast<double>(temp_msg.data[0]);
   }
   has_prev_pitch_offset = true;
   has_prev_yaw_offset = true;
   prev_pitch_offset = filtered_pitch_offset;
   prev_yaw_offset = filtered_yaw_offset;
 
-  const double pitch_deadband = 3.0;
-  const double yaw_deadband = 3.0;
+  const double pitch_deadband = 2.0;//死区
+  const double yaw_deadband = 2.0;//死区
   if (std::abs(filtered_pitch_offset) < pitch_deadband)
   {
     filtered_pitch_offset = 0.0;
@@ -656,10 +687,10 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
     // printf("callback--find_center =%d\n",find_center);
 
     // 瞄准目标
-    const int desired_pitch = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset/3));
-    const int desired_yaw = curYuntai_feedback_data.Position_1 + static_cast<int>(filtered_yaw_offset/3);
-    last_pitch_command = applySlewLimit(desired_pitch, last_pitch_command, 75);//位置变化最大限制幅度
-    last_yaw_command = applySlewLimit(desired_yaw, last_yaw_command, 75);
+    const int desired_pitch = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset/2.7));
+    const int desired_yaw = curYuntai_feedback_data.Position_1 + static_cast<int>(filtered_yaw_offset/2.7);
+    last_pitch_command = applySlewLimit(desired_pitch, last_pitch_command, 85);//位置变化最大限制幅度
+    last_yaw_command = applySlewLimit(desired_yaw, last_yaw_command, 85);
 
     moveBaseControl.Position_0 = last_pitch_command;
     moveBaseControl.Position_1 = last_yaw_command;
@@ -669,11 +700,11 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
 
     printf("Detected target: find_center=%d, filtered_pitch_offset=%.2f, filtered_yaw_offset=%.2f\n", find_center, filtered_pitch_offset, filtered_yaw_offset);
 
-    if(abs(static_cast<int>(filtered_pitch_offset)) < 20 && abs(static_cast<int>(filtered_yaw_offset)) < 20){
+    if(abs(static_cast<int>(filtered_pitch_offset)) < 15 && abs(static_cast<int>(filtered_yaw_offset)) < 15){
       std_msgs::UInt8 shotdata;
       shotdata.data =1;
       pub_LaserShot_Command.publish(shotdata);
-       ros::Duration(0.2).sleep();
+       ros::Duration(0.08).sleep();
       shotdata.data = 0;
       pub_LaserShot_Command.publish(shotdata);
     }
@@ -713,8 +744,8 @@ double turn_on_robot::CaremaSpeedControl(int target_pose,int current_pose,Gimbal
         double derivative_limit;
     };
 
-    const Gains gains = is_pitch ? Gains{300,11.2,11.8,9000.0,4.5,1.0,600.0}
-                                 : Gains{300,11.2,11.8,9000.0,8,1.0,600.0};//前面pitch 后面yaw 分别对应kp,ki,kd,max_speed,offset,deadband,derivative_limit
+    const Gains gains = is_pitch ? Gains{200,11.2,11.8,9000.0,4.5,1.0,600.0}
+                                 : Gains{200,11.2,11.8,9000.0,8,1.0,600.0};//前面pitch 后面yaw 分别对应kp,ki,kd,max_speed,offset,deadband,derivative_limit
 
     static constexpr double sampling_time = 0.01;  // 采样时间 (10Hz)
 

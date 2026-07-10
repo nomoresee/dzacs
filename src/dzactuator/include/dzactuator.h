@@ -218,6 +218,8 @@ public:
 	ros::Subscriber  sub_cmd_vel;
 	ros::Subscriber  sub_stop_point_singal;
     ros::Subscriber  sub_voice_switch;
+    ros::Subscriber  sub_material_scan_mode;   // 物资扫描模式订阅
+    ros::Subscriber  sub_scan_gimbal_position; // 扫描云台位置订阅
 
 	// The speed topic subscribes to the callback function
 	// 速度话题订阅回调函数
@@ -225,6 +227,8 @@ public:
 	void callback_cmd_vel_angle(const geometry_msgs::Twist::ConstPtr &msg);
 	void callback_stop_point_signal(const std_msgs::UInt8::ConstPtr &msg);
     void callback_voice_switch(const std_msgs::UInt8::ConstPtr &msg);
+    void callback_material_scan_mode(const std_msgs::UInt8::ConstPtr &msg);
+    void callback_scan_gimbal_position(const std_msgs::Int32MultiArray::ConstPtr &msg);
 
 	ros::Subscriber sub_monter_control;
 	ros::Subscriber sub_offset_center;

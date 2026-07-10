@@ -9,7 +9,7 @@ import rospkg
 from auto_navigation.msg import NavigationGoal, NavigationStatus
 
 # ----------------- 常量 -----------------
-ORIGIN = (1.07, 3.48, -1.57, "返回起点")
+ORIGIN = (0, 0, 0, "返回起点")
 
 # 找到包根目录，并指向 Roads/
 rospack   = rospkg.RosPack()

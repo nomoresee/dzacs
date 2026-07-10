@@ -194,8 +194,8 @@ namespace move_base
 
     foundObstacleFlag = 0;
 
-    pursuitSpeed = 0.6;
-    pubtargetSpeed = 0.6;
+    pursuitSpeed = 1.5;
+    pubtargetSpeed = 1.5;
     recvScanFlag = 0;
 
     saveMappingMsg.data = 0;

@@ -14,7 +14,7 @@
 #include <set>
 #include <vector>
 
-static const char *labels[OBJ_CLASS_NUM] = {
+static const char *labels[OBJ_CLASS_NUM_25] = {
     "class_00","class_01","class_02","class_03","class_04",
     "class_05","class_06","class_07","class_08","class_09",
     "electrodrill","headphones","keyboard","mobile_phone","monitor",
@@ -99,7 +99,7 @@ static int process_float(float *input, int *anchor, int grid_h, int grid_w, int 
 {
   int validCount = 0;
   int grid_len = grid_h * grid_w;
-  int prop_size = PROP_BOX_SIZE;  // 30
+  int prop_size = PROP_BOX_SIZE_25;  // 30
 
   for (int a = 0; a < 3; a++) {
     for (int i = 0; i < grid_h; i++) {
@@ -130,7 +130,7 @@ static int process_float(float *input, int *anchor, int grid_h, int grid_w, int 
 
         float maxClassProb = sigmoid(in_ptr[5 * grid_len]);
         int maxClassId = 0;
-        for (int k = 1; k < OBJ_CLASS_NUM; ++k) {
+        for (int k = 1; k < OBJ_CLASS_NUM_25; ++k) {
           float prob = sigmoid(in_ptr[(5 + k) * grid_len]);
           if (prob > maxClassProb) {
             maxClassId = k;
@@ -152,7 +152,7 @@ static int process_float(float *input, int *anchor, int grid_h, int grid_w, int 
   return validCount;
 }
 
-int post_process_float(float *input0, float *input1, float *input2, int model_in_h, int model_in_w,
+int post_process_25_f(float *input0, float *input1, float *input2, int model_in_h, int model_in_w,
                        float conf_threshold, float nms_threshold, BOX_RECT pads, float scale_w, float scale_h,
                        DetectResultsGroup *group)
 {
@@ -204,11 +204,11 @@ int post_process_float(float *input0, float *input1, float *input2, int model_in
 }
 
 // Stub for backward compat
-int post_process(int8_t *input0, int8_t *input1, int8_t *input2, int model_in_h, int model_in_w,
+int post_process_25(int8_t *input0, int8_t *input1, int8_t *input2, int model_in_h, int model_in_w,
                  float conf_threshold, float nms_threshold, BOX_RECT pads, float scale_w, float scale_h,
                  std::vector<int32_t> &qnt_zps, std::vector<float> &qnt_scales, DetectResultsGroup *group)
 {
-  printf("ERROR: post_process(int8_t) not supported after float update!\n");
+  printf("ERROR: post_process_25(int8_t) not supported after float update!\n");
   return -1;
 }
 

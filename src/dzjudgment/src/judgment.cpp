@@ -47,11 +47,14 @@ dzjudgment::dzjudgment(ros::NodeHandle handle)
   }
 
   sub_LaserShot_Command = handle.subscribe("LaserShot_Command", 2, &dzjudgment::callback_LaserShot_Command, this);
+  sub_scan_command = handle.subscribe("scan_command", 2, &dzjudgment::callback_scan_command, this);
 
   pub_hpandhismsg = handle.advertise<std_msgs::UInt8MultiArray>("HpAndHitmsg", 10);
   pub_all_Material_Number = handle.advertise<std_msgs::UInt8MultiArray>("all_Material_Number", 10);
   pub_enemy_Material_Number = handle.advertise<std_msgs::UInt8MultiArray>("enemy_Material_Number", 10);
   pub_self_Material_Number = handle.advertise<std_msgs::UInt8MultiArray>("self_Material_Number", 10);
+  pub_scan_mode = handle.advertise<std_msgs::UInt8>("material_scan_mode", 10);
+  pub_scan_position = handle.advertise<std_msgs::Int32MultiArray>("scan_gimbal_position", 10);
 }
 
 dzjudgment::~dzjudgment()
@@ -90,6 +93,9 @@ void dzjudgment::run()
         ROS_ERROR("[dzjudgment-->] Failed to reconnect serial port.");
       }
     }
+
+    // 执行云台扫描控制
+    control_gimbal_scan();
 
     rate.sleep();
   }
@@ -267,5 +273,92 @@ void dzjudgment::sendLaserShot()
     {
       ROS_ERROR("[dzjudgment-->] Failed to reconnect serial port.");
     }
+  }
+}
+
+// 物资扫描指令回调函数
+void dzjudgment::callback_scan_command(const std_msgs::String::ConstPtr &msg)
+{
+  std::string command = msg->data;
+  ROS_INFO("[dzjudgment-->] Received scan command: %s", command.c_str());
+
+  if (command == "rs" || command == "scan_start")
+  {
+    start_material_scan();
+  }
+  else if (command == "stop" || command == "scan_stop")
+  {
+    stop_material_scan();
+  }
+  else
+  {
+    ROS_WARN("[dzjudgment-->] Unknown scan command: %s", command.c_str());
+  }
+}
+
+// 启动物资扫描
+void dzjudgment::start_material_scan()
+{
+  scan_mode_active = true;
+  scan_yaw_position = 2050;  // 从中间位置开始
+  scan_direction = 1;       // 先向右扫
+  ROS_INFO("[dzjudgment-->] Material scan started - gimbal lifting and sweeping");
+
+  // 发布扫描模式状态
+  std_msgs::UInt8 scan_mode_msg;
+  scan_mode_msg.data = 1;
+  pub_scan_mode.publish(scan_mode_msg);
+}
+
+// 停止物资扫描
+void dzjudgment::stop_material_scan()
+{
+  scan_mode_active = false;
+  scan_yaw_position = 2050;  // 回到中间位置
+
+  // 发布停止扫描模式状态
+  std_msgs::UInt8 scan_mode_msg;
+  scan_mode_msg.data = 0;
+  pub_scan_mode.publish(scan_mode_msg);
+
+  ROS_INFO("[dzjudgment-->] Material scan stopped - gimbal centered");
+}
+
+// 云台扫描控制逻辑
+void dzjudgment::control_gimbal_scan()
+{
+  if (!scan_mode_active)
+    return;
+
+  // 控制扫描速度，每隔一定周期移动一次
+  if (scan_interval_counter++ >= 2)  // 控制扫描速度
+  {
+    scan_interval_counter = 0;
+
+    // 更新 yaw 位置实现左右扫描
+    scan_yaw_position += scan_direction * scan_step;
+
+    // 到达边界时反向
+    if (scan_yaw_position >= scan_gimbal_yaw_max)
+    {
+      scan_yaw_position = scan_gimbal_yaw_max;
+      scan_direction = -1;
+      ROS_INFO("[dzjudgment-->] Scan reached right limit, turning left");
+    }
+    else if (scan_yaw_position <= scan_gimbal_yaw_min)
+    {
+      scan_yaw_position = scan_gimbal_yaw_min;
+      scan_direction = 1;
+      ROS_INFO("[dzjudgment-->] Scan reached left limit, turning right");
+    }
+
+    // 发布扫描位置信息（dzactuator 订阅此话题来控制云台）
+    std_msgs::Int32MultiArray scan_pos_msg;
+    scan_pos_msg.data.clear();
+    scan_pos_msg.data.push_back(scan_gimbal_pitch);  // pitch 抬高
+    scan_pos_msg.data.push_back(scan_yaw_position);   // yaw 扫描位置
+    pub_scan_position.publish(scan_pos_msg);
+
+    ROS_DEBUG("[dzjudgment-->] Scan: pitch=%d, yaw=%d", scan_gimbal_pitch, scan_yaw_position);
   }
 }

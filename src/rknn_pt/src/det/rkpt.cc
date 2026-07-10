@@ -88,7 +88,20 @@ static unsigned char *load_model(const char *filename, int *model_size)
 RkPt::RkPt(const std::string &model_path)
 {
     this->model_path = model_path;
-    nms_threshold = NMS_THRESH;      // 默认的NMS阈值
+    // Auto-detect model type from filename
+    if (model_path.find("light") != std::string::npos) {
+        model_type_ = 1;
+        nms_threshold = NMS_THRESH_1;
+        box_conf_threshold = BOX_THRESH_1;
+        printf("[RkPt] Detected 1-class model (int8 path)
+");
+    } else {
+        model_type_ = 25;
+        nms_threshold = NMS_THRESH_25;
+        box_conf_threshold = BOX_THRESH_25;
+        printf("[RkPt] Detected 25-class model (float path)
+");
+    }      // 默认的NMS阈值
     box_conf_threshold = BOX_THRESH; // 默认的置信度阈值
 }
 
@@ -250,25 +263,26 @@ DetectResultsGroup RkPt::infer(cv::Mat &orig_img, int cur_frame_id)
     memset(outputs, 0, sizeof(outputs));
     for (int i = 0; i < io_num.n_output; i++)
     {
-        outputs[i].want_float = 0;
+        outputs[i].want_float = 1;
     }
 
     // 模型推理
     ret = rknn_run(ctx, NULL);
     ret = rknn_outputs_get(ctx, io_num.n_output, outputs, NULL);
 
-    // 后处理/Post-processing
-    DetectResultsGroup detect_result_group;
-
-    std::vector<float> out_scales;
-    std::vector<int32_t> out_zps;
-    for (int i = 0; i < io_num.n_output; ++i)
-    {
-        out_scales.push_back(output_attrs[i].scale);
-        out_zps.push_back(output_attrs[i].zp);
+    // DEBUG: print output format
+    printf("=== OUTPUT FORMAT ===\n");
+    for (int i = 0; i < io_num.n_output; i++) {
+        printf("  output[%d]: fmt=%d (%s), type=%d, zp=%d, scale=%.6f\n",
+               i, output_attrs[i].fmt,
+               output_attrs[i].fmt == 0 ? "NCHW" : "NHWC",
+               output_attrs[i].type, output_attrs[i].zp, output_attrs[i].scale);
     }
-    post_process((int8_t *)outputs[0].buf, (int8_t *)outputs[1].buf, (int8_t *)outputs[2].buf, height, width,
-                 box_conf_threshold, nms_threshold, pads, scale_w, scale_h, out_zps, out_scales, &detect_result_group);
+
+    // 后处理/Post-processing (float32, no dequantization)
+    DetectResultsGroup detect_result_group;
+    post_process_float((float *)outputs[0].buf, (float *)outputs[1].buf, (float *)outputs[2].buf, height, width,
+                       box_conf_threshold, nms_threshold, pads, scale_w, scale_h, &detect_result_group);
 
     detect_result_group.cur_frame_id = cur_frame_id;
     detect_result_group.cur_img = orig_img.clone();

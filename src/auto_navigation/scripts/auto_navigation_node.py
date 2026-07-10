@@ -38,9 +38,9 @@ class AutoNavigationNode:
         self.target_sub = rospy.Subscriber('/target_detected', Bool, self.target_callback)
         
         # 返航基地坐标
-        self.base_x = rospy.get_param('~base_x', 1.07)
-        self.base_y = rospy.get_param('~base_y', 3.48)
-        self.base_yaw = rospy.get_param('~base_yaw', -1.57)
+        self.base_x = rospy.get_param('~base_x', 0)
+        self.base_y = rospy.get_param('~base_y', 0)
+        self.base_yaw = rospy.get_param('~base_yaw', 0)
         
         # 目标检测状态
         self.target_found = False

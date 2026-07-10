@@ -25,22 +25,15 @@
     <arg name="goal_tolerance" value="0.15" />
   </include>
   
-  <!-- 噪点过滤参数 -->
+  <!-- 静态地图模式：obstacle_layer 已在 costmap_common.yaml 中 disabled -->
+  <!-- 以下动态障碍/噪点参数保留注释，恢复动态避障时可取消注释 -->
+  <!--
+  <rosparam param="/move_base/global_costmap/obstacle_layer/enabled">true</rosparam>
+  <rosparam param="/move_base/local_costmap/obstacle_layer/enabled">true</rosparam>
   <rosparam param="/move_base/global_costmap/obstacle_layer/scan/min_obstacle_range">0.15</rosparam>
-  <rosparam param="/move_base/global_costmap/obstacle_layer/scan/max_obstacle_range">8.0</rosparam>
-  <rosparam param="/move_base/global_costmap/obstacle_layer/scan/obstacle_filter_window">3</rosparam>
-  <rosparam param="/move_base/global_costmap/obstacle_layer/scan/obstacle_filter_threshold">0.1</rosparam>
-  
-  <rosparam param="/move_base/local_costmap/obstacle_layer/scan/min_obstacle_range">0.15</rosparam>
-  <rosparam param="/move_base/local_costmap/obstacle_layer/scan/max_obstacle_range">8.0</rosparam>
-  <rosparam param="/move_base/local_costmap/obstacle_layer/scan/obstacle_filter_window">3</rosparam>
-  <rosparam param="/move_base/local_costmap/obstacle_layer/scan/obstacle_filter_threshold">0.1</rosparam>
-  
-  <!-- TEB噪点过滤参数 -->
+  <rosparam param="/move_base/TebLocalPlannerROS/include_dynamic_obstacles">true</rosparam>
   <rosparam param="/move_base/TebLocalPlannerROS/obstacle_filter_enabled">true</rosparam>
-  <rosparam param="/move_base/TebLocalPlannerROS/obstacle_filter_window">3</rosparam>
-  <rosparam param="/move_base/TebLocalPlannerROS/obstacle_filter_threshold">0.1</rosparam>
-  <rosparam param="/move_base/TebLocalPlannerROS/min_obstacle_points">2</rosparam>
+  -->
   
   <!-- 膨胀层优化 -->
   <rosparam param="/move_base/global_costmap/inflation_layer/cost_scaling_factor">5.0</rosparam>
@@ -48,4 +41,4 @@
   <rosparam param="/move_base/local_costmap/inflation_layer/cost_scaling_factor">5.0</rosparam>
   <rosparam param="/move_base/local_costmap/inflation_layer/inflation_radius">0.2</rosparam>
   
-</launch> 
+</launch>

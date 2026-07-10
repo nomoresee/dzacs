@@ -1,0 +1,22 @@
+# ROS / catkin generated files
+/build/
+/devel/
+/logs/
+/.catkin_tools/
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Editor and temporary files
+*.swp
+*.swo
+*.bak
+*~
+Untitled
+
+# Native build artifacts and logs
+*.o
+*.a
+*.so
+*.log

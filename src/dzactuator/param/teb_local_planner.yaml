@@ -18,18 +18,18 @@ TebLocalPlannerROS:
  path_smoothing: True
  
  # Robot - 根据SmartMaster硬件参数调整
- max_vel_x: 1.0  # 最高速度1m/s
+ max_vel_x: 2  # 最高速度1m/s
  max_vel_y: 0 
  max_vel_x_backwards: 0.5  # 后退速度限制
- max_vel_theta: 0.5  # 角速度限制，考虑阿克曼转向
- acc_lim_x: 0.3  # 加速度限制
+ max_vel_theta: 2.0  # 角速度限制，考虑阿克曼转向
+ acc_lim_x: 1.0  # 加速度限制
  acc_lim_y: 0  
- acc_lim_theta: 0.2  # 角加速度限制
- max_vel_trans: 1.0  # 最大平移速度
+ acc_lim_theta: 0.6  # 角加速度限制
+ max_vel_trans: 1.5  # 最大平移速度
  
  # 根据硬件参数调整
  wheelbase: 0.15  # 轴距150mm
- min_turning_radius: 0.20  # 最小转弯半径240-260mm，取250mm
+ min_turning_radius: 0.25  # 最小转弯半径240-260mm，取250mm
  
  cmd_angle_instead_rotvel: False
  
@@ -39,22 +39,22 @@ TebLocalPlannerROS:
   vertices: [[-0.14, -0.055], [-0.14, 0.055], [0.14, 0.055], [0.14, -0.055]]  # 长度278mm，宽度140mm
 
  xy_goal_tolerance: 0.2  #gai
- yaw_goal_tolerance: 0.1 #gai
+ yaw_goal_tolerance: 0.5 #gai
  free_goal_vel: False #gai
  
- # Obstacles
- min_obstacle_dist: 0.15  # 增加安全距离 gai85
+ # Obstacles（静态地图模式：仅绕开 costmap 中的墙体/膨胀区）
+ min_obstacle_dist: 0.10  # 与墙体保持的最小距离
  include_costmap_obstacles: True 
  costmap_obstacles_behind_robot_dist: 1.5  #default:1.5  0.0~20.0
  obstacle_poses_affected: 15   
  costmap_converter_plugin: ""
  costmap_converter_spin_thread: True
  costmap_converter_rate: 5
- include_dynamic_obstacles: True #gai 
- dynamic_obstacle_inflation_dist: 0.1  # 根据阿克曼结构调整 85
+ include_dynamic_obstacles: False
+ dynamic_obstacle_inflation_dist: 0.1  # 保留参数，动态障碍关闭时不生效
  
- # 噪点过滤参数
- obstacle_filter_enabled: True
+ # 噪点过滤参数（动态障碍关闭时可不启用，保留配置便于恢复）
+ obstacle_filter_enabled: False
  obstacle_filter_window: 3  # 障碍物滤波窗口
  obstacle_filter_threshold: 0.1  # 障碍物滤波阈值
  min_obstacle_points: 2  # 最小障碍物点数，过滤孤立噪点
@@ -112,5 +112,4 @@ TebLocalPlannerROS:
  oscillation_v_eps: 0.1
  oscillation_omega_eps: 0.1
  oscillation_recovery_min_duration: 10
- oscillation_filter_duration: 5 
- 
+ oscillation_filter_duration: 5

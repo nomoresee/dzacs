@@ -15,6 +15,7 @@ class RkPt
 {
 private:
     int ret;
+    int model_type_;  // 1 for light_det (1-class, int8), 25 for aug_enhanced (25-class, float)
     std::mutex mtx;
     std::string model_path;
     unsigned char *model_data;
@@ -34,8 +35,6 @@ public:
     RkPt(const std::string &model_path);
     int init(rknn_context *ctx_in, bool isChild);
     rknn_context *get_pctx();
-    // cv::Mat infer(cv::Mat &ori_img);
-    // std::vector<detect_result_t> infer(cv::Mat &ori_img);
     DetectResultsGroup infer(cv::Mat &ori_img, int cur_frame_id);
     ~RkPt();
 };

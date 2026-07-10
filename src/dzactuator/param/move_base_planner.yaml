@@ -42,7 +42,7 @@ super_reset:
  
 move_slow_and_clear:  
   clearing_distance: 0.1
-  limited_trans_speed: 0.1  
+  limited_trans_speed: 0.5  #靠近障碍物最低速度
   limited_rot_speed: 0.4  
   limited_distance: 0.3  
  

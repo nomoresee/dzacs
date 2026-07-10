@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <memory>
+#include <chrono>
 #include <sys/time.h>
 #include <ros/ros.h>
 #include <std_msgs/Int32MultiArray.h>
@@ -41,7 +42,7 @@ int main(int argc, char **argv)
   image_transport::ImageTransport it(nh);
   image_transport::Subscriber image_sub = it.subscribe("/usb_cam/image_raw", 1, imageCallback);
 
-  std::string model_name = "/home/duzhong/dzacs/src/rknn_pt/model/light_det.rknn";
+  std::string model_name = "/home/duzhong/dzacs/src/rknn_pt/model/aug_enhanced_v5s_opt2_v3.rknn";
   // std::string vedio_name = "/home/duzhong/Desktop/8.mp4";
 
   int draw = 1;
@@ -132,6 +133,15 @@ int main(int argc, char **argv)
           msg.data[0] = offset_center_x;
           msg.data[1] = offset_center_y;
           msg.data[2] = 1;
+
+          // Print labels every 2 seconds
+          static auto last_print = std::chrono::steady_clock::now();
+          auto now = std::chrono::steady_clock::now();
+          if (std::chrono::duration_cast<std::chrono::seconds>(now - last_print).count() >= 2) {
+            printf("[DETECT] %s (%.2f) offset=(%d,%d)\n",
+                   res.det_name.c_str(), res.score, offset_center_x, offset_center_y);
+            last_print = now;
+          }
 
           // ROS_INFO("published: [%d %d]", msg.data[0], msg.data[1]);
         }

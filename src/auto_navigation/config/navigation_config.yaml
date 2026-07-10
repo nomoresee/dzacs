@@ -15,8 +15,8 @@ goal_queue:
 # 导航参数
 navigation:
   # 速度限制
-  max_linear_velocity: 0.3
-  max_angular_velocity: 0.2
+  max_linear_velocity: 1
+  max_angular_velocity: 0.4
   
   # 安全参数
   min_obstacle_distance: 0.5
@@ -26,11 +26,11 @@ navigation:
 path_planning:
   # 全局规划
   global_planner: "navfn/NavfnROS"
-  global_planning_frequency: 1.0
+  global_planning_frequency: 2.0
   
   # 局部规划
   local_planner: "teb_local_planner/TebLocalPlannerROS"
-  local_planning_frequency: 10.0
+  local_planning_frequency: 5.0
   
 # 恢复行为参数
 recovery:
