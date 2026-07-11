@@ -88,24 +88,38 @@ static unsigned char *load_model(const char *filename, int *model_size)
 RkPt::RkPt(const std::string &model_path)
 {
     this->model_path = model_path;
-    // Auto-detect model type from filename
     if (model_path.find("light") != std::string::npos) {
         model_type_ = 1;
         nms_threshold = NMS_THRESH_1;
         box_conf_threshold = BOX_THRESH_1;
-        printf("[RkPt] Detected 1-class model (int8 path)
-");
+        printf("[RkPt] Detected 1-class model (int8 path)\n");
     } else {
         model_type_ = 25;
         nms_threshold = NMS_THRESH_25;
         box_conf_threshold = BOX_THRESH_25;
-        printf("[RkPt] Detected 25-class model (float path)
-");
-
+        printf("[RkPt] Detected 25-class model (float path)\n");
     }
 }
 
-    // 设置模型绑定的核心
+int RkPt::init(rknn_context *ctx_in, bool isChild)
+{
+    int model_data_size = 0;
+    if (!isChild) {
+        model_data = load_model(model_path.c_str(), &model_data_size);
+        if (!model_data) {
+            printf("load_model fail!\n");
+            return -1;
+        }
+        ret = rknn_init(&ctx, model_data, model_data_size, 0, NULL);
+    } else {
+        ctx = *ctx_in;
+    }
+    if (ret < 0)
+    {
+        printf("rknn_init error ret=%d\n", ret);
+        return -1;
+    }
+
     rknn_core_mask core_mask;
     switch (get_core_num())
     {
@@ -119,7 +133,6 @@ RkPt::RkPt(const std::string &model_path)
         core_mask = RKNN_NPU_CORE_2;
         break;
     }
-}
     ret = rknn_set_core_mask(ctx, core_mask);
     if (ret < 0)
     {

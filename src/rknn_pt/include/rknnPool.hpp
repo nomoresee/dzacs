@@ -74,8 +74,7 @@ int rknnPool<rknnModel, inputType, outputType>::init()
 template <typename rknnModel, typename inputType, typename outputType>
 int rknnPool<rknnModel, inputType, outputType>::reinit(const std::string& newModelPath)
 {
-    printf("[rknnPool] Reinitializing model...
-");
+    printf("[rknnPool] Reinitializing model...\n");
     {
         std::lock_guard<std::mutex> lock(queueMtx);
         while (!futs.empty()) {
@@ -92,8 +91,7 @@ int rknnPool<rknnModel, inputType, outputType>::reinit(const std::string& newMod
         ret = models[i]->init(models[0]->get_pctx(), i != 0);
         if (ret != 0) return ret;
     }
-    printf("[rknnPool] Reinit complete
-");
+    printf("[rknnPool] Reinit complete\n");
     return 0;
 }
 
