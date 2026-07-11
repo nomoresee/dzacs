@@ -435,7 +435,7 @@ void turn_on_robot::callback_movebase_angle(const geometry_msgs::Twist::ConstPtr
   float v = msg->linear.x;
   float w = msg->angular.z;
 
-  moveBaseControl.TargetSpeed = abs(clamp(v * 30 / 0.2, -255.0, 255.0));
+  moveBaseControl.TargetSpeed = abs(clamp(v * 30 / 0.4, -255.0, 255.0));
   moveBaseControl.TargetAngle = w;
   moveBaseControl.TargetAngle += 60;
 
@@ -463,7 +463,7 @@ void turn_on_robot::callback_cmd_vel_angle(const geometry_msgs::Twist::ConstPtr 
   float v = msg->linear.x;
   float w = msg->angular.z;
 
-  moveBaseControl.TargetSpeed = abs(clamp(v * 30/0.2, -255.0, 255.0));
+  moveBaseControl.TargetSpeed = abs(clamp(v * 30/0.4, -255.0, 255.0));
   if(!v == 0)
   {
     moveBaseControl.TargetAngle = round(atan(CARL * w / v) * 57.3);

@@ -26,7 +26,7 @@
         <param name="base_yaw" value="$(arg base_yaw)" />
     </node>
     
-    <!-- 启动目标发布器（可选） -->
+    <!-- 启动目标发布器（可选）；自动加载 Roads/ 中唯一的路径 txt -->
     <group if="$(arg auto_execute)">
         <node name="goal_publisher" pkg="auto_navigation" type="goal_publisher.py" output="screen">
         </node>

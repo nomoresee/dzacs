@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import re
 import math
 import rospy
 import rospkg
@@ -12,9 +11,10 @@ from auto_navigation.msg import NavigationGoal, NavigationStatus
 ORIGIN = (0, 0, 0, "返回起点")
 
 # 找到包根目录，并指向 Roads/
+# 运行时 Roads/ 中应只放一个路径 txt，节点自动加载该文件
 rospack   = rospkg.RosPack()
 PKG_PATH  = rospack.get_path("auto_navigation")
-PATH_ROOT = os.path.join(PKG_PATH, "Roads")        # Road*.txt 所在目录
+PATH_ROOT = os.path.join(PKG_PATH, "Roads")
 # ---------------------------------------
 
 class GoalPublisher:
@@ -131,40 +131,46 @@ class GoalPublisher:
 
     # ---------- 路径加载 ----------
     def load_paths(self):
-        """从 PATH_ROOT 读取 Road*.txt，返回 [[(x,y,yaw,desc)…], …]"""
+        """加载 Roads/ 中唯一的路径 txt，返回 [[(x,y,yaw,desc)…], …]"""
         if not os.path.isdir(PATH_ROOT):
             rospy.logerr(f"未找到路径目录: {PATH_ROOT}")
             return []
 
-        paths = []
-        ptn = re.compile(r"Road(\d+)\.txt$")
-        for f in os.listdir(PATH_ROOT):
-            m = ptn.match(f)
-            if m:
-                paths.append((int(m.group(1)), os.path.join(PATH_ROOT, f)))
-        paths.sort()                              # Road1 → Road2 → …
+        txt_files = sorted(
+            f for f in os.listdir(PATH_ROOT)
+            if f.endswith(".txt") and os.path.isfile(os.path.join(PATH_ROOT, f))
+        )
+        if not txt_files:
+            rospy.logerr(f"路径目录中没有 txt 文件: {PATH_ROOT}")
+            return []
+        if len(txt_files) > 1:
+            rospy.logerr(
+                f"路径目录中应只有 1 个 txt，当前有 {len(txt_files)} 个: {txt_files}"
+            )
+            return []
 
-        all_paths = []
-        for idx, file in paths:
-            waypoints = []
-            with open(file, encoding="utf-8") as fp:
-                for ln, line in enumerate(fp, 1):
-                    line = line.strip()
-                    if not line or line.startswith("#"):
-                        continue
-                    try:
-                        parts = list(map(float, line.split()))
-                        x, y = parts[:2]
-                        yaw  = parts[2] if len(parts) > 2 else 0.0
-                        waypoints.append((x, y, yaw, f"Road{idx}_{ln}"))
-                    except ValueError:
-                        rospy.logwarn(f"{file}:{ln} 行格式错误，已跳过")
+        target = txt_files[0]
+        file = os.path.join(PATH_ROOT, target)
+        name = os.path.splitext(target)[0]
+        waypoints = []
+        with open(file, encoding="utf-8") as fp:
+            for ln, line in enumerate(fp, 1):
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                try:
+                    parts = list(map(float, line.split()))
+                    x, y = parts[:2]
+                    yaw = parts[2] if len(parts) > 2 else 0.0
+                    waypoints.append((x, y, yaw, f"{name}_{ln}"))
+                except ValueError:
+                    rospy.logwarn(f"{file}:{ln} 行格式错误，已跳过")
 
-            if waypoints:
-                all_paths.append(waypoints)
-                rospy.loginfo(f"已加载 Road{idx}.txt，共 {len(waypoints)} 个点")
+        if not waypoints:
+            return []
 
-        return all_paths
+        rospy.loginfo(f"已加载 {target}，共 {len(waypoints)} 个点")
+        return [waypoints]
 
     # ---------- 主执行逻辑 ----------
     def run_all_paths(self):

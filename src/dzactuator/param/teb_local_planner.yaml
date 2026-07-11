@@ -18,7 +18,7 @@ TebLocalPlannerROS:
  path_smoothing: True
  
  # Robot - 根据SmartMaster硬件参数调整
- max_vel_x: 2  # 最高速度1m/s
+ max_vel_x: 0.5  # 最高速度1m/s
  max_vel_y: 0 
  max_vel_x_backwards: 0.5  # 后退速度限制
  max_vel_theta: 2.0  # 角速度限制，考虑阿克曼转向
