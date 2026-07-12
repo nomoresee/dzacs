@@ -19,8 +19,8 @@
 		<param name="odom_alpha1" value="1"/> <!-- Specifies the expected noise in odometry's rotation estimate from the rotational component of the robot's motion. -->
 		<param name="odom_alpha2" value="1"/> <!-- Specifies the expected noise in odometry's rotation estimate from translational component of the robot's motion. -->
 		<!-- translation std dev, m -->
-		<param name="odom_alpha3" value="3.7"/> <!-- Specifies the expected noise in odometry's translation estimate from the translational component of the robot's motion. -->
-		<param name="odom_alpha4" value="4"/> <!-- Specifies the expected noise in odometry's translation estimate from the rotational component of the robot's motion. -->
+		<param name="odom_alpha3" value="0.2"/> <!-- Specifies the expected noise in odometry's translation estimate from the translational component of the robot's motion. -->
+		<param name="odom_alpha4" value="0.2"/> <!-- Specifies the expected noise in odometry's translation estimate from the rotational component of the robot's motion. -->
 		<param name="laser_z_hit" value="0.5"/>
 		<param name="laser_z_short" value="0.05"/>
 		<param name="laser_z_max" value="0.05"/>

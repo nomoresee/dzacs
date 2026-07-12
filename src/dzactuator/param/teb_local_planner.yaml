@@ -18,14 +18,14 @@ TebLocalPlannerROS:
  path_smoothing: True
  
  # Robot - 根据SmartMaster硬件参数调整
- max_vel_x: 0.5  # 最高速度1m/s
+ max_vel_x: 1.0  # 最高速度1m/s
  max_vel_y: 0 
  max_vel_x_backwards: 0.5  # 后退速度限制
  max_vel_theta: 2.0  # 角速度限制，考虑阿克曼转向
  acc_lim_x: 1.0  # 加速度限制
  acc_lim_y: 0  
  acc_lim_theta: 0.6  # 角加速度限制
- max_vel_trans: 1.5  # 最大平移速度
+ max_vel_trans: 1.0  # 最大平移速度
  
  # 根据硬件参数调整
  wheelbase: 0.15  # 轴距150mm
@@ -38,12 +38,12 @@ TebLocalPlannerROS:
   type: "polygon"
   vertices: [[-0.14, -0.055], [-0.14, 0.055], [0.14, 0.055], [0.14, -0.055]]  # 长度278mm，宽度140mm
 
- xy_goal_tolerance: 0.2  #gai
- yaw_goal_tolerance: 0.5 #gai
+ xy_goal_tolerance: 0.05  #gai
+ yaw_goal_tolerance: 0.2 #gai
  free_goal_vel: False #gai
  
  # Obstacles（静态地图模式：仅绕开 costmap 中的墙体/膨胀区）
- min_obstacle_dist: 0.10  # 与墙体保持的最小距离
+ min_obstacle_dist: 0.15  # 与墙体保持的最小距离
  include_costmap_obstacles: True 
  costmap_obstacles_behind_robot_dist: 1.5  #default:1.5  0.0~20.0
  obstacle_poses_affected: 15   

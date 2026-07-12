@@ -30,7 +30,7 @@ path_planning:
   
   # 局部规划
   local_planner: "teb_local_planner/TebLocalPlannerROS"
-  local_planning_frequency: 5.0
+  local_planning_frequency: 10.0
   
 # 恢复行为参数
 recovery:
