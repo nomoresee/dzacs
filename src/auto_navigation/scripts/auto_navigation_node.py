@@ -14,12 +14,13 @@ class AutoNavigationNode:
     def __init__(self):
         rospy.init_node('auto_navigation_node', anonymous=True)
         
-        # 参数配置 - 优化超时和重试参数
+        # 参数配置
         self.auto_execute = rospy.get_param('~auto_execute', True)
-        self.goal_timeout = rospy.get_param('~goal_timeout', 20.0)  # 减少超时时间
-        self.max_retries = rospy.get_param('~max_retries', 2)       # 减少重试次数
-        self.goal_tolerance = rospy.get_param('~goal_tolerance', 0.2)  # 增大容差
-        self.planning_timeout = rospy.get_param('~planning_timeout', 10.0)  # 规划超时
+        self.goal_timeout = rospy.get_param('~goal_timeout', 30.0)
+        self.max_retries = rospy.get_param('~max_retries', 3)
+        self.goal_tolerance = rospy.get_param('~goal_tolerance', 0.1)
+        self.planning_timeout = rospy.get_param('~planning_timeout', 10.0)
+        self.max_queue_size = rospy.get_param('~max_queue_size', 20)
         
         # 状态变量
         self.current_goal = None
@@ -28,9 +29,15 @@ class AutoNavigationNode:
         self.retry_count = 0
         self.current_status = "idle"
         self.last_planning_time = rospy.Time.now()
+        self._goal_seq = 0
+        self._active_goal_seq = None
+        self._timeout_timer = None
+        self._handling_result = False
+        self._cancel_requested = False
+        self._pending_next_timer = None
         
         # 订阅话题
-        self.goal_sub = rospy.Subscriber('/auto_navigation/goal', NavigationGoal, self.goal_callback)
+        self.goal_sub = rospy.Subscriber('/auto_navigation/goal', NavigationGoal, self.goal_callback, queue_size=self.max_queue_size)
         self.cancel_sub = rospy.Subscriber('/auto_navigation/cancel', Bool, self.cancel_callback)
         self.pause_sub = rospy.Subscriber('/auto_navigation/pause', Bool, self.pause_callback)
         
@@ -44,48 +51,90 @@ class AutoNavigationNode:
         
         # 目标检测状态
         self.target_found = False
-        self.interrupted_goal = None  # 被中断的目标
+        self.interrupted_goal = None
         
         # 发布话题
         self.status_pub = rospy.Publisher('/auto_navigation/status', NavigationStatus, queue_size=10)
-        self.goal_pub = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=10)
+        self.goal_pub = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=self.max_queue_size)
         
         # Action客户端
         self.move_base_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         
-        # 等待move_base服务器
         rospy.loginfo("等待move_base服务器...")
         self.move_base_client.wait_for_server()
         rospy.loginfo("move_base服务器已连接")
         
-        # 定时器 - 更频繁的状态检查
         self.status_timer = rospy.Timer(rospy.Duration(2.0), self.publish_status)
         self.planning_timer = rospy.Timer(rospy.Duration(2.0), self.check_planning_timeout)
         
         rospy.loginfo("自动导航节点已启动")
-    
+
+    def _cancel_timeout_timer(self):
+        if self._timeout_timer is not None:
+            self._timeout_timer.shutdown()
+            self._timeout_timer = None
+
+    def _cancel_pending_next_timer(self):
+        if self._pending_next_timer is not None:
+            self._pending_next_timer.shutdown()
+            self._pending_next_timer = None
+
+    def _is_active_seq(self, seq):
+        return seq is not None and seq == self._active_goal_seq
+
+    def _request_cancel(self, reason):
+        """同一目标只取消一次，避免 SimpleActionClient received DONE twice"""
+        if not self.is_navigating or self._cancel_requested:
+            return False
+        self._cancel_requested = True
+        rospy.logwarn("%s", reason)
+        # 只取消当前 goal，不要反复 cancel_all_goals
+        try:
+            self.move_base_client.cancel_goal()
+        except Exception as ex:
+            rospy.logwarn("cancel_goal 异常，回退 cancel_all_goals: %s", ex)
+            self.move_base_client.cancel_all_goals()
+        return True
+
+    def _schedule_execute_next(self, delay=0.3):
+        """延后发起下一个目标，避免在 DONE 回调栈内 send_goal"""
+        self._cancel_pending_next_timer()
+        self._pending_next_timer = rospy.Timer(
+            rospy.Duration(delay),
+            self._on_pending_next,
+            oneshot=True,
+        )
+
+    def _on_pending_next(self, _event):
+        self._pending_next_timer = None
+        if not self.is_navigating:
+            self.execute_next_goal()    
     def goal_callback(self, msg):
-        """处理导航目标"""
+        """处理导航目标（支持整路径一次性入队）"""
         rospy.loginfo(f"收到导航目标: {msg.description}")
-        
-        # 添加到目标队列
+
+        if len(self.goal_queue) >= self.max_queue_size:
+            rospy.logwarn(
+                "目标队列已满(%d)，丢弃: %s",
+                self.max_queue_size,
+                msg.description,
+            )
+            return
+
         self.goal_queue.append(msg)
-        
-        # 按优先级排序
         self.goal_queue.sort(key=lambda x: x.priority, reverse=True)
-        
-        # 如果自动执行且当前没有导航，开始导航
+
+        rospy.loginfo("当前队列长度: %d/%d", len(self.goal_queue), self.max_queue_size)
+
         if self.auto_execute and not self.is_navigating:
             self.execute_next_goal()
     
     def cancel_callback(self, msg):
-        """取消导航"""
         if msg.data:
             rospy.loginfo("取消导航")
             self.cancel_navigation()
     
     def pause_callback(self, msg):
-        """暂停/恢复导航"""
         if msg.data:
             rospy.loginfo("暂停导航")
             self.pause_navigation()
@@ -94,79 +143,106 @@ class AutoNavigationNode:
             self.resume_navigation()
     
     def target_callback(self, msg):
-        """目标检测回调"""
         if msg.data and not self.target_found:
             self.target_found = True
             rospy.logwarn("检测到目标，准备返航")
             
-            # 保存当前目标
             if self.current_goal:
                 self.interrupted_goal = self.current_goal
                 rospy.loginfo(f"保存被中断的目标: {self.current_goal.description}")
             
-            # 取消当前导航
             self.cancel_navigation()
-            
-            # 开始返航流程
-            self.return_to_base()
+            # 等取消完成后再发返航，避免与旧目标 DONE 打架
+            rospy.Timer(
+                rospy.Duration(0.3),
+                lambda _e: self.return_to_base(),
+                oneshot=True,
+            )
     
     def execute_next_goal(self):
         """执行下一个目标"""
-        # 检查是否被目标检测中断
         if self.target_found:
             rospy.loginfo("目标检测中断中，等待返航完成")
+            return
+
+        if self.is_navigating:
             return
         
         if not self.goal_queue:
             rospy.loginfo("目标队列为空")
             return
         
-        self.current_goal = self.goal_queue.pop(0)
+        next_goal = self.goal_queue.pop(0)
+        # 仅切换到新目标时清零重试计数，同一目标重试时保留
+        if (
+            self.current_goal is None
+            or next_goal.description != self.current_goal.description
+        ):
+            self.retry_count = 0
+        self.current_goal = next_goal
         self.is_navigating = True
         self.current_status = "navigating"
-        self.retry_count = 0
         self.last_planning_time = rospy.Time.now()
+        self._handling_result = False
+        self._cancel_requested = False
         
         rospy.loginfo(f"开始导航到: {self.current_goal.description}")
         
-        # 创建move_base目标
         goal = MoveBaseGoal()
         goal.target_pose = self.current_goal.goal_pose
-        
-        # 发送目标
-        self.move_base_client.send_goal(goal, self.done_callback, self.active_callback, self.feedback_callback)
-        
-        # 设置超时 - 使用更短的超时时间
-        rospy.Timer(rospy.Duration(self.current_goal.timeout), self.timeout_callback, oneshot=True)
+
+        # 取消上一个超时定时器，并为本次目标分配序号，忽略过期 DONE
+        self._cancel_timeout_timer()
+        self._cancel_pending_next_timer()
+        self._goal_seq += 1
+        self._active_goal_seq = self._goal_seq
+        seq = self._active_goal_seq
+
+        timeout = self.current_goal.timeout if self.current_goal.timeout > 0 else self.goal_timeout
+
+        self.move_base_client.send_goal(
+            goal,
+            done_cb=lambda status, result, s=seq: self.done_callback(status, result, s),
+            active_cb=self.active_callback,
+            feedback_cb=self.feedback_callback,
+        )
+        self.publish_status_now()
+
+        self._timeout_timer = rospy.Timer(
+            rospy.Duration(timeout),
+            lambda event, s=seq: self.timeout_callback(event, s),
+            oneshot=True,
+        )
     
     def check_planning_timeout(self, event):
-        """检查规划超时"""
-        # 检查是否被目标检测中断
-        if self.target_found:
+        if self.target_found or self._cancel_requested or self._handling_result:
             return
         
         if self.is_navigating and (rospy.Time.now() - self.last_planning_time).to_sec() > self.planning_timeout:
-            rospy.logwarn("规划超时，尝试重新规划")
-            self.handle_planning_timeout()
+            # 同一目标只取消一次；DONE 到来前不要再次 cancel
+            self._request_cancel("规划超时，取消当前目标（等待 DONE 后重试）")
     
-    def handle_planning_timeout(self):
-        """处理规划超时"""
-        # 检查是否被目标检测中断
-        if self.target_found:
-            rospy.loginfo("规划超时被目标检测中断，等待返航完成")
+    def done_callback(self, status, result, seq=None):
+        """导航完成回调（带序号，防止旧目标/重复 DONE）"""
+        if not self._is_active_seq(seq):
+            rospy.logdebug("忽略过期 DONE 回调 seq=%s active=%s", seq, self._active_goal_seq)
             return
-        
-        if self.is_navigating:
-            rospy.logwarn("规划超时，取消当前目标并重试")
-            self.move_base_client.cancel_all_goals()
-            rospy.sleep(1.0)
-            self.handle_navigation_failure()
-    
-    def done_callback(self, status, result):
-        """导航完成回调"""
-        # 检查是否被目标检测中断
+
+        if self._handling_result:
+            rospy.logwarn("忽略重复 DONE 回调")
+            return
+        self._handling_result = True
+        self._cancel_requested = False
+
+        self._cancel_timeout_timer()
+        try:
+            self.move_base_client.stop_tracking_goal()
+        except Exception:
+            pass
+
         if self.target_found:
             rospy.loginfo("导航被目标检测中断，等待返航完成")
+            self.is_navigating = False
             return
         
         if status == actionlib.GoalStatus.SUCCEEDED:
@@ -174,27 +250,32 @@ class AutoNavigationNode:
             self.current_status = "reached"
             self.is_navigating = False
             self.retry_count = 0
-            
-            # 执行下一个目标
+            self.publish_status_now()
+
             if self.goal_queue:
-                rospy.sleep(0.5)  # 减少等待时间
-                self.execute_next_goal()
+                self._schedule_execute_next(0.5)
+            else:
+                self.current_status = "idle"
+                self._active_goal_seq = None
+                self.publish_status_now()
         else:
-            rospy.logwarn(f"导航失败: {self.current_goal.description}")
+            rospy.logwarn(
+                "导航未成功: %s (status=%d)",
+                self.current_goal.description if self.current_goal else "?",
+                status,
+            )
             self.current_status = "failed"
+            self.is_navigating = False
+            self.publish_status_now()
             self.handle_navigation_failure()
     
     def active_callback(self):
-        """导航激活回调"""
         rospy.loginfo("导航已激活")
         self.last_planning_time = rospy.Time.now()
     
     def feedback_callback(self, feedback):
-        """导航反馈回调"""
-        # 更新规划时间
         self.last_planning_time = rospy.Time.now()
         
-        # 检查是否接近目标
         if hasattr(feedback, 'base_position') and self.current_goal:
             current_pos = feedback.base_position.pose.position
             goal_pos = self.current_goal.goal_pose.pose.position
@@ -204,129 +285,160 @@ class AutoNavigationNode:
             if distance < self.goal_tolerance:
                 rospy.loginfo(f"接近目标，距离: {distance:.2f}m")
     
-    def timeout_callback(self, event):
-        """超时回调"""
-        # 检查是否被目标检测中断
-        if self.target_found:
-            rospy.loginfo("导航超时被目标检测中断，等待返航完成")
+    def timeout_callback(self, event, seq=None):
+        """超时只取消一次，重试交给 done_callback"""
+        if not self._is_active_seq(seq):
             return
-        
-        if self.is_navigating:
-            rospy.logwarn(f"导航超时: {self.current_goal.description}")
-            self.current_status = "failed"
-            self.handle_navigation_failure()
+        if self.target_found:
+            return
+        self.current_status = "failed"
+        self._request_cancel(
+            "导航超时，取消目标: %s"
+            % (self.current_goal.description if self.current_goal else "?")
+        )
     
     def handle_navigation_failure(self):
-        """处理导航失败"""
-        # 检查是否被目标检测中断
         if self.target_found:
             rospy.loginfo("导航失败被目标检测中断，等待返航完成")
             return
         
         self.retry_count += 1
+        self.is_navigating = False
         
         if self.retry_count < self.max_retries:
             rospy.loginfo(f"重试导航 ({self.retry_count}/{self.max_retries})")
-            # 重新添加到队列前端
-            self.goal_queue.insert(0, self.current_goal)
-            self.is_navigating = False
-            rospy.sleep(1.0)  # 减少等待时间
-            self.execute_next_goal()
+            if self.current_goal:
+                self.goal_queue.insert(0, self.current_goal)
+            self._schedule_execute_next(1.0)
         else:
-            rospy.logerr(f"导航失败，已达到最大重试次数: {self.current_goal.description}")
-            self.is_navigating = False
+            rospy.logerr(
+                "导航失败，已达到最大重试次数: %s",
+                self.current_goal.description if self.current_goal else "?",
+            )
             self.retry_count = 0
+            self._active_goal_seq = None
             
-            # 跳过这个目标，继续下一个
             if self.goal_queue:
                 rospy.loginfo("跳过失败目标，继续下一个")
-                rospy.sleep(1.0)
-                self.execute_next_goal()
+                self._schedule_execute_next(1.0)
+            else:
+                self.current_status = "idle"
+                self.publish_status_now()
     
     def cancel_navigation(self):
-        """取消导航"""
         if self.is_navigating:
-            self.move_base_client.cancel_all_goals()
+            self._cancel_timeout_timer()
+            self._cancel_pending_next_timer()
+            self._active_goal_seq = None
+            self._cancel_requested = True
+            try:
+                self.move_base_client.cancel_goal()
+            except Exception:
+                self.move_base_client.cancel_all_goals()
             self.current_status = "cancelled"
             self.is_navigating = False
+            self._handling_result = False
             rospy.loginfo("导航已取消")
     
     def pause_navigation(self):
-        """暂停导航"""
         if self.is_navigating:
-            self.move_base_client.cancel_all_goals()
+            self._cancel_timeout_timer()
+            self._cancel_pending_next_timer()
+            self._active_goal_seq = None
+            self._cancel_requested = True
+            try:
+                self.move_base_client.cancel_goal()
+            except Exception:
+                self.move_base_client.cancel_all_goals()
+            self.is_navigating = False
             rospy.loginfo("导航已暂停")
     
     def resume_navigation(self):
-        """恢复导航"""
         if not self.is_navigating and self.current_goal:
             rospy.loginfo("恢复导航")
+            self.goal_queue.insert(0, self.current_goal)
             self.execute_next_goal()
     
     def return_to_base(self):
-        """返航到基地"""
         rospy.logwarn("开始返航到基地...")
         
-        # 创建返航目标
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = "map"
         goal.target_pose.header.stamp = rospy.Time.now()
         goal.target_pose.pose.position.x = self.base_x
         goal.target_pose.pose.position.y = self.base_y
         
-        # 设置朝向
-        import tf2_geometry_msgs
-        import tf2_ros
-        q = tf2_ros.transformations.quaternion_from_euler(0, 0, self.base_yaw)
+        import tf.transformations as tft
+        q = tft.quaternion_from_euler(0, 0, self.base_yaw)
         goal.target_pose.pose.orientation.x = q[0]
         goal.target_pose.pose.orientation.y = q[1]
         goal.target_pose.pose.orientation.z = q[2]
         goal.target_pose.pose.orientation.w = q[3]
+
+        self._cancel_timeout_timer()
+        self._cancel_pending_next_timer()
+        self._goal_seq += 1
+        self._active_goal_seq = self._goal_seq
+        seq = self._active_goal_seq
+        self.is_navigating = True
+        self._handling_result = False
+        self._cancel_requested = False
         
-        # 发送返航目标
-        self.move_base_client.send_goal(goal, self.return_done_callback, self.active_callback, self.feedback_callback)
-        
-        # 设置返航超时
-        rospy.Timer(rospy.Duration(30.0), self.return_timeout_callback, oneshot=True)
+        self.move_base_client.send_goal(
+            goal,
+            done_cb=lambda status, result, s=seq: self.return_done_callback(status, result, s),
+            active_cb=self.active_callback,
+            feedback_cb=self.feedback_callback,
+        )
+
+        self._timeout_timer = rospy.Timer(
+            rospy.Duration(30.0),
+            lambda event, s=seq: self.return_timeout_callback(event, s),
+            oneshot=True,
+        )
     
-    def return_done_callback(self, status, result):
-        """返航完成回调"""
+    def return_done_callback(self, status, result, seq=None):
+        if not self._is_active_seq(seq):
+            return
+        if self._handling_result:
+            return
+        self._handling_result = True
+        self._cancel_requested = False
+        self._cancel_timeout_timer()
+        self.is_navigating = False
+        try:
+            self.move_base_client.stop_tracking_goal()
+        except Exception:
+            pass
+
         if status == actionlib.GoalStatus.SUCCEEDED:
             rospy.loginfo("成功返航到基地")
-            
-            # 重置目标检测状态
             self.target_found = False
             
-            # 等待系统稳定
-            rospy.sleep(1.0)
-            
-            # 重新规划被中断的路径
             if self.interrupted_goal:
                 rospy.loginfo(f"重新规划被中断的路径: {self.interrupted_goal.description}")
-                # 将中断的目标重新加入队列前端
                 self.goal_queue.insert(0, self.interrupted_goal)
                 self.interrupted_goal = None
-                
-                # 继续执行下一个目标
-                if not self.is_navigating:
-                    self.execute_next_goal()
+                self._schedule_execute_next(1.0)
             else:
                 rospy.loginfo("没有中断的目标，继续执行队列中的下一个目标")
-                if not self.is_navigating and self.goal_queue:
-                    self.execute_next_goal()
+                if self.goal_queue:
+                    self._schedule_execute_next(1.0)
         else:
             rospy.logerr("返航失败")
             self.target_found = False
             self.interrupted_goal = None
+            self._active_goal_seq = None
     
-    def return_timeout_callback(self, event):
-        """返航超时回调"""
-        rospy.logerr("返航超时")
-        self.target_found = False
-        self.interrupted_goal = None
+    def return_timeout_callback(self, event, seq=None):
+        if not self._is_active_seq(seq):
+            return
+        self._request_cancel("返航超时，取消返航目标")
     
     def publish_status(self, event):
-        """发布状态信息"""
+        self.publish_status_now()
+
+    def publish_status_now(self):
         status_msg = NavigationStatus()
         status_msg.header.stamp = rospy.Time.now()
         status_msg.status = self.current_status
@@ -334,15 +446,13 @@ class AutoNavigationNode:
         
         if self.current_goal:
             status_msg.current_goal = self.current_goal.description
-            # 计算进度（简化版本）
-            status_msg.progress = 50.0  # 这里可以根据实际情况计算
-            status_msg.distance_to_goal = 0.0  # 这里可以根据实际情况计算
-            status_msg.estimated_time = 0.0  # 这里可以根据实际情况计算
+            status_msg.progress = 50.0
+            status_msg.distance_to_goal = 0.0
+            status_msg.estimated_time = 0.0
         
         self.status_pub.publish(status_msg)
     
     def run(self):
-        """主循环"""
         rospy.spin()
 
 if __name__ == '__main__':

@@ -2,12 +2,50 @@
 #include "dzactuator.h"
 #include "Quaternion_Solution.h"
 
+#include <algorithm>
 #include <cmath>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/convert.h>
 #include <tf2/utils.h>
 
 sensor_msgs::Imu Mpu6050;
+
+namespace
+{
+// -------------------------- Yaw 运动靶调参区 --------------------------
+// 视觉像素偏差到云台位置增量的换算系数。数值越小，Yaw 修正越激进；
+// 应先调好下方的超前时间再调该值。正负方向必须与实际 Yaw 机械方向一致。
+constexpr double kYawPixelsPerMotorPosition = 2.7;
+
+// 目标估计水平速度的低通滤波旧值权重。调大更平稳，但靶子折返时响应更慢。
+constexpr double kYawVelocityFilterOldWeight = 0.70;
+
+// 补偿相机、推理、ROS 通信和云台执行总延迟的超前时间。恒速段仍落后靶子则
+// 增大；云台跑到靶前方则减小。建议每次以 0.02 秒为步长实测调整。
+constexpr double kYawLeadTimeSec = 0.10;
+
+// 估计速度及其超前位置的安全上限，防止偶发错误检测框造成过大的 Yaw 指令。
+constexpr double kYawMaxEstimatedVelocity = 600.0;  // 云台位置单位/秒
+constexpr double kYawMaxLeadPosition = 80.0;        // 云台位置单位
+
+// 速度超过该阈值后发生正负号改变，视为导轨端点折返。折返的当前视觉帧不使用
+// 超前预测，下一帧立即按新方向恢复；端点停顿很短，因此不能在此等待多帧。
+constexpr double kYawReversalVelocityThreshold = 25.0;  // 云台位置单位/秒
+
+// 保持原先“每 80 ms 最多一发”的频率，但不再阻塞视觉回调。只有确认下位机和
+// 激光硬件能稳定接收更高频率指令后，才可以减小该值。
+constexpr double kLaserShotMinIntervalSec = 0.08;
+
+// 发射窗口。水平导轨靶以 Yaw 为主要精度指标；数值越小命中要求越严格，若仅因
+// 视觉抖动导致无法发射才适当增大。
+constexpr double kYawFireWindowPixels = 10.0;
+constexpr double kPitchFireWindowPixels = 15.0;
+
+double clampDouble(double value, double lower, double upper)
+{
+  return std::max(lower, std::min(value, upper));
+}
+} // namespace
 
 turn_on_robot::turn_on_robot() : Power_voltage(0)
 {
@@ -435,7 +473,7 @@ void turn_on_robot::callback_movebase_angle(const geometry_msgs::Twist::ConstPtr
   float v = msg->linear.x;
   float w = msg->angular.z;
 
-  moveBaseControl.TargetSpeed = abs(clamp(v * 30 / 0.4, -255.0, 255.0));
+  moveBaseControl.TargetSpeed = abs(clamp(v * 30 / 0.25, -255.0, 255.0));
   moveBaseControl.TargetAngle = w;
   moveBaseControl.TargetAngle += 60;
 
@@ -463,7 +501,7 @@ void turn_on_robot::callback_cmd_vel_angle(const geometry_msgs::Twist::ConstPtr 
   float v = msg->linear.x;
   float w = msg->angular.z;
 
-  moveBaseControl.TargetSpeed = abs(clamp(v * 30/0.4, -255.0, 255.0));
+  moveBaseControl.TargetSpeed = abs(clamp(v * 30/0.25, -255.0, 255.0));
   if(!v == 0)
   {
     moveBaseControl.TargetAngle = round(atan(CARL * w / v) * 57.3);
@@ -627,6 +665,12 @@ void turn_on_robot::callback_scan_gimbal_position(const std_msgs::Int32MultiArra
 
 void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::ConstPtr &msg)
 {
+  if (msg->data.size() < 3)
+  {
+    ROS_WARN_THROTTLE(1.0, "offset_center 消息格式应为 [Yaw偏差, Pitch偏差, 是否检测到]");
+    return;
+  }
+
   std_msgs::Int32MultiArray temp_msg = *msg;
   static double prev_pitch_offset = 0.0;
   static double prev_yaw_offset = 0.0;
@@ -634,13 +678,18 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
   static bool has_prev_yaw_offset = false;
   static int last_pitch_command = GIMBAL_MOTOR0_CENTER_POSITION;
   static int last_yaw_command = 2047;
+  static double previous_target_yaw = 0.0;
+  static double filtered_target_yaw_velocity = 0.0;
+  static ros::Time previous_target_yaw_time;
+  static bool has_target_yaw_sample = false;
+  static ros::Time last_laser_shot_time;
   double filtered_pitch_offset = temp_msg.data[1];
   double filtered_yaw_offset = temp_msg.data[0];
 
   if (has_prev_pitch_offset)
   {
-    filtered_pitch_offset = 0.52
-     * prev_pitch_offset + 0.5 * static_cast<double>(temp_msg.data[1]);
+    filtered_pitch_offset = 0.45
+     * prev_pitch_offset + 0.55 * static_cast<double>(temp_msg.data[1]);
   }
   if (has_prev_yaw_offset)
   {
@@ -683,12 +732,58 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
   if (temp_msg.data[2] == 1)
   { // 检测到目标
     find_center = true;
-    // std::cout << "return = " << return_center << std::endl;
-    // printf("callback--find_center =%d\n",find_center);
 
-    // 瞄准目标
+    // 目标水平位置估计值 = 上次 Yaw 指令位置 + 当前视觉残余偏差。开环舵机没有
+    // 可信的实际位置反馈时，以已下发指令为基准，仍可估算目标的运动速度。
+    const ros::Time now = ros::Time::now();
+    const double estimated_target_yaw =
+        static_cast<double>(last_yaw_command) +
+        filtered_yaw_offset / kYawPixelsPerMotorPosition;
+
+    double yaw_lead_position = 0.0;
+    double predicted_yaw_offset = filtered_yaw_offset;
+    bool yaw_reversed_this_frame = false;
+    if (has_target_yaw_sample)
+    {
+      const double dt = (now - previous_target_yaw_time).toSec();
+      // 相机暂停或时钟重置后，旧帧不能被错误地解释为很高的目标速度。
+      if (dt > 0.001 && dt < 1.0)
+      {
+        const double raw_velocity = clampDouble(
+            (estimated_target_yaw - previous_target_yaw) / dt,
+            -kYawMaxEstimatedVelocity, kYawMaxEstimatedVelocity);
+        const double previous_velocity = filtered_target_yaw_velocity;
+        filtered_target_yaw_velocity =
+            kYawVelocityFilterOldWeight * filtered_target_yaw_velocity +
+            (1.0 - kYawVelocityFilterOldWeight) * raw_velocity;
+
+        // 导轨端点停顿很短，因此“速度真正变号”才是可用的折返标志。本帧不使用
+        // 旧方向的超前量，下一帧立即恢复按新方向预测。
+        yaw_reversed_this_frame =
+            previous_velocity * filtered_target_yaw_velocity < 0.0 &&
+            std::abs(previous_velocity) > kYawReversalVelocityThreshold &&
+            std::abs(filtered_target_yaw_velocity) > kYawReversalVelocityThreshold;
+
+        if (!yaw_reversed_this_frame)
+        {
+          yaw_lead_position = clampDouble(
+              filtered_target_yaw_velocity * kYawLeadTimeSec,
+              -kYawMaxLeadPosition, kYawMaxLeadPosition);
+          predicted_yaw_offset = filtered_yaw_offset +
+              yaw_lead_position * kYawPixelsPerMotorPosition;
+        }
+      }
+    }
+
+    previous_target_yaw = estimated_target_yaw;
+    previous_target_yaw_time = now;
+    has_target_yaw_sample = true;
+
+    // Pitch 保持原有控制方式；Yaw 叠加超前位置，使恒速靶瞄准其当前位置而非
+    // 视觉延迟对应的过去位置。
     const int desired_pitch = limitGimbalMotor0Position(curYuntai_feedback_data.Position_0 + static_cast<int>(filtered_pitch_offset/2.7));
-    const int desired_yaw = curYuntai_feedback_data.Position_1 + static_cast<int>(filtered_yaw_offset/2.7);
+    const int desired_yaw = curYuntai_feedback_data.Position_1 +
+        static_cast<int>(filtered_yaw_offset / kYawPixelsPerMotorPosition + yaw_lead_position);
     last_pitch_command = applySlewLimit(desired_pitch, last_pitch_command, 85);//位置变化最大限制幅度
     last_yaw_command = applySlewLimit(desired_yaw, last_yaw_command, 85);
 
@@ -698,13 +793,24 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
     moveBaseControl.Speed_0 = CaremaSpeedControl(moveBaseControl.Position_0, curYuntai_feedback_data.Position_0, GimbalAxis::Pitch);
     moveBaseControl.Speed_1 = CaremaSpeedControl(moveBaseControl.Position_1, curYuntai_feedback_data.Position_1, GimbalAxis::Yaw);
 
-    printf("Detected target: find_center=%d, filtered_pitch_offset=%.2f, filtered_yaw_offset=%.2f\n", find_center, filtered_pitch_offset, filtered_yaw_offset);
+    ROS_INFO("Yaw跟踪: 当前偏差=%.2f 预测偏差=%.2f 估计速度=%.2f 超前位置=%.2f 本帧折返=%d",
+             filtered_yaw_offset, predicted_yaw_offset, filtered_target_yaw_velocity,
+             yaw_lead_position, yaw_reversed_this_frame);
 
-    if(abs(static_cast<int>(filtered_pitch_offset)) < 15 && abs(static_cast<int>(filtered_yaw_offset)) < 15){
+    const bool within_fire_window =
+        std::abs(filtered_pitch_offset) < kPitchFireWindowPixels &&
+        std::abs(predicted_yaw_offset) < kYawFireWindowPixels;
+    const bool shot_interval_elapsed = last_laser_shot_time.isZero() ||
+        (now - last_laser_shot_time).toSec() >= kLaserShotMinIntervalSec;
+    if (within_fire_window && shot_interval_elapsed)
+    {
       std_msgs::UInt8 shotdata;
-      shotdata.data =1;
+      shotdata.data = 1;
       pub_LaserShot_Command.publish(shotdata);
-       ros::Duration(0.08).sleep();
+      last_laser_shot_time = now;
+
+      // dzjudgment 收到值 1 才真正击发。保留原来的尾随 0 语义，但不再让视觉
+      // 追踪因 80 ms sleep 而阻塞。
       shotdata.data = 0;
       pub_LaserShot_Command.publish(shotdata);
     }
@@ -712,6 +818,8 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
   else if (temp_msg.data[2] == 0)
   { // 未检测到目标
     find_center = false;
+    has_target_yaw_sample = false;
+    filtered_target_yaw_velocity = 0.0;
     
     std_msgs::UInt8 shotdata;
     shotdata.data =0;

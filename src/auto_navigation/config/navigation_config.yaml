@@ -1,40 +1,42 @@
 # 自动导航配置文件
+# 数值与 launch / TEB / move_base 当前生效参数对齐
 
-# 基本参数
+# 基本参数（与 auto_navigation.launch 一致）
 auto_navigation_node:
   auto_execute: true
-  goal_timeout: 60.0
+  goal_timeout: 30.0
   max_retries: 3
   goal_tolerance: 0.1
-  
+  planning_timeout: 10.0
+  max_queue_size: 20
+
 # 目标队列参数
 goal_queue:
-  max_size: 10
+  max_size: 20
   priority_enabled: true
-  
-# 导航参数
+
+# 导航参数（与 teb_local_planner.yaml 一致）
 navigation:
   # 速度限制
-  max_linear_velocity: 1
-  max_angular_velocity: 0.4
-  
+  max_linear_velocity: 1.0          # TEB max_vel_x
+  max_angular_velocity: 2.0         # TEB max_vel_theta
+
   # 安全参数
-  min_obstacle_distance: 0.5
+  min_obstacle_distance: 0.15       # TEB min_obstacle_dist
   safety_timeout: 30.0
-  
-# 路径规划参数
+
+# 路径规划参数（与 dznavigation / move_base 一致）
 path_planning:
   # 全局规划
-  global_planner: "navfn/NavfnROS"
-  global_planning_frequency: 2.0
-  
+  global_planner: "global_planner/GlobalPlanner"
+  global_planning_frequency: 1.0    # move_base planner_frequency
+
   # 局部规划
   local_planner: "teb_local_planner/TebLocalPlannerROS"
-  local_planning_frequency: 10.0
-  
-# 恢复行为参数
+  local_planning_frequency: 15.0    # move_base controller_frequency
+
+# 恢复行为参数（与 move_base_planner.yaml 一致）
 recovery:
-  # 恢复行为列表
   behaviors:
     - name: "conservative_reset"
       type: "clear_costmap_recovery/ClearCostmapRecovery"
@@ -42,18 +44,17 @@ recovery:
       type: "rotate_recovery/RotateRecovery"
     - name: "clearing_move"
       type: "move_slow_and_clear/MoveSlowAndClear"
-  
-  # 恢复参数
+
   conservative_reset:
     reset_distance: 1.0
     layer_names: ["obstacle_layer"]
-  
+
   aggressive_reset:
     reset_distance: 3.0
     layer_names: ["obstacle_layer"]
-  
+
   move_slow_and_clear:
     clearing_distance: 0.1
-    limited_trans_speed: 0.1
+    limited_trans_speed: 0.5
     limited_rot_speed: 0.4
-    limited_distance: 0.3 
+    limited_distance: 0.3

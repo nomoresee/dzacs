@@ -110,8 +110,9 @@ namespace move_base
     goal_sub_ = simple_nh.subscribe<geometry_msgs::PoseStamped>("goal", 1, boost::bind(&MoveBase::goalCB, this, _1));
 
     // we'll assume the radius of the robot to be consistent with what's specified for the costmaps
-    private_nh.param("local_costmap/inscribed_radius", inscribed_radius_, 0.325);
-    private_nh.param("local_costmap/circumscribed_radius", circumscribed_radius_, 0.46);
+    // 按 footprint 280x140mm: 内接=半宽0.07, 外接=sqrt(0.14^2+0.07^2)≈0.157
+    private_nh.param("local_costmap/inscribed_radius", inscribed_radius_, 0.07);
+    private_nh.param("local_costmap/circumscribed_radius", circumscribed_radius_, 0.157);
     private_nh.param("clearing_radius", clearing_radius_, circumscribed_radius_);
     private_nh.param("conservative_reset_dist", conservative_reset_dist_, 0.21);
 

@@ -21,8 +21,9 @@ class GoalPublisher:
     def __init__(self):
         rospy.init_node("goal_publisher", anonymous=True)
 
+        self.max_queue_size = rospy.get_param("~max_queue_size", 20)
         self.goal_pub = rospy.Publisher(
-            "/auto_navigation/goal", NavigationGoal, queue_size=10
+            "/auto_navigation/goal", NavigationGoal, queue_size=self.max_queue_size
         )
 
         # 订阅导航状态
@@ -32,6 +33,7 @@ class GoalPublisher:
         
         # 状态变量
         self.current_status = None
+        self._last_status = None
         self.waiting_for_completion = False
         self.current_goal_index = 0
         self.current_path_goals = []
@@ -41,7 +43,7 @@ class GoalPublisher:
         self.waiting_after_path = False  # 标记是否在路径完成后等待
 
         rospy.sleep(1.0)
-        rospy.loginfo("导航目标发布器已启动")
+        rospy.loginfo("导航目标发布器已启动（整路径入队，队列上限 %d）", self.max_queue_size)
 
     # ---------- 消息发布封装 ----------
     def publish_goal(self, x, y, yaw=0.0,
@@ -70,27 +72,29 @@ class GoalPublisher:
         rospy.loginfo(f"已发布导航目标: {description} ({x:.2f}, {y:.2f})")
 
     def status_callback(self, status):
-        """导航状态回调函数"""
+        """导航状态回调：整路径已入队，这里只统计到达，不再逐点发布"""
         self.current_status = status
-        
-        # 如果正在等待完成且导航已完成
+
         if self.waiting_for_completion and status.status == "reached":
-            rospy.loginfo(f"目标点 {self.current_goal_index + 1} 已到达")
-            
-            # 继续下一个目标点
-            self.current_goal_index += 1
-            
-            if self.current_goal_index < len(self.current_path_goals):
-                # 发布下一个目标点
-                x, y, yaw, desc = self.current_path_goals[self.current_goal_index]
-                self.publish_goal(x, y, yaw, desc, priority=10 - self.current_goal_index)
-            else:
-                # 所有目标点完成，开始等待
-                rospy.loginfo(f"路径所有目标点已完成，开始等待 {self.wait_duration} 秒...")
-                self.wait_start_time = rospy.Time.now()
-                self.waiting_for_completion = False
-                self.waiting_after_path = True
-                self.path_completed = True
+            # 边沿触发，避免 status 定时重复发布 "reached" 导致重复计数
+            if self._last_status != "reached":
+                self.current_goal_index += 1
+                rospy.loginfo(
+                    "目标点 %d/%d 已到达",
+                    self.current_goal_index,
+                    len(self.current_path_goals),
+                )
+                if self.current_goal_index >= len(self.current_path_goals):
+                    rospy.loginfo(
+                        "路径所有目标点已完成，开始等待 %.0f 秒...",
+                        self.wait_duration,
+                    )
+                    self.wait_start_time = rospy.Time.now()
+                    self.waiting_for_completion = False
+                    self.waiting_after_path = True
+                    self.path_completed = True
+
+        self._last_status = status.status
             
     def check_wait_completion(self):
         """检查等待是否完成"""
@@ -108,26 +112,39 @@ class GoalPublisher:
                 self.current_goal_index = 0
 
     def publish_sequence_goals(self, goals):
-        """按序列依次发布若干目标点"""
+        """一次性发布若干目标点入队（按顺序，前点优先级更高）"""
+        n = len(goals)
         for i, (x, y, yaw, desc) in enumerate(goals):
-            self.publish_goal(x, y, yaw, desc, priority=10 - i)
-            rospy.sleep(0.5)          # 每点间隔 0.5 s
+            self.publish_goal(x, y, yaw, desc, priority=n - i)
+            rospy.sleep(0.05)
 
     def publish_sequence_goals_with_wait(self, goals):
-        """按序列依次发布若干目标点，路径完成后等待10秒"""
+        """一次性把整条路径入队，全部到达后再等待"""
         if not goals:
             return
-            
+
+        if len(goals) > self.max_queue_size:
+            rospy.logwarn(
+                "路径点数 %d 超过队列上限 %d，已截断",
+                len(goals),
+                self.max_queue_size,
+            )
+            goals = goals[: self.max_queue_size]
+
         self.current_path_goals = goals
         self.current_goal_index = 0
+        self._last_status = None
         self.waiting_for_completion = True
         self.path_completed = False
         self.waiting_after_path = False
-        
-        # 发布第一个目标点
-        x, y, yaw, desc = goals[0]
-        self.publish_goal(x, y, yaw, desc, priority=10)
-        rospy.loginfo(f"开始执行路径，共 {len(goals)} 个目标点")
+
+        n = len(goals)
+        for i, (x, y, yaw, desc) in enumerate(goals):
+            # 靠前的点 priority 更大，排序后仍保持路径顺序
+            self.publish_goal(x, y, yaw, desc, priority=n - i)
+            rospy.sleep(0.05)
+
+        rospy.loginfo("已一次性入队整条路径，共 %d 个目标点", n)
 
     # ---------- 路径加载 ----------
     def load_paths(self):

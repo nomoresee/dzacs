@@ -38,7 +38,7 @@ TebLocalPlannerROS:
   type: "polygon"
   vertices: [[-0.14, -0.055], [-0.14, 0.055], [0.14, 0.055], [0.14, -0.055]]  # 长度278mm，宽度140mm
 
- xy_goal_tolerance: 0.05  #gai
+ xy_goal_tolerance: 0.1  #gai
  yaw_goal_tolerance: 0.2 #gai
  free_goal_vel: False #gai
  
