@@ -310,6 +310,10 @@ public:
 	bool find_center;
 	int count_return_center;
 	bool return_center;
+	// 只有“目标可见时已经发射，随后目标丢失”才进入命中后的局部快扫。
+	bool laser_shot_while_target_visible;
+	bool post_shot_focused_scan_active;
+	int post_shot_scan_center_yaw;
 
 	curYuntai_feedback curYuntai_feedback_data;
 	

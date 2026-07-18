@@ -15,8 +15,8 @@
 #include <vector>
 
 static const char *labels[OBJ_CLASS_NUM] = {
-    "class_00","class_01","class_02","class_03","class_04",
-    "class_05","class_06","class_07","class_08","class_09",
+    "0","1","2","3","4",
+    "5","6","7","8","9",
     "electrodrill","headphones","keyboard","mobile_phone","monitor",
     "mouse","multimeter","oscillograph","pliers","printer",
     "screwdriver","soldering_iron","speaker","tape_measure","wrench",

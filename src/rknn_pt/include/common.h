@@ -15,6 +15,7 @@ typedef struct _BOX_RECT
 
 typedef struct _DetectionBox
 {
+    int class_id;
     float score;
     std::string det_name;
     cv::Rect_<int> box;

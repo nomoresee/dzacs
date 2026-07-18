@@ -1,18 +1,15 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(voice_module)
 
-# 1. 查找 catkin 包时，加入 serial 依赖
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   geometry_msgs
-  serial
 )
 
-# 2. 声明 catkin 运行时依赖，加入 serial
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS roscpp std_msgs geometry_msgs serial
+  CATKIN_DEPENDS roscpp std_msgs geometry_msgs
 )
 
 include_directories(

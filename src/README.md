@@ -152,11 +152,13 @@ source devel/setup.bash
 ---
 
 ### 📦 rknn_pt
-- 功能：识别靶标并发布位置信息
+- 功能：运行 light_det2 / aug_enhanced 模型并支持运行时切换
 - 订阅 `/usb_cam/image_raw`
-- 发布 `offset_center`
+- 订阅 `/switch_model`（`std_msgs/String`）
+- `light_det2` 发布 `/offset_center`（`[x偏差, y偏差, 是否检测到]`）
+- `aug_enhanced_v5s_opt2_v3` 发布 `/detected_objects`（去重类别名称）和 `/dzatornode2`（最高置信度类别 ID）
 - 主要节点：`det_node`
-- 启动文件：`ros run rknn_pt det_node`
+- 启动文件：`rosrun rknn_pt det_node`
 
 ---
 
@@ -180,6 +182,9 @@ source devel/setup.bash
 | /usb_cam/image_raw | sensor_msgs::Image                | 发布    | 摄像头传感器数据   |
 | /scan              | sensor_msgs/LaserScan             | 发布    | LiDAR 扫描数据 |
 | offset_center      | std_msgs::Int32MultiArray         | 发布    | 识别的靶标坐标    |
+| /detected_objects  | std_msgs/String                    | 发布    | 识别到的物品类别名称 |
+| /dzatornode2       | std_msgs/String                    | 发布    | 最高置信度物品类别 ID |
+| /switch_model      | std_msgs/String                    | 订阅    | 切换 RKNN 模型 |
 | amcl_pose          | geometry_msgs::PoseWithCovariance | 发布    | 定位坐标       |
 | LaserShot_Command  | std_msgs::UInt8                   | 订阅    | 激光发射信息     |
 | initialpose        | geometry_msgs::PoseWithCovariance | 订阅    | 重置位姿       |

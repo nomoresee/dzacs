@@ -31,8 +31,12 @@ private:
 
     float nms_threshold, box_conf_threshold;
 
+    void release();
+
 public:
     RkPt(const std::string &model_path);
+    RkPt(const RkPt &) = delete;
+    RkPt &operator=(const RkPt &) = delete;
     int init(rknn_context *ctx_in, bool isChild);
     rknn_context *get_pctx();
     DetectResultsGroup infer(cv::Mat &ori_img, int cur_frame_id);

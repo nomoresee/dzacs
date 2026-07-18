@@ -1,3 +1,4 @@
 <launch>
-    <node name="rknn_pt" pkg="rknn_pt" type="det_node"  />
+    <env name="DISPLAY" value=":0" />
+    <node name="rknn_pt" pkg="rknn_pt" type="det_node" launch-prefix="bash -c 'export DISPLAY=:0; $0 $@' " />
 </launch>

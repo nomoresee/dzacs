@@ -38,15 +38,19 @@ static int nms(int validCount, std::vector<float> &outputLocations, std::vector<
 {
   for (int i = 0; i < validCount; ++i)
   {
-    if (order[i] == -1 || classIds[i] != filterId)
+    if (order[i] == -1)
     {
       continue;
     }
     int n = order[i];
+    if (classIds[n] != filterId)
+    {
+      continue;
+    }
     for (int j = i + 1; j < validCount; ++j)
     {
       int m = order[j];
-      if (m == -1 || classIds[i] != filterId)
+      if (m == -1 || classIds[m] != filterId)
       {
         continue;
       }
@@ -180,7 +184,7 @@ int post_process_1(int8_t *input0, int8_t *input1, int8_t *input2, int model_in_
                  float nms_threshold, BOX_RECT pads, float scale_w, float scale_h, std::vector<int32_t> &qnt_zps,
                  std::vector<float> &qnt_scales, DetectResultsGroup *group)
 {
-  memset(group, 0, sizeof(DetectResultsGroup));
+  group->dets.clear();
 
   std::vector<float> filterBoxes;
   std::vector<float> objProbs;
@@ -250,6 +254,7 @@ int post_process_1(int8_t *input0, int8_t *input1, int8_t *input2, int model_in_
     float obj_conf = objProbs[i];
 
     DetectionBox new_box;
+    new_box.class_id = id;
     int _x1 = (int)(clamp(x1, 0, model_in_w) / scale_w);
     int _y1 = (int)(clamp(y1, 0, model_in_h) / scale_h);
     int _x2 = (int)(clamp(x2, 0, model_in_w) / scale_w);

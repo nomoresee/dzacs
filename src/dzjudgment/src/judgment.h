@@ -5,6 +5,7 @@
 #include <iostream>
 #include <math.h>
 #include <string.h>
+#include <vector>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
@@ -98,7 +99,7 @@ public:
   uint8_t Bing_hit = 0x10;    // 是否被敌方击打  0x01左方,0x02前方，0x03右方，0x04后方,0x10未被击打
   uint8_t ammo = 10;          // 子弹个数
   uint8_t Shooting_Count = 0; // 总的射击次数
-  uint8_t previousHeader2 = 0;
+  std::vector<uint8_t> serial_rx_buffer; // 非阻塞串口接收缓存
 
   // 物资扫描状态
   bool scan_mode_active = false;      // 扫描模式是否激活

@@ -15,8 +15,8 @@
 #include <vector>
 
 static const char *labels[OBJ_CLASS_NUM_25] = {
-    "class_00","class_01","class_02","class_03","class_04",
-    "class_05","class_06","class_07","class_08","class_09",
+    "0","1","2","3","4",
+    "5","6","7","8","9",
     "electrodrill","headphones","keyboard","mobile_phone","monitor",
     "mouse","multimeter","oscillograph","pliers","printer",
     "screwdriver","soldering_iron","speaker","tape_measure","wrench",
@@ -48,11 +48,12 @@ static int nms(int validCount, std::vector<float> &outputLocations, std::vector<
                int filterId, float threshold)
 {
   for (int i = 0; i < validCount; ++i) {
-    if (order[i] == -1 || classIds[i] != filterId) continue;
+    if (order[i] == -1) continue;
     int n = order[i];
+    if (classIds[n] != filterId) continue;
     for (int j = i + 1; j < validCount; ++j) {
       int m = order[j];
-      if (m == -1 || classIds[i] != filterId) continue;
+      if (m == -1 || classIds[m] != filterId) continue;
       float xmin0 = outputLocations[n * 4 + 0];
       float ymin0 = outputLocations[n * 4 + 1];
       float xmax0 = outputLocations[n * 4 + 0] + outputLocations[n * 4 + 2];
@@ -137,7 +138,12 @@ static int process_float(float *input, int *anchor, int grid_h, int grid_w, int 
             maxClassProb = prob;
           }
         }
-        if (maxClassProb > threshold) {
+        // 手机(13)、耳机(11)、音响(22)使用更高阈值
+        float class_threshold = threshold;
+        if (maxClassId == 11 || maxClassId == 13 || maxClassId == 22) {
+          class_threshold = 0.80f;
+        }
+        if (maxClassProb > class_threshold) {
           objProbs.push_back(maxClassProb * box_conf);
           classId.push_back(maxClassId);
           validCount++;
@@ -156,7 +162,7 @@ int post_process_25_f(float *input0, float *input1, float *input2, int model_in_
                        float conf_threshold, float nms_threshold, BOX_RECT pads, float scale_w, float scale_h,
                        DetectResultsGroup *group)
 {
-  memset(group, 0, sizeof(DetectResultsGroup));
+  group->dets.clear();
   std::vector<float> filterBoxes, objProbs;
   std::vector<int> classId;
 
@@ -191,6 +197,7 @@ int post_process_25_f(float *input0, float *input1, float *input2, int model_in_
     float y2 = y1 + filterBoxes[n * 4 + 3];
     int id = classId[n];
     DetectionBox new_box;
+    new_box.class_id = id;
     new_box.box = cv::Rect_<int>(
         (int)(clamp(x1, 0, model_in_w) / scale_w),
         (int)(clamp(y1, 0, model_in_h) / scale_h),

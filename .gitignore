@@ -20,3 +20,6 @@ Untitled
 *.a
 *.so
 *.log
+
+# Local captured/training dataset (large runtime data)
+/dataset/

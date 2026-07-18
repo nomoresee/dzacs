@@ -1,5 +1,8 @@
 #include "judgment.h"
 
+#include <algorithm>
+#include <array>
+
 dzjudgment::dzjudgment(ros::NodeHandle handle)
 {
   m_baudrate = 115200;
@@ -134,49 +137,63 @@ bool dzjudgment::reconnectSerial()
 
 void dzjudgment::recvESP32Info()
 {
-  while (true && ros::ok())
+  const size_t available_bytes = ser.available();
+  if (available_bytes == 0)
+    return;
+
+  std::vector<uint8_t> incoming(available_bytes);
+  const size_t bytes_read = ser.read(incoming.data(), incoming.size());
+  serial_rx_buffer.insert(serial_rx_buffer.end(), incoming.begin(),
+                          incoming.begin() + bytes_read);
+
+  // 防止线路噪声长期无法形成有效帧时缓存无限增长，只保留可能包含帧头的尾部。
+  constexpr size_t kMaxSerialBufferSize = 1024;
+  if (serial_rx_buffer.size() > kMaxSerialBufferSize)
   {
-    uint8_t header1, header2;
+    ROS_WARN_THROTTLE(1.0, "[dzjudgment-->] Serial receive buffer overflow, resynchronizing");
+    serial_rx_buffer.erase(
+        serial_rx_buffer.begin(),
+        serial_rx_buffer.end() - kMaxSerialBufferSize / 2);
+  }
 
-    if (previousHeader2 == 0xB5)
+  while (serial_rx_buffer.size() >= 2)
+  {
+    // 丢弃帧头前的噪声字节，但保留末尾单独出现的 0xB5，等待下一轮补齐。
+    const std::array<uint8_t, 2> frame_header{{0xB5, 0x5B}};
+    auto header = std::search(serial_rx_buffer.begin(), serial_rx_buffer.end(),
+                              frame_header.begin(), frame_header.end());
+    if (header == serial_rx_buffer.end())
     {
-      header1 = previousHeader2;
-    }
-    else
-    {
-      while (ser.available() > 0)
-      {
-        ser.read(&header1, 1);
-        if (header1 == 0xB5)
-          break;
-      }
-    }
-
-    if (ser.available() > 0)
-    {
-      ser.read(&header2, 1);
-      previousHeader2 = header2;
+      const bool keep_possible_header = serial_rx_buffer.back() == 0xB5;
+      serial_rx_buffer.clear();
+      if (keep_possible_header)
+        serial_rx_buffer.push_back(0xB5);
+      return;
     }
 
-    if (header1 == 0xB5 && header2 == 0x5B)
-    {
-      uint8_t dataLength;
-      if (ser.available() > 0)
-      {
-        ser.read(&dataLength, 1);
-        if (ser.available() >= static_cast<size_t>(dataLength))
-        {
-          uint8_t charArray[dataLength + 3];
-          charArray[0] = header1;
-          charArray[1] = header2;
-          charArray[2] = dataLength;
-          ser.read(&charArray[3], dataLength);
+    if (header != serial_rx_buffer.begin())
+      serial_rx_buffer.erase(serial_rx_buffer.begin(), header);
 
-          processData(charArray, dataLength);
-          break;
-        }
-      }
+    if (serial_rx_buffer.size() < 3)
+      return;
+
+    const uint8_t data_length = serial_rx_buffer[2];
+    if (data_length < 2 || data_length > MAX_VALID_DATA_LENGTH + 2)
+    {
+      ROS_WARN_THROTTLE(1.0,
+                        "[dzjudgment-->] Invalid serial frame length: %u",
+                        static_cast<unsigned int>(data_length));
+      serial_rx_buffer.erase(serial_rx_buffer.begin());
+      continue;
     }
+
+    const size_t complete_frame_size = 3 + static_cast<size_t>(data_length);
+    if (serial_rx_buffer.size() < complete_frame_size)
+      return;
+
+    processData(serial_rx_buffer.data(), data_length);
+    serial_rx_buffer.erase(serial_rx_buffer.begin(),
+                           serial_rx_buffer.begin() + complete_frame_size);
   }
 }
 

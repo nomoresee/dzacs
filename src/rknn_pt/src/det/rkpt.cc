@@ -86,8 +86,23 @@ static unsigned char *load_model(const char *filename, int *model_size)
 }
 
 RkPt::RkPt(const std::string &model_path)
+    : ret(0),
+      model_type_(0),
+      model_path(model_path),
+      model_data(nullptr),
+      ctx(0),
+      io_num{},
+      input_attrs(nullptr),
+      output_attrs(nullptr),
+      inputs{},
+      channel(0),
+      width(0),
+      height(0),
+      img_width(0),
+      img_height(0),
+      nms_threshold(0.0f),
+      box_conf_threshold(0.0f)
 {
-    this->model_path = model_path;
     if (model_path.find("light") != std::string::npos) {
         model_type_ = 1;
         nms_threshold = NMS_THRESH_1;
@@ -112,7 +127,11 @@ int RkPt::init(rknn_context *ctx_in, bool isChild)
         }
         ret = rknn_init(&ctx, model_data, model_data_size, 0, NULL);
     } else {
-        ctx = *ctx_in;
+        if (ctx_in == nullptr || *ctx_in == 0) {
+            printf("rknn_dup_context error: invalid parent context\n");
+            return -1;
+        }
+        ret = rknn_dup_context(ctx_in, &ctx);
     }
     if (ret < 0)
     {
@@ -156,6 +175,12 @@ int RkPt::init(rknn_context *ctx_in, bool isChild)
         printf("rknn_init error ret=%d\n", ret);
         return -1;
     }
+    if (io_num.n_input != 1 || io_num.n_output != 3)
+    {
+        printf("Unsupported model I/O count: inputs=%u outputs=%u (expected 1/3)\n",
+               io_num.n_input, io_num.n_output);
+        return -1;
+    }
     // printf("model input num: %d, output num: %d\n", io_num.n_input, io_num.n_output);
 
     // 设置输入参数
@@ -178,6 +203,11 @@ int RkPt::init(rknn_context *ctx_in, bool isChild)
     {
         output_attrs[i].index = i;
         ret = rknn_query(ctx, RKNN_QUERY_OUTPUT_ATTR, &(output_attrs[i]), sizeof(rknn_tensor_attr));
+        if (ret < 0)
+        {
+            printf("rknn_query output attr error ret=%d\n", ret);
+            return -1;
+        }
         dump_tensor_attr(&(output_attrs[i]));
     }
 
@@ -204,6 +234,11 @@ int RkPt::init(rknn_context *ctx_in, bool isChild)
     inputs[0].fmt = RKNN_TENSOR_NHWC;
     inputs[0].pass_through = 0;
 
+    printf("[RkPt] Model initialized: type=%s input=%dx%dx%d outputs=%u ctx=%llu\n",
+           model_type_ == 1 ? "light_det2/int8" : "aug_enhanced/float",
+           width, height, channel, io_num.n_output,
+           static_cast<unsigned long long>(ctx));
+
     return 0;
 }
 
@@ -215,6 +250,15 @@ rknn_context *RkPt::get_pctx()
 DetectResultsGroup RkPt::infer(cv::Mat &orig_img, int cur_frame_id)
 {
     std::lock_guard<std::mutex> lock(mtx);
+    DetectResultsGroup detect_result_group{};
+    detect_result_group.cur_frame_id = cur_frame_id;
+    detect_result_group.cur_img = orig_img.clone();
+
+    if (ctx == 0 || orig_img.empty())
+    {
+        return detect_result_group;
+    }
+
     cv::Mat img;
     cv::cvtColor(orig_img, img, cv::COLOR_BGR2RGB);
     img_width = img.cols;
@@ -239,7 +283,8 @@ DetectResultsGroup RkPt::infer(cv::Mat &orig_img, int cur_frame_id)
         ret = resize_rga(src, dst, img, resized_img, target_size);
         if (ret != 0)
         {
-            fprintf(stderr, "resize with rga error\n");
+            fprintf(stderr, "resize with rga error, falling back to OpenCV\n");
+            cv::resize(img, resized_img, target_size);
         }
 
         // // opencv
@@ -255,30 +300,36 @@ DetectResultsGroup RkPt::infer(cv::Mat &orig_img, int cur_frame_id)
         inputs[0].buf = img.data;
     }
 
-    rknn_inputs_set(ctx, io_num.n_input, inputs);
+    ret = rknn_inputs_set(ctx, io_num.n_input, inputs);
+    if (ret < 0)
+    {
+        fprintf(stderr, "rknn_inputs_set failed, ret=%d\n", ret);
+        return detect_result_group;
+    }
 
-    rknn_output outputs[io_num.n_output];
-    memset(outputs, 0, sizeof(outputs));
+    std::vector<rknn_output> outputs(io_num.n_output);
     for (int i = 0; i < io_num.n_output; i++)
     {
-        outputs[i].want_float = 1;
+        // light_det2 keeps its native quantized int8 output; the 25-class
+        // model is converted by RKNN Runtime to float32 for post-processing.
+        outputs[i].want_float = model_type_ == 25 ? 1 : 0;
     }
 
     // 模型推理
     ret = rknn_run(ctx, NULL);
-    ret = rknn_outputs_get(ctx, io_num.n_output, outputs, NULL);
-
-    // DEBUG: print output format
-    printf("=== OUTPUT FORMAT ===\n");
-    for (int i = 0; i < io_num.n_output; i++) {
-        printf("  output[%d]: fmt=%d (%s), type=%d, zp=%d, scale=%.6f\n",
-               i, output_attrs[i].fmt,
-               output_attrs[i].fmt == 0 ? "NCHW" : "NHWC",
-               output_attrs[i].type, output_attrs[i].zp, output_attrs[i].scale);
+    if (ret < 0)
+    {
+        fprintf(stderr, "rknn_run failed, ret=%d\n", ret);
+        return detect_result_group;
+    }
+    ret = rknn_outputs_get(ctx, io_num.n_output, outputs.data(), NULL);
+    if (ret < 0)
+    {
+        fprintf(stderr, "rknn_outputs_get failed, ret=%d\n", ret);
+        return detect_result_group;
     }
 
     // 后处理/Post-processing (float32, no dequantization)
-    DetectResultsGroup detect_result_group;
     if (model_type_ == 1) {
         std::vector<int32_t> qnt_zps;
         std::vector<float> qnt_scales;
@@ -295,24 +346,45 @@ DetectResultsGroup RkPt::infer(cv::Mat &orig_img, int cur_frame_id)
                           pads, scale_w, scale_h, &detect_result_group);
     }
 
-    detect_result_group.cur_frame_id = cur_frame_id;
-    detect_result_group.cur_img = orig_img.clone();
-
-    ret = rknn_outputs_release(ctx, io_num.n_output, outputs);
+    ret = rknn_outputs_release(ctx, io_num.n_output, outputs.data());
+    if (ret < 0)
+    {
+        fprintf(stderr, "rknn_outputs_release failed, ret=%d\n", ret);
+    }
 
     return detect_result_group;
     // return orig_img;
 }
 
-RkPt::~RkPt()
+void RkPt::release()
 {
-    ret = rknn_destroy(ctx);
+    if (ctx != 0)
+    {
+        ret = rknn_destroy(ctx);
+        if (ret < 0)
+            fprintf(stderr, "rknn_destroy failed, ret=%d\n", ret);
+        ctx = 0;
+    }
 
     if (model_data)
+    {
         free(model_data);
+        model_data = nullptr;
+    }
 
     if (input_attrs)
+    {
         free(input_attrs);
+        input_attrs = nullptr;
+    }
     if (output_attrs)
+    {
         free(output_attrs);
+        output_attrs = nullptr;
+    }
+}
+
+RkPt::~RkPt()
+{
+    release();
 }

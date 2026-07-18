@@ -1,51 +1,48 @@
 #include "voice_module.h"
-#include <map>
+
 #include <algorithm>
+#include <cctype>
+#include <exception>
+#include <sstream>
 
-VoiceModule::VoiceModule(ros::NodeHandle nh) : nh_(nh) {
-    // 初始化状态
-    voice_recognition_ready_ = false;
-    voice_synthesis_ready_ = false;
-    is_listening_ = false;
+VoiceModule::VoiceModule(ros::NodeHandle nh)
+    : nh_(nh),
+      private_nh_("~"),
+      visual_repeat_interval_(3.0),
+      voice_sequence_interval_(1.2),
+      voice_recognition_ready_(false),
+      voice_synthesis_ready_(false),
+      is_listening_(false),
+      current_material_position_(0),
+      has_material_position_(false) {
+    private_nh_.param<std::string>("visual_class_topic", visual_class_topic_, "/dzatornode2");
+    private_nh_.param<std::string>("material_position_topic", material_position_topic_, "/voice_material_position");
+    private_nh_.param<double>("visual_repeat_interval", visual_repeat_interval_, 3.0);
+    private_nh_.param<double>("voice_sequence_interval", voice_sequence_interval_, 1.2);
 
-    // 初始化命令映射
     initializeCommandMapping();
+    initializeClassNames();
 
-    // 初始化语音识别和合成
-    if (initializeVoiceRecognition()) {
-        ROS_INFO("语音识别模块初始化成功");
-        voice_recognition_ready_ = true;
-    } else {
-        ROS_ERROR("语音识别模块初始化失败");
-    }
+    voice_recognition_ready_ = initializeVoiceRecognition();
+    voice_synthesis_ready_ = initializeVoiceSynthesis();
 
-    if (initializeVoiceSynthesis()) {
-        ROS_INFO("语音合成模块初始化成功");
-        voice_synthesis_ready_ = true;
-    } else {
-        ROS_ERROR("语音合成模块初始化失败");
-    }
-
-    // 订阅话题
     sub_voice_command_ = nh_.subscribe("/voice_command", 10, &VoiceModule::voiceCommandCallback, this);
-    sub_visual_target_ = nh_.subscribe("/offset_center", 10, &VoiceModule::visualTargetCallback, this);
+    sub_visual_class_ = nh_.subscribe(visual_class_topic_, 10, &VoiceModule::visualClassCallback, this);
+    sub_material_position_ = nh_.subscribe(material_position_topic_, 10, &VoiceModule::materialPositionCallback, this);
     sub_robot_status_ = nh_.subscribe("/robot_status", 10, &VoiceModule::robotStatusCallback, this);
 
-    // 发布话题
     pub_voice_feedback_ = nh_.advertise<std_msgs::String>("/voice_feedback", 10);
     pub_control_command_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
     pub_voice_status_ = nh_.advertise<std_msgs::UInt8>("/voice_status", 10);
+    pub_voice_switch_ = nh_.advertise<std_msgs::UInt8>("/voice_switch", 10);
 
-    ROS_INFO("语音模块初始化完成");
+    publishVoiceStatus(voice_synthesis_ready_ ? 1 : 0);
+
+    ROS_INFO("voice_module started. visual_class_topic=%s material_position_topic=%s",
+             visual_class_topic_.c_str(), material_position_topic_.c_str());
 }
 
-VoiceModule::~VoiceModule() {
-    // 关闭串口
-    if(serial_port_.isOpen()){
-        serial_port_.close();
-    }
-    ROS_INFO("语音模块关闭");
-}
+VoiceModule::~VoiceModule() = default;
 
 void VoiceModule::initializeCommandMapping() {
     command_mapping_["前进"] = "forward";
@@ -61,145 +58,103 @@ void VoiceModule::initializeCommandMapping() {
     command_mapping_["位置"] = "position";
 }
 
-bool VoiceModule::initializeVoiceRecognition() {
-    try {
-        ROS_INFO("正在初始化天问block语音识别...");
-        ros::Duration(1.0).sleep();
-        return true;
-    } catch (const std::exception& e) {
-        ROS_ERROR("语音识别初始化失败: %s", e.what());
-        return false;
-    }
+void VoiceModule::initializeClassNames() {
+    class_names_ = {
+        "数字0", "数字1", "数字2", "数字3", "数字4",
+        "数字5", "数字6", "数字7", "数字8", "数字9",
+        "电钻", "耳机", "键盘", "手机", "显示器",
+        "鼠标", "万用表", "示波器", "钳子", "打印机",
+        "螺丝刀", "电烙铁", "音响", "卷尺", "扳手",
+    };
 }
 
-// 核心修改点：初始化串口连接天问Block
-bool VoiceModule::initializeVoiceSynthesis() {
-    try {
-        ROS_INFO("正在配置天问block串口通信...");
-        // 注意：这里的端口号请根据实际情况修改，例如 /dev/ttyUSB0 或 /dev/ttyACM0
-        serial_port_.setPort("/dev/ttyUSB0"); 
-        serial_port_.setBaudrate(115200); // 必须与天问Block程序中的波特率保持一致
-        serial::Timeout to = serial::Timeout::simpleTimeout(1000);
-        serial_port_.setTimeout(to);
-        
-        serial_port_.open();
+bool VoiceModule::initializeVoiceRecognition() {
+    ROS_INFO("voice recognition input uses /voice_command text topic.");
+    return true;
+}
 
-        if (serial_port_.isOpen()) {
-            ROS_INFO("成功连接到天问Block串口，语音合成就绪");
-            return true;
-        } else {
-            ROS_ERROR("无法打开串口，请检查连线或权限(sudo chmod 777 /dev/ttyUSB0)");
-            return false;
-        }
-    } catch (serial::IOException& e) {
-        ROS_ERROR("串口初始化异常: %s", e.what());
-        return false;
-    }
+bool VoiceModule::initializeVoiceSynthesis() {
+    ROS_INFO("voice synthesis uses /voice_switch preset ids through dzactuator.");
+    return true;
 }
 
 std::string VoiceModule::recognizeSpeech() {
     if (!voice_recognition_ready_) {
-        ROS_WARN("语音识别模块未就绪");
         return "";
     }
-    try {
-        ROS_INFO("正在识别语音...");
-        std::string recognized_text = "前进"; // 模拟识别结果
-        ROS_INFO("识别结果: %s", recognized_text.c_str());
-        return recognized_text;
-    } catch (const std::exception& e) {
-        ROS_ERROR("语音识别失败: %s", e.what());
-        return "";
-    }
+    return "";
 }
 
-// 核心修改点：通过串口发送文字指令给天问Block发声
 void VoiceModule::synthesizeSpeech(const std::string& text) {
-    if (!voice_synthesis_ready_ || !serial_port_.isOpen()) {
-        ROS_WARN("语音合成模块（串口）未就绪，无法播报");
-        return;
-    }
-    try {
-        ROS_INFO("正在向天问Block发送语音合成指令: %s", text.c_str());
-        
-        // 在字符串末尾加上换行符 '\n'，方便天问Block做字符串截断接收
-        std::string payload = text + "\n"; 
-        serial_port_.write(payload);
-        
-        ROS_INFO("语音指令发送完成");
-    } catch (const std::exception& e) {
-        ROS_ERROR("串口发送失败: %s", e.what());
-    }
+    ROS_INFO("voice feedback: %s", text.c_str());
 }
 
 void VoiceModule::voiceCommandCallback(const std_msgs::String::ConstPtr& msg) {
-    ROS_INFO("收到语音命令: %s", msg->data.c_str());
     processVoiceCommand(msg->data);
 }
 
-void VoiceModule::visualTargetCallback(const std_msgs::Int32MultiArray::ConstPtr& msg) {
-    // 假设msg->data[0]为物资编号，msg->data[1]为区域标志，msg->data[2]为类别编号
-    if (msg->data.size() >= 3) {
-        int goods_id = msg->data[0];
-        bool in_area = (msg->data[1] == 1); // 1表示在区域内
-        int class_id = msg->data[2];
-        handleGoodsRecognition(goods_id, class_id, in_area);
-    }
+void VoiceModule::visualClassCallback(const std_msgs::String::ConstPtr& msg) {
+    handleVisualToken(msg->data);
+}
+
+void VoiceModule::materialPositionCallback(const std_msgs::UInt8::ConstPtr& msg) {
+    current_material_position_ = static_cast<int>(msg->data);
+    has_material_position_ = true;
+    ROS_INFO("material position updated: %d", current_material_position_);
 }
 
 void VoiceModule::robotStatusCallback(const std_msgs::UInt8::ConstPtr& msg) {
-    ROS_INFO("收到机器人状态: %d", msg->data);
+    ROS_DEBUG("robot_status=%u", msg->data);
 }
 
 void VoiceModule::processVoiceCommand(const std::string& command) {
     last_command_ = command;
-    auto it = command_mapping_.find(command);
-    if (it != command_mapping_.end()) {
-        std::string action = it->second;
-        ROS_INFO("执行命令: %s -> %s", command.c_str(), action.c_str());
-        if (action == "forward") {
-            geometry_msgs::Twist cmd;
-            cmd.linear.x = 0.5;
-            cmd.angular.z = 0.0;
-            pub_control_command_.publish(cmd);
-            generateVoiceFeedback("正在前进");
-        } else if (action == "backward") {
-            geometry_msgs::Twist cmd;
-            cmd.linear.x = -0.5;
-            cmd.angular.z = 0.0;
-            pub_control_command_.publish(cmd);
-            generateVoiceFeedback("正在后退");
-        } else if (action == "turn_left") {
-            geometry_msgs::Twist cmd;
-            cmd.linear.x = 0.0;
-            cmd.angular.z = 0.5;
-            pub_control_command_.publish(cmd);
-            generateVoiceFeedback("正在左转");
-        } else if (action == "turn_right") {
-            geometry_msgs::Twist cmd;
-            cmd.linear.x = 0.0;
-            cmd.angular.z = -0.5;
-            pub_control_command_.publish(cmd);
-            generateVoiceFeedback("正在右转");
-        } else if (action == "stop") {
-            geometry_msgs::Twist cmd;
-            cmd.linear.x = 0.0;
-            cmd.angular.z = 0.0;
-            pub_control_command_.publish(cmd);
-            generateVoiceFeedback("已停止");
-        } else if (action == "aim") {
-            generateVoiceFeedback("正在瞄准目标");
-        } else if (action == "shoot") {
-            generateVoiceFeedback("正在射击");
-        } else if (action == "status") {
-            generateVoiceFeedback("系统运行正常");
-        } else if (action == "battery") {
-            generateVoiceFeedback("电量充足");
-        } else if (action == "position") {
-            generateVoiceFeedback("当前位置已记录");
-        }
+
+    const auto it = command_mapping_.find(command);
+    if (it == command_mapping_.end()) {
+        generateVoiceFeedback("命令未识别");
+        return;
+    }
+
+    const std::string& action = it->second;
+    geometry_msgs::Twist cmd;
+    bool should_publish_cmd = true;
+
+    if (action == "forward") {
+        cmd.linear.x = 0.5;
+        generateVoiceFeedback("正在前进");
+    } else if (action == "backward") {
+        cmd.linear.x = -0.5;
+        generateVoiceFeedback("正在后退");
+    } else if (action == "turn_left") {
+        cmd.angular.z = 0.5;
+        generateVoiceFeedback("正在左转");
+    } else if (action == "turn_right") {
+        cmd.angular.z = -0.5;
+        generateVoiceFeedback("正在右转");
+    } else if (action == "stop") {
+        generateVoiceFeedback("已停止");
+    } else if (action == "aim") {
+        should_publish_cmd = false;
+        generateVoiceFeedback("正在瞄准目标");
+    } else if (action == "shoot") {
+        should_publish_cmd = false;
+        generateVoiceFeedback("正在射击");
+    } else if (action == "status") {
+        should_publish_cmd = false;
+        generateVoiceFeedback("系统运行正常");
+    } else if (action == "battery") {
+        should_publish_cmd = false;
+        generateVoiceFeedback("电量充足");
+    } else if (action == "position") {
+        should_publish_cmd = false;
+        generateVoiceFeedback("当前位置已记录");
     } else {
-        generateVoiceFeedback("命令未识别，请重试");
+        should_publish_cmd = false;
+    }
+
+    if (should_publish_cmd) {
+        pub_control_command_.publish(cmd);
     }
 }
 
@@ -207,30 +162,182 @@ void VoiceModule::generateVoiceFeedback(const std::string& message) {
     std_msgs::String feedback_msg;
     feedback_msg.data = message;
     pub_voice_feedback_.publish(feedback_msg);
-    // 触发串口发送语音播报
     synthesizeSpeech(message);
 }
 
-// 物资播报核心逻辑
-void VoiceModule::handleGoodsRecognition(int goods_id, int class_id, bool in_area) {
-    // 只处理1-20和101-120，101-120映射为1-20
-    int mapped_id = goods_id;
-    if (goods_id >= 101 && goods_id <= 120) mapped_id = goods_id - 100;
-    if (mapped_id < 1 || mapped_id > 20) return;
+void VoiceModule::handleVisualToken(const std::string& token) {
+    std::vector<uint8_t> voice_ids;
+    std::string broadcast_text;
+    if (!parseVisualToken(token, &voice_ids, &broadcast_text)) {
+        ROS_WARN("invalid visual token: %s", token.c_str());
+        return;
+    }
 
-    // 区域内且未被抢占
-    if (in_area && occupied_goods_.count(mapped_id) == 0) {
-        std::string type = (class_id >= 0 && class_id < class_names_.size()) ? class_names_[class_id] : "未知物资";
-        std::string msg = std::to_string(mapped_id) + "号位置识别到" + type;
-        generateVoiceFeedback(msg);
-        occupied_goods_.insert(mapped_id);
-        last_broadcast_time_ = ros::Time::now();
-        last_goods_id_ = mapped_id;
+    std::string broadcast_key = token;
+    if (has_material_position_) {
+        broadcast_key += "@" + std::to_string(current_material_position_);
+    }
+
+    if (!shouldBroadcastToken(broadcast_key)) {
+        return;
+    }
+
+    last_visual_token_ = broadcast_key;
+    last_visual_broadcast_time_ = ros::Time::now();
+
+    publishVoiceSwitchSequence(voice_ids);
+    generateVoiceFeedback(broadcast_text);
+}
+
+bool VoiceModule::shouldBroadcastToken(const std::string& token) const {
+    if (token != last_visual_token_) {
+        return true;
+    }
+
+    if (last_visual_broadcast_time_.isZero()) {
+        return true;
+    }
+
+    const double elapsed = (ros::Time::now() - last_visual_broadcast_time_).toSec();
+    return elapsed >= visual_repeat_interval_;
+}
+
+bool VoiceModule::parseVisualToken(const std::string& token, std::vector<uint8_t>* voice_ids, std::string* broadcast_text) const {
+    if (token.empty() || voice_ids == nullptr || broadcast_text == nullptr) {
+        return false;
+    }
+
+    voice_ids->clear();
+
+    const bool is_index = std::all_of(token.begin(), token.end(), [](unsigned char c) {
+        return std::isdigit(c) != 0;
+    });
+    if (is_index) {
+        uint8_t voice_id = 0;
+        const int class_id = std::stoi(token);
+        if (class_id < 0 || class_id >= static_cast<int>(class_names_.size()) ||
+            !classIndexToVoiceId(class_id, &voice_id)) {
+            return false;
+        }
+        if (has_material_position_ && class_id >= 10) {
+            uint8_t position_voice_id = 0;
+            if (!numberToVoiceId(current_material_position_, &position_voice_id)) {
+                return false;
+            }
+            voice_ids->push_back(position_voice_id);
+            voice_ids->push_back(voice_id);
+            *broadcast_text = std::to_string(current_material_position_) + "号位置识别到" + class_names_[class_id];
+        } else {
+            voice_ids->push_back(voice_id);
+            *broadcast_text = "识别到" + class_names_[class_id];
+        }
+        return true;
+    }
+
+    std::string number_text;
+    std::stringstream ss(token);
+    std::string part;
+    while (std::getline(ss, part, '_')) {
+        if (part.empty()) {
+            return false;
+        }
+        const bool part_is_digit = std::all_of(part.begin(), part.end(), [](unsigned char c) {
+            return std::isdigit(c) != 0;
+        });
+        if (!part_is_digit) {
+            return false;
+        }
+        number_text += part;
+    }
+
+    if (number_text.empty()) {
+        return false;
+    }
+
+    const int number = std::stoi(number_text);
+    uint8_t voice_id = 0;
+    if (!numberToVoiceId(number, &voice_id)) {
+        return false;
+    }
+    voice_ids->push_back(voice_id);
+
+    *broadcast_text = "识别到" + numberToChineseText(number);
+    return true;
+}
+
+bool VoiceModule::numberToVoiceId(int number, uint8_t* voice_id) const {
+    if (voice_id == nullptr || number < 0 || number > 99) {
+        return false;
+    }
+
+    if (number <= 9) {
+        *voice_id = static_cast<uint8_t>(4 + number);
+        return true;
+    }
+
+    // Measured preset table: 29=数字10, 30=数字11, so N>=10 follows N+19.
+    *voice_id = static_cast<uint8_t>(number + 19);
+    return true;
+}
+
+std::string VoiceModule::numberToChineseText(int number) const {
+    static const char* digits[] = {
+        "零", "一", "二", "三", "四", "五", "六", "七", "八", "九",
+    };
+
+    if (number < 0 || number > 99) {
+        return "";
+    }
+
+    if (number < 10) {
+        return digits[number];
+    }
+
+    const int tens = number / 10;
+    const int ones = number % 10;
+
+    if (tens == 1) {
+        return ones == 0 ? std::string("十") : std::string("十") + digits[ones];
+    }
+
+    return ones == 0 ? std::string(digits[tens]) + "十"
+                     : std::string(digits[tens]) + "十" + digits[ones];
+}
+
+bool VoiceModule::classIndexToVoiceId(int class_id, uint8_t* voice_id) const {
+    if (voice_id == nullptr || class_id < 0 || class_id >= static_cast<int>(class_names_.size())) {
+        return false;
+    }
+
+    if (class_id <= 9) {
+        return numberToVoiceId(class_id, voice_id);
+    }
+
+    // Measured preset table: 14=电钻 maps to class index 10, continuing to 28=扳手.
+    *voice_id = static_cast<uint8_t>(class_id + 4);
+    return true;
+}
+
+void VoiceModule::publishVoiceSwitch(uint8_t voice_id) {
+    std_msgs::UInt8 msg;
+    msg.data = voice_id;
+    pub_voice_switch_.publish(msg);
+    ROS_INFO("voice_switch id=%u", voice_id);
+}
+
+void VoiceModule::publishVoiceSwitchSequence(const std::vector<uint8_t>& voice_ids) {
+    for (size_t i = 0; i < voice_ids.size(); ++i) {
+        publishVoiceSwitch(voice_ids[i]);
+        if (i + 1 < voice_ids.size()) {
+            ros::Duration(voice_sequence_interval_).sleep();
+        }
     }
 }
 
-void VoiceModule::resetLap() {
-    occupied_goods_.clear();
+void VoiceModule::publishVoiceStatus(uint8_t status) {
+    std_msgs::UInt8 status_msg;
+    status_msg.data = status;
+    pub_voice_status_.publish(status_msg);
 }
 
 int main(int argc, char** argv) {
@@ -238,13 +345,7 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh;
 
     VoiceModule voice_module(nh);
-
-    ros::Rate rate(10); // 10Hz
-
-    while (ros::ok()) {
-        ros::spinOnce();
-        rate.sleep();
-    }
+    ros::spin();
 
     return 0;
 }

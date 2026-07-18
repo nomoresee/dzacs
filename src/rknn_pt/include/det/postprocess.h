@@ -28,7 +28,7 @@
 #define OBJ_NUMB_MAX_SIZE_25 128
 #define OBJ_CLASS_NUM_25 25
 #define NMS_THRESH_25 0.45
-#define BOX_THRESH_25 0.45
+#define BOX_THRESH_25 0.60
 #define PROP_BOX_SIZE_25 (5 + OBJ_CLASS_NUM_25)
 
 // 1-class postprocess (int8_t quantized output)

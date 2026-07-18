@@ -1,82 +1,77 @@
-#ifndef __VOICE_MODULE_H_
-#define __VOICE_MODULE_H_
+#ifndef VOICE_MODULE_H_
+#define VOICE_MODULE_H_
 
-#include "ros/ros.h"
-#include <iostream>
+#include <map>
 #include <string>
+#include <vector>
+
+#include <geometry_msgs/Twist.h>
+#include <ros/ros.h>
+#include <ros/time.h>
 #include <std_msgs/String.h>
 #include <std_msgs/UInt8.h>
-#include <geometry_msgs/Twist.h>
-#include <std_msgs/Int32MultiArray.h>
-#include <set>
-#include <vector>
-#include <map>
-#include <ros/time.h>
-
-// 【新增1】：引入ROS串口通信库头文件
-#include <serial/serial.h> 
 
 class VoiceModule {
 public:
-    VoiceModule(ros::NodeHandle nh);
+    explicit VoiceModule(ros::NodeHandle nh);
     ~VoiceModule();
 
 private:
     ros::NodeHandle nh_;
+    ros::NodeHandle private_nh_;
 
-    // 【新增2】：声明用于和天问Block通信的串口对象
-    serial::Serial serial_port_;
+    ros::Subscriber sub_voice_command_;
+    ros::Subscriber sub_visual_class_;
+    ros::Subscriber sub_material_position_;
+    ros::Subscriber sub_robot_status_;
 
-    // 订阅者
-    ros::Subscriber sub_voice_command_;      // 订阅语音命令
-    ros::Subscriber sub_visual_target_;      // 订阅视觉目标信息
-    ros::Subscriber sub_robot_status_;       // 订阅机器人状态
+    ros::Publisher pub_voice_feedback_;
+    ros::Publisher pub_control_command_;
+    ros::Publisher pub_voice_status_;
+    ros::Publisher pub_voice_switch_;
 
-    // 发布者
-    ros::Publisher pub_voice_feedback_;      // 发布语音反馈
-    ros::Publisher pub_control_command_;     // 发布控制命令
-    ros::Publisher pub_voice_status_;        // 发布语音状态
+    std::string visual_class_topic_;
+    std::string material_position_topic_;
+    double visual_repeat_interval_;
+    double voice_sequence_interval_;
 
-    // 回调函数
-    void voiceCommandCallback(const std_msgs::String::ConstPtr& msg);
-    void visualTargetCallback(const std_msgs::Int32MultiArray::ConstPtr& msg);
-    void robotStatusCallback(const std_msgs::UInt8::ConstPtr& msg);
-
-    // 语音处理函数
-    void processVoiceCommand(const std::string& command);
-    void generateVoiceFeedback(const std::string& message);
-    void handleGoodsRecognition(int goods_id, int class_id, bool in_area);
-    void resetLap(); // 每圈调用，清空occupied_goods_
-
-    // 语音识别和合成相关
-    bool initializeVoiceRecognition();
-    bool initializeVoiceSynthesis();
-    std::string recognizeSpeech();
-    void synthesizeSpeech(const std::string& text);
-
-    // 状态变量
     bool voice_recognition_ready_;
     bool voice_synthesis_ready_;
     bool is_listening_;
     std::string last_command_;
 
-    // 语音命令映射
-    std::map<std::string, std::string> command_mapping_;
-    void initializeCommandMapping();
+    std::string last_visual_token_;
+    ros::Time last_visual_broadcast_time_;
+    int current_material_position_;
+    bool has_material_position_;
 
-    // 物资播报相关
-    std::set<int> occupied_goods_; // 已抢占物资编号
-    int current_lap_; // 当前圈数
-    bool in_zebra_area_; // 是否在斑马线区域
-    int last_goods_id_; // 上一次识别的物资编号
-    ros::Time last_broadcast_time_;
-    std::map<int, std::string> goods_type_map_; // 物资类别编号到名称
-    std::vector<std::string> class_names_ = {
-        "数字0", "数字1", "数字2", "数字3", "数字4", "数字5", "数字6", "数字7", "数字8", "数字9",
-        "dianzuan", "erji", "jianpan", "shouji", "xianshiqi", "shubiao", "wanyongbiao", "shiboqi", 
-        "qianzi", "dayinji", "luosidao", "diannaotie", "yinxiang", "juanchi", "banshou",
-        "红色小车", "红色移动靶", "蓝色小车", "蓝色移动靶"
-    };
+    std::map<std::string, std::string> command_mapping_;
+    std::vector<std::string> class_names_;
+
+    void initializeCommandMapping();
+    void initializeClassNames();
+
+    bool initializeVoiceRecognition();
+    bool initializeVoiceSynthesis();
+    std::string recognizeSpeech();
+    void synthesizeSpeech(const std::string& text);
+
+    void voiceCommandCallback(const std_msgs::String::ConstPtr& msg);
+    void visualClassCallback(const std_msgs::String::ConstPtr& msg);
+    void materialPositionCallback(const std_msgs::UInt8::ConstPtr& msg);
+    void robotStatusCallback(const std_msgs::UInt8::ConstPtr& msg);
+
+    void processVoiceCommand(const std::string& command);
+    void generateVoiceFeedback(const std::string& message);
+    void handleVisualToken(const std::string& token);
+    bool shouldBroadcastToken(const std::string& token) const;
+    bool parseVisualToken(const std::string& token, std::vector<uint8_t>* voice_ids, std::string* broadcast_text) const;
+    bool numberToVoiceId(int number, uint8_t* voice_id) const;
+    std::string numberToChineseText(int number) const;
+    bool classIndexToVoiceId(int class_id, uint8_t* voice_id) const;
+    void publishVoiceSwitch(uint8_t voice_id);
+    void publishVoiceSwitchSequence(const std::vector<uint8_t>& voice_ids);
+    void publishVoiceStatus(uint8_t status);
 };
 
-#endif
+#endif  // VOICE_MODULE_H_
