@@ -7,7 +7,14 @@
     <arg name="goal_timeout" default="30.0" />
     <arg name="max_retries" default="3" />
     <arg name="goal_tolerance" default="0.1" />
-    <arg name="max_queue_size" default="20" />
+    <arg name="max_queue_size" default="25" />
+    <arg name="referee_material_topic" default="/all_Material_Number" />
+    <arg name="arrived_material_topic" default="/arrived_material_number" />
+    <arg name="material_arrive_tolerance" default="0.1" />
+    <arg name="material_wait_duration" default="5.0" />
+    <arg name="switch_model_on_route_complete" default="true" />
+    <arg name="model_switch_topic" default="/switch_model" />
+    <arg name="route_complete_model" default="light_det2" />
     
     <!-- 返航基地坐标参数 -->
     <arg name="base_x" default="0" />
@@ -21,6 +28,13 @@
         <param name="max_retries" value="$(arg max_retries)" />
         <param name="goal_tolerance" value="$(arg goal_tolerance)" />
         <param name="max_queue_size" value="$(arg max_queue_size)" />
+        <param name="referee_material_topic" value="$(arg referee_material_topic)" />
+        <param name="arrived_material_topic" value="$(arg arrived_material_topic)" />
+        <param name="material_arrive_tolerance" value="$(arg material_arrive_tolerance)" />
+        <param name="material_wait_duration" value="$(arg material_wait_duration)" />
+        <param name="switch_model_on_route_complete" value="$(arg switch_model_on_route_complete)" />
+        <param name="model_switch_topic" value="$(arg model_switch_topic)" />
+        <param name="route_complete_model" value="$(arg route_complete_model)" />
         
         <!-- 返航基地坐标 -->
         <param name="base_x" value="$(arg base_x)" />
@@ -28,10 +42,11 @@
         <param name="base_yaw" value="$(arg base_yaw)" />
     </node>
     
-    <!-- 启动目标发布器；一次性加载 Roads/ 中唯一路径并整表入队 -->
+    <!-- 启动目标发布器；等待裁判物资点后从 Roads/ 选最优路径并整表入队 -->
     <group if="$(arg auto_execute)">
         <node name="goal_publisher" pkg="auto_navigation" type="goal_publisher.py" output="screen">
             <param name="max_queue_size" value="$(arg max_queue_size)" />
+            <param name="referee_material_topic" value="$(arg referee_material_topic)" />
         </node>
     </group>
     

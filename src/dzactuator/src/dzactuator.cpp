@@ -3,7 +3,11 @@
 #include "Quaternion_Solution.h"
 
 #include <algorithm>
+#include <cstdio>
 #include <cmath>
+#include <fstream>
+#include <sstream>
+#include <ros/package.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/convert.h>
 #include <tf2/utils.h>
@@ -91,7 +95,11 @@ constexpr double kLaserShotMinIntervalSec = 0.08;
 // 发射窗口。水平导轨靶以 Yaw 为主要精度指标；数值越小命中要求越严格，若仅因
 // 视觉抖动导致无法发射才适当增大。
 constexpr double kYawFireWindowPixels = 2.0;
-constexpr double kPitchFireWindowPixels = 10.0;
+constexpr double kPitchFireWindowPixels = 5.0;
+
+// 第二发二次对准开关：true 时，只有最新视觉仍检测到靶子且偏差进入上述
+// Yaw/Pitch 发射窗口才发第二发；false 时恢复原来的固定间隔无条件双发。
+constexpr bool kPeriodicSecondShotRequireAlignedTarget = true;
 
 // 常规扫描覆盖整个机械可用范围。命中后若视觉随即丢靶，则以最后一次发射时的
 // 目标 Yaw 为中心，将总扫描宽度减半，并小幅提高步长和电机速度。
@@ -104,6 +112,94 @@ constexpr int kFocusedScanSpeed = 1900;
 constexpr int kScanCommandIntervalCycles = 3;  // 50 Hz 控制循环下约 16.7 Hz 更新
 constexpr int kFocusedScanHalfWidth =
     (kFullScanYawMax - kFullScanYawMin) / 4;
+
+// --------------------- 物资识别点位定姿模式 ---------------------
+// 预留 ROS 接口：std_msgs/Int32，topic 为 material_recognition_point。
+// data=1..16：选择对应点位；data=0：退出定姿模式；其他值：拒绝。
+// 每行依次为 {Pitch(Position_0), Yaw(Position_1), 是否已标定}。
+// 未标定点位即使收到 topic 也不会驱动云台，防止未填写坐标时误动作。
+struct MaterialRecognitionPose
+{
+  int pitch;
+  int yaw;
+  bool calibrated;
+};
+
+constexpr int kMaterialRecognitionPointCount = 16;
+MaterialRecognitionPose gMaterialRecognitionPoses[kMaterialRecognitionPointCount] = {
+    {2047, 2047, false},  // 点位 1：待标定
+    {2047, 2047, false},  // 点位 2：待标定
+    {2047, 2047, false},  // 点位 3：待标定
+    {2047, 2047, false},  // 点位 4：待标定
+    {2047, 2047, false},  // 点位 5：待标定
+    {2047, 2047, false},  // 点位 6：待标定
+    {2047, 2047, false},  // 点位 7：待标定
+    {2047, 2047, false},  // 点位 8：待标定
+    {2047, 2047, false},  // 点位 9：待标定
+    {2047, 2047, false},  // 点位10：待标定
+    {2047, 2047, false},  // 点位11：待标定
+    {2047, 2047, false},  // 点位12：待标定
+    {2047, 2047, false},  // 点位13：待标定
+    {2047, 2047, false},  // 点位14：待标定
+    {2047, 2047, false},  // 点位15：待标定
+    {2047, 2047, false},  // 点位16：待标定
+};
+constexpr int kMaterialRecognitionPositionSpeed = 2000;
+
+// material_pose_calibration 的 Int32MultiArray 接口：
+// [0, point_id]：开始/切换到指定点位标定；[1, pitch, yaw]：设置当前点位姿态；
+// [2]：保存当前点位并切换到下一点；[3]：退出标定且释放云台定姿锁定。
+constexpr int kMaterialCalibrationCommandStart = 0;
+constexpr int kMaterialCalibrationCommandSetPose = 1;
+constexpr int kMaterialCalibrationCommandSaveAndNext = 2;
+constexpr int kMaterialCalibrationCommandExit = 3;
+
+bool parseYamlInteger(const std::string &line, const std::string &key, int &value)
+{
+  const std::size_t key_position = line.find(key);
+  if (key_position == std::string::npos)
+  {
+    return false;
+  }
+
+  const std::size_t colon_position = line.find(':', key_position + key.size());
+  if (colon_position == std::string::npos)
+  {
+    return false;
+  }
+
+  std::istringstream stream(line.substr(colon_position + 1));
+  stream >> value;
+  return !stream.fail();
+}
+
+bool parseYamlBoolean(const std::string &line, const std::string &key, bool &value)
+{
+  const std::size_t key_position = line.find(key);
+  if (key_position == std::string::npos)
+  {
+    return false;
+  }
+
+  const std::size_t colon_position = line.find(':', key_position + key.size());
+  if (colon_position == std::string::npos)
+  {
+    return false;
+  }
+
+  const std::string text = line.substr(colon_position + 1);
+  if (text.find("true") != std::string::npos)
+  {
+    value = true;
+    return true;
+  }
+  if (text.find("false") != std::string::npos)
+  {
+    value = false;
+    return true;
+  }
+  return false;
+}
 
 double clampDouble(double value, double lower, double upper)
 {
@@ -155,6 +251,13 @@ turn_on_robot::turn_on_robot() : Power_voltage(0)
   laser_shot_while_target_visible = false;
   post_shot_focused_scan_active = false;
   post_shot_scan_center_yaw = 2047;
+  material_recognition_mode_active = false;
+  material_recognition_point_id = 0;
+  material_calibration_mode_active = false;
+  material_calibration_pose_set = false;
+  material_calibration_point_id = 0;
+  material_calibration_pitch = GIMBAL_MOTOR0_CENTER_POSITION;
+  material_calibration_yaw = 2047;
   memset(&Robot_Pos, 0, sizeof(Robot_Pos));
   memset(&Robot_Vel, 0, sizeof(Robot_Vel));
   memset(&Receive_Data, 0, sizeof(Receive_Data));
@@ -180,6 +283,20 @@ turn_on_robot::turn_on_robot() : Power_voltage(0)
   private_nh.param("calibrate_lineSpeed", calibrate_lineSpeed, calibrate_lineSpeed);
   private_nh.param("ticksPerMeter", ticksPerMeter, ticksPerMeter);
   private_nh.param("ticksPer2PI", ticksPer2PI, ticksPer2PI);
+  std::string default_pose_config_path = ros::package::getPath("dzactuator");
+  if (default_pose_config_path.empty())
+  {
+    default_pose_config_path = "/home/duzhong/dzacs/src/dzactuator";
+  }
+  default_pose_config_path += "/config/material_recognition_points.yaml";
+  private_nh.param<std::string>("material_recognition_pose_config_path",
+                                material_recognition_pose_config_path,
+                                default_pose_config_path);
+  if (!loadMaterialRecognitionPoseTable())
+  {
+    ROS_WARN("物资识别点位表未加载，所有点位保持未标定状态: %s",
+             material_recognition_pose_config_path.c_str());
+  }
 
   voltage_publisher = n.advertise<std_msgs::Float32>("PowerVoltage", 10);            // Create a battery-voltage topic publisher //创建电池电压话题发布者
   Battery_Percentage_pub = n.advertise<std_msgs::Float32>("Battery_Percentage", 10); // Create a battery-voltage topic publisher //创建电池电量百分比话题发布者
@@ -207,6 +324,9 @@ turn_on_robot::turn_on_robot() : Power_voltage(0)
   sub_stop_point_singal = n.subscribe("/move_base/stop_signal",1,&turn_on_robot::callback_stop_point_signal,this);              //停车状态回调
   sub_voice_switch = n.subscribe("/voice_switch",1,&turn_on_robot::callback_voice_switch,this);                                 //语音播报回调
   sub_material_scan_mode = n.subscribe("material_scan_mode", 1, &turn_on_robot::callback_material_scan_mode, this);               //物资扫描模式回调
+  sub_material_recognition_point = n.subscribe("material_recognition_point", 1, &turn_on_robot::callback_material_recognition_point, this); //物资识别定姿点位回调
+  sub_arrived_material_number = n.subscribe("/arrived_material_number", 1, &turn_on_robot::callback_arrived_material_number, this); //导航到达物资点回调
+  sub_material_pose_calibration = n.subscribe("material_pose_calibration", 1, &turn_on_robot::callback_material_pose_calibration, this); //物资点位坐标标定回调
   sub_scan_gimbal_position = n.subscribe("scan_gimbal_position", 1, &turn_on_robot::callback_scan_gimbal_position, this);       //扫描云台位置回调
   // ros::Publisher det_pub = nh.advertise<std_msgs::Int32MultiArray>("/pt_det_topic", 1);
 
@@ -522,6 +642,111 @@ int turn_on_robot::limitGimbalMotor0Position(int position)
   return position;
 }
 
+bool turn_on_robot::loadMaterialRecognitionPoseTable()
+{
+  std::ifstream input(material_recognition_pose_config_path.c_str());
+  if (!input.is_open())
+  {
+    return false;
+  }
+
+  MaterialRecognitionPose loaded[kMaterialRecognitionPointCount];
+  for (int index = 0; index < kMaterialRecognitionPointCount; ++index)
+  {
+    loaded[index].pitch = GIMBAL_MOTOR0_CENTER_POSITION;
+    loaded[index].yaw = 2047;
+    loaded[index].calibrated = false;
+  }
+
+  int current_index = -1;
+  bool found_point = false;
+  std::string line;
+  while (std::getline(input, line))
+  {
+    int point_id = 0;
+    if (std::sscanf(line.c_str(), " point_%d:", &point_id) == 1)
+    {
+      current_index = point_id - 1;
+      if (current_index >= 0 && current_index < kMaterialRecognitionPointCount)
+      {
+        found_point = true;
+      }
+      else
+      {
+        current_index = -1;
+      }
+      continue;
+    }
+
+    if (current_index < 0)
+    {
+      continue;
+    }
+
+    int value = 0;
+    if (parseYamlInteger(line, "pitch", value))
+    {
+      loaded[current_index].pitch = value;
+      continue;
+    }
+    if (parseYamlInteger(line, "yaw", value))
+    {
+      loaded[current_index].yaw = value;
+      continue;
+    }
+
+    bool calibrated = false;
+    if (parseYamlBoolean(line, "calibrated", calibrated))
+    {
+      loaded[current_index].calibrated = calibrated;
+    }
+  }
+
+  if (!found_point)
+  {
+    return false;
+  }
+
+  for (int index = 0; index < kMaterialRecognitionPointCount; ++index)
+  {
+    gMaterialRecognitionPoses[index] = loaded[index];
+  }
+  ROS_INFO("物资识别点位表已加载: %s",
+           material_recognition_pose_config_path.c_str());
+  return true;
+}
+
+bool turn_on_robot::saveMaterialRecognitionPoseTable() const
+{
+  const std::string temporary_path = material_recognition_pose_config_path + ".tmp";
+  std::ofstream output(temporary_path.c_str());
+  if (!output.is_open())
+  {
+    ROS_ERROR("无法写入物资识别点位临时表: %s", temporary_path.c_str());
+    return false;
+  }
+
+  output << "# 物资识别点位表。Pitch 对应 Position_0，Yaw 对应 Position_1。\n";
+  output << "# calibrated 为 true 的点位才允许 material_recognition_point 调用。\n";
+  output << "material_recognition_points:\n";
+  for (int index = 0; index < kMaterialRecognitionPointCount; ++index)
+  {
+    const MaterialRecognitionPose &pose = gMaterialRecognitionPoses[index];
+    output << "  point_" << (index + 1) << ":\n";
+    output << "    pitch: " << pose.pitch << "\n";
+    output << "    yaw: " << pose.yaw << "\n";
+    output << "    calibrated: " << (pose.calibrated ? "true" : "false") << "\n";
+  }
+  output.close();
+
+  if (std::rename(temporary_path.c_str(), material_recognition_pose_config_path.c_str()) != 0)
+  {
+    ROS_ERROR("无法保存物资识别点位表: %s", material_recognition_pose_config_path.c_str());
+    return false;
+  }
+  return true;
+}
+
 /**************************************
 Date: January 28, 2021
 Function: Data conversion function
@@ -558,7 +783,7 @@ void turn_on_robot::callback_movebase_angle(const geometry_msgs::Twist::ConstPtr
   float v = msg->linear.x;
   float w = msg->angular.z;
 
-  moveBaseControl.TargetSpeed = abs(clamp(v * 30 / 0.25, -255.0, 255.0));
+  moveBaseControl.TargetSpeed = abs(clamp(v * 45 / 0.25, -255.0, 255.0));
   moveBaseControl.TargetAngle = w;
   moveBaseControl.TargetAngle += 60;
 
@@ -586,7 +811,7 @@ void turn_on_robot::callback_cmd_vel_angle(const geometry_msgs::Twist::ConstPtr 
   float v = msg->linear.x;
   float w = msg->angular.z;
 
-  moveBaseControl.TargetSpeed = abs(clamp(v * 30/0.25, -255.0, 255.0));
+  moveBaseControl.TargetSpeed = abs(clamp(v * 45 / 0.25, -255.0, 255.0));
   if(!v == 0)
   {
     moveBaseControl.TargetAngle = round(atan(CARL * w / v) * 57.3);
@@ -636,6 +861,12 @@ void turn_on_robot::callback_stop_point_signal(const std_msgs::UInt8::ConstPtr &
 
 void turn_on_robot::callback_monter_control(const geometry_msgs::Twist::ConstPtr &msg)
 {
+  if (material_recognition_mode_active)
+  {
+    ROS_WARN_THROTTLE(1.0, "物资识别定姿模式中，忽略 monter_control 云台位置命令");
+    return;
+  }
+
   moveBaseControl.Position_0 = msg->linear.x;
   moveBaseControl.Position_1 = msg->linear.y;
   moveBaseControl.Speed_0 = 1000;
@@ -733,6 +964,11 @@ void turn_on_robot::callback_material_scan_mode(const std_msgs::UInt8::ConstPtr 
 {
   if (msg->data == 1)
   {
+    material_recognition_mode_active = false;
+    material_recognition_point_id = 0;
+    material_calibration_mode_active = false;
+    material_calibration_pose_set = false;
+    material_calibration_point_id = 0;
     find_center = false;  // 收到明确命令后才开始扫描
     ROS_INFO("[dzactuator] Material scan mode activated");
   }
@@ -744,9 +980,192 @@ void turn_on_robot::callback_material_scan_mode(const std_msgs::UInt8::ConstPtr 
   }
 }
 
+// 物资识别点位定姿回调。
+// 接口预留：std_msgs/Int32.data 为 1..16 的到达点位编号，0 用于退出定姿模式。
+void turn_on_robot::callback_material_recognition_point(const std_msgs::Int32::ConstPtr &msg)
+{
+  set_material_recognition_point(msg->data);
+}
+
+// 导航节点发布 /arrived_material_number（std_msgs/UInt8，1..16）后，
+// 直接复用物资定姿逻辑。0 仍沿用原接口的“退出定姿模式”语义。
+void turn_on_robot::callback_arrived_material_number(const std_msgs::UInt8::ConstPtr &msg)
+{
+  ROS_INFO("收到导航到达物资点: %u", static_cast<unsigned int>(msg->data));
+  set_material_recognition_point(static_cast<int>(msg->data));
+}
+
+void turn_on_robot::set_material_recognition_point(int requested_point)
+{
+  if (requested_point == 0)
+  {
+    material_recognition_mode_active = false;
+    material_recognition_point_id = 0;
+    material_calibration_mode_active = false;
+    material_calibration_pose_set = false;
+    material_calibration_point_id = 0;
+    find_center = true;
+    post_shot_focused_scan_active = false;
+    ROS_INFO("物资识别定姿模式已退出");
+    return;
+  }
+
+  if (requested_point < 1 || requested_point > kMaterialRecognitionPointCount)
+  {
+    ROS_WARN("物资识别点位无效: %d，允许范围为 1-%d（0 为退出）",
+             requested_point, kMaterialRecognitionPointCount);
+    return;
+  }
+
+  const MaterialRecognitionPose &pose =
+      gMaterialRecognitionPoses[requested_point - 1];
+  if (!pose.calibrated)
+  {
+    ROS_WARN("物资识别点位 %d 尚未标定，已忽略本次定姿请求",
+             requested_point);
+    return;
+  }
+
+  const int pitch = limitGimbalMotor0Position(pose.pitch);
+  const int yaw = clamp(pose.yaw, kFullScanYawMin, kFullScanYawMax);
+  material_recognition_mode_active = true;
+  material_recognition_point_id = requested_point;
+  material_calibration_mode_active = false;
+  material_calibration_pose_set = false;
+  material_calibration_point_id = 0;
+  find_center = true;
+  post_shot_focused_scan_active = false;
+  moveBaseControl.Position_0 = pitch;
+  moveBaseControl.Position_1 = yaw;
+  moveBaseControl.Speed_0 = kMaterialRecognitionPositionSpeed;
+  moveBaseControl.Speed_1 = kMaterialRecognitionPositionSpeed;
+  moveBaseControl.Time_0 = 0;
+  moveBaseControl.Time_1 = 0;
+  moveBaseControl.Fun = 0;
+
+  ROS_INFO("物资识别定姿：点位=%d, Pitch=%d, Yaw=%d",
+           requested_point, pitch, yaw);
+}
+
+void turn_on_robot::callback_material_pose_calibration(
+    const std_msgs::Int32MultiArray::ConstPtr &msg)
+{
+  if (msg->data.empty())
+  {
+    ROS_WARN("物资点位标定消息为空");
+    return;
+  }
+
+  const int command = msg->data[0];
+  if (command == kMaterialCalibrationCommandStart)
+  {
+    if (msg->data.size() < 2 || msg->data[1] < 1 ||
+        msg->data[1] > kMaterialRecognitionPointCount)
+    {
+      ROS_WARN("开始标定格式应为 [0, point_id]，point_id 范围为 1-%d",
+               kMaterialRecognitionPointCount);
+      return;
+    }
+
+    material_calibration_mode_active = true;
+    material_calibration_pose_set = false;
+    material_calibration_point_id = msg->data[1];
+    material_recognition_mode_active = true;
+    material_recognition_point_id = 0;
+    find_center = true;
+    post_shot_focused_scan_active = false;
+    ROS_INFO("开始标定物资点位 %d；请发送 [1, pitch, yaw] 调整姿态",
+             material_calibration_point_id);
+    return;
+  }
+
+  if (command == kMaterialCalibrationCommandSetPose)
+  {
+    if (!material_calibration_mode_active || msg->data.size() < 3)
+    {
+      ROS_WARN("设置标定姿态前请先发送 [0, point_id]；设置格式为 [1, pitch, yaw]");
+      return;
+    }
+
+    material_calibration_pitch = limitGimbalMotor0Position(msg->data[1]);
+    material_calibration_yaw = clamp(msg->data[2], kFullScanYawMin, kFullScanYawMax);
+    material_calibration_pose_set = true;
+    moveBaseControl.Position_0 = material_calibration_pitch;
+    moveBaseControl.Position_1 = material_calibration_yaw;
+    moveBaseControl.Speed_0 = kMaterialRecognitionPositionSpeed;
+    moveBaseControl.Speed_1 = kMaterialRecognitionPositionSpeed;
+    moveBaseControl.Time_0 = 0;
+    moveBaseControl.Time_1 = 0;
+    moveBaseControl.Fun = 0;
+    ROS_INFO("标定点位 %d 调整到 Pitch=%d, Yaw=%d",
+             material_calibration_point_id, material_calibration_pitch,
+             material_calibration_yaw);
+    return;
+  }
+
+  if (command == kMaterialCalibrationCommandSaveAndNext)
+  {
+    if (!material_calibration_mode_active || !material_calibration_pose_set)
+    {
+      ROS_WARN("当前点位尚未设置 Pitch/Yaw，不能保存");
+      return;
+    }
+
+    MaterialRecognitionPose &pose =
+        gMaterialRecognitionPoses[material_calibration_point_id - 1];
+    pose.pitch = material_calibration_pitch;
+    pose.yaw = material_calibration_yaw;
+    pose.calibrated = true;
+    if (!saveMaterialRecognitionPoseTable())
+    {
+      ROS_ERROR("点位 %d 保存失败，仍停留在当前点位",
+                material_calibration_point_id);
+      return;
+    }
+
+    if (material_calibration_point_id == kMaterialRecognitionPointCount)
+    {
+      material_calibration_mode_active = false;
+      material_calibration_pose_set = false;
+      material_recognition_mode_active = true;
+      material_recognition_point_id = kMaterialRecognitionPointCount;
+      ROS_INFO("16 个物资点位均已完成保存，云台保持在点位 16 姿态");
+      return;
+    }
+
+    ++material_calibration_point_id;
+    material_calibration_pose_set = false;
+    material_recognition_point_id = 0;
+    ROS_INFO("点位已保存；已切换到点位 %d。云台保持当前位置，等待下一条 [1, pitch, yaw]",
+             material_calibration_point_id);
+    return;
+  }
+
+  if (command == kMaterialCalibrationCommandExit)
+  {
+    material_calibration_mode_active = false;
+    material_calibration_pose_set = false;
+    material_calibration_point_id = 0;
+    material_recognition_mode_active = false;
+    material_recognition_point_id = 0;
+    find_center = true;
+    post_shot_focused_scan_active = false;
+    ROS_INFO("物资点位标定已退出，未保存的当前调整已丢弃");
+    return;
+  }
+
+  ROS_WARN("未知物资点位标定命令: %d", command);
+}
+
 // 扫描云台位置回调
 void turn_on_robot::callback_scan_gimbal_position(const std_msgs::Int32MultiArray::ConstPtr &msg)
 {
+  if (material_recognition_mode_active)
+  {
+    ROS_WARN_THROTTLE(1.0, "物资识别定姿模式中，忽略 scan_gimbal_position 命令");
+    return;
+  }
+
   if (msg->data.size() >= 2)
   {
     // 设置云台位置进行扫描
@@ -763,6 +1182,12 @@ void turn_on_robot::callback_scan_gimbal_position(const std_msgs::Int32MultiArra
 
 void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::ConstPtr &msg)
 {
+  if (material_recognition_mode_active)
+  {
+    ROS_DEBUG_THROTTLE(1.0, "物资识别定姿模式中，暂停视觉云台跟踪");
+    return;
+  }
+
   if (msg->data.size() < 3)
   {
     ROS_WARN_THROTTLE(1.0, "offset_center 消息格式应为 [Yaw偏差, Pitch偏差, 是否检测到]");
@@ -851,6 +1276,26 @@ void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::Cons
     if (burst_was_active &&
         periodic_now >= next_periodic_burst_shot_time)
     {
+      const bool is_second_periodic_shot =
+          periodic_burst_shots_remaining == 1;
+      const bool second_shot_is_aligned =
+          !kPeriodicSecondShotRequireAlignedTarget ||
+          (temp_msg.data[2] == 1 &&
+           std::abs(static_cast<double>(temp_msg.data[0])) <
+               kYawFireWindowPixels &&
+           std::abs(static_cast<double>(temp_msg.data[1])) <
+               kPitchFireWindowPixels);
+
+      // 第一发保持原来的固定等待后发射。第二发未重新检测到靶子或未居中
+      // 时直接取消，让下一帧视觉重新瞄准，避免在目标已经离开时补发。
+      if (is_second_periodic_shot && !second_shot_is_aligned)
+      {
+        periodic_burst_shots_remaining = 0;
+        ROS_INFO("定时单步双发：第二发取消，目标未重新对准 (yaw=%d, pitch=%d, detected=%d)",
+                 temp_msg.data[0], temp_msg.data[1], temp_msg.data[2]);
+        return;
+      }
+
       std_msgs::UInt8 shotdata;
       shotdata.data = 1;
       pub_LaserShot_Command.publish(shotdata);

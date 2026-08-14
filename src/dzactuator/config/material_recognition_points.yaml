@@ -1,0 +1,67 @@
+# 物资识别点位表。Pitch 对应 Position_0，Yaw 对应 Position_1。
+# calibrated 为 true 的点位才允许 material_recognition_point 调用。
+material_recognition_points:
+  point_1:
+    pitch: 1850
+    yaw: 1200
+    calibrated: true
+  point_2:
+    pitch: 2000
+    yaw: 2900
+    calibrated: true
+  point_3:
+    pitch: 2000
+    yaw: 2047
+    calibrated: true
+  point_4:
+    pitch: 1950
+    yaw: 3300
+    calibrated: true
+  point_5:
+    pitch: 1850
+    yaw: 1050
+    calibrated: true
+  point_6:
+    pitch: 2000
+    yaw: 3150
+    calibrated: true
+  point_7:
+    pitch: 1950
+    yaw: 1300
+    calibrated: true
+  point_8:
+    pitch: 1900
+    yaw: 3050
+    calibrated: true
+  point_9:
+    pitch: 1875
+    yaw: 1050
+    calibrated: true
+  point_10:
+    pitch: 1900
+    yaw: 1200
+    calibrated: true
+  point_11:
+    pitch: 1900
+    yaw: 3100
+    calibrated: true
+  point_12:
+    pitch: 1876
+    yaw: 1030
+    calibrated: true
+  point_13:
+    pitch: 1950
+    yaw: 2750
+    calibrated: true
+  point_14:
+    pitch: 1850
+    yaw: 3050
+    calibrated: true
+  point_15:
+    pitch: 1950
+    yaw: 1300
+    calibrated: true
+  point_16:
+    pitch: 1900
+    yaw: 3200
+    calibrated: true

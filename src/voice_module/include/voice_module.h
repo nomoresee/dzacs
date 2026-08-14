@@ -24,6 +24,7 @@ private:
     ros::Subscriber sub_visual_class_;
     ros::Subscriber sub_material_position_;
     ros::Subscriber sub_robot_status_;
+    ros::Timer visual_vote_timer_;
 
     ros::Publisher pub_voice_feedback_;
     ros::Publisher pub_control_command_;
@@ -32,7 +33,7 @@ private:
 
     std::string visual_class_topic_;
     std::string material_position_topic_;
-    double visual_repeat_interval_;
+    double visual_vote_window_;
     double voice_sequence_interval_;
 
     bool voice_recognition_ready_;
@@ -40,10 +41,12 @@ private:
     bool is_listening_;
     std::string last_command_;
 
-    std::string last_visual_token_;
-    ros::Time last_visual_broadcast_time_;
     int current_material_position_;
     bool has_material_position_;
+    bool material_position_broadcasted_;
+    bool visual_vote_active_;
+    std::map<std::string, int> visual_class_votes_;
+    std::vector<std::string> visual_vote_order_;
 
     std::map<std::string, std::string> command_mapping_;
     std::vector<std::string> class_names_;
@@ -60,13 +63,15 @@ private:
     void visualClassCallback(const std_msgs::String::ConstPtr& msg);
     void materialPositionCallback(const std_msgs::UInt8::ConstPtr& msg);
     void robotStatusCallback(const std_msgs::UInt8::ConstPtr& msg);
+    void visualVoteTimerCallback(const ros::TimerEvent& event);
 
     void processVoiceCommand(const std::string& command);
     void generateVoiceFeedback(const std::string& message);
-    void handleVisualToken(const std::string& token);
-    bool shouldBroadcastToken(const std::string& token) const;
+    void collectVisualVote(const std::string& token);
+    void broadcastVisualToken(const std::string& token);
     bool parseVisualToken(const std::string& token, std::vector<uint8_t>* voice_ids, std::string* broadcast_text) const;
     bool numberToVoiceId(int number, uint8_t* voice_id) const;
+    bool materialPositionToVoiceId(int position, uint8_t* voice_id) const;
     std::string numberToChineseText(int number) const;
     bool classIndexToVoiceId(int class_id, uint8_t* voice_id) const;
     void publishVoiceSwitch(uint8_t voice_id);

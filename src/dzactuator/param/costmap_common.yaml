@@ -36,7 +36,7 @@ obstacle_layer:
 inflation_layer:
   enabled: true
   cost_scaling_factor: 3.0  # 降低代价缩放因子
-  inflation_radius: 0.05  # 减少膨胀半径，根据SmartMaster实际尺寸调整
+  inflation_radius: 0.1  # 减少膨胀半径，根据SmartMaster实际尺寸调整
   # 噪点过滤参数
   inflation_decay_function: "linear"  # 线性衰减函数
   inflation_decay_scale: 0.5  # 衰减比例

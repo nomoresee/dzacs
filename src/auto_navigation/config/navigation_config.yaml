@@ -29,11 +29,11 @@ navigation:
 path_planning:
   # 全局规划
   global_planner: "global_planner/GlobalPlanner"
-  global_planning_frequency: 1.0    # move_base planner_frequency
+  global_planning_frequency: 0.0    # move_base planner_frequency
 
   # 局部规划
   local_planner: "teb_local_planner/TebLocalPlannerROS"
-  local_planning_frequency: 15.0    # move_base controller_frequency
+  local_planning_frequency: 20.0    # move_base controller_frequency
 
 # 恢复行为参数（与 move_base_planner.yaml 一致）
 recovery:

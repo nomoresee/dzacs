@@ -1,0 +1,19 @@
+--- camera topic rate ---
+subscribed to [/usb_cam/image_raw]
+average rate: 30.003
+	min: 0.033s max: 0.034s std dev: 0.00012s window: 20
+average rate: 30.003
+	min: 0.028s max: 0.038s std dev: 0.00166s window: 20
+average rate: 29.993
+	min: 0.033s max: 0.034s std dev: 0.00011s window: 20
+average rate: 29.938
+	min: 0.032s max: 0.036s std dev: 0.00066s window: 20
+average rate: 29.903
+	min: 0.032s max: 0.037s std dev: 0.00097s window: 20
+--- current model ---
+data: "augmented_finetune_v1_best_416"
+---
+--- detected objects sample ---
+data: "tape_measure"
+---
+--- detected objects rate ---

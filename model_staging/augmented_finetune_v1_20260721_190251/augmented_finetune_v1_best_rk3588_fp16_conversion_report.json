@@ -1,0 +1,48 @@
+{
+  "source_onnx": "/home/duzhong/dzacs/model_staging/augmented_finetune_v1_20260721_190251/augmented_finetune_v1_best_416_raw3.onnx",
+  "source_onnx_sha256": "ba486f38476c4eef948959140e36dd547b503b2fa2273d041425303c1933ec0f",
+  "rknn": "/home/duzhong/dzacs/model_staging/augmented_finetune_v1_20260721_190251/augmented_finetune_v1_best_rk3588_fp16.rknn",
+  "rknn_sha256": "fe3f3dd9f81b457c350015e9ae20e7a4bb65b85c767b4cd71dab61894f320efd",
+  "rknn_size_bytes": 15281673,
+  "target_platform": "rk3588",
+  "precision": "FP16 (do_quantization=False)",
+  "input_contract": "uint8 NHWC [1,416,416,3], mean=0, std=255",
+  "runtime_verification": [
+    {
+      "shape": [
+        1,
+        90,
+        52,
+        52
+      ],
+      "dtype": "float32",
+      "all_finite": true,
+      "minimum": -58.0,
+      "maximum": 6.25390625
+    },
+    {
+      "shape": [
+        1,
+        90,
+        26,
+        26
+      ],
+      "dtype": "float32",
+      "all_finite": true,
+      "minimum": -66.5,
+      "maximum": 4.3203125
+    },
+    {
+      "shape": [
+        1,
+        90,
+        13,
+        13
+      ],
+      "dtype": "float32",
+      "all_finite": true,
+      "minimum": -16.203125,
+      "maximum": 3.185546875
+    }
+  ]
+}

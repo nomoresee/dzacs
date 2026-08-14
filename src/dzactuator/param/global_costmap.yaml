@@ -3,8 +3,8 @@ global_costmap:
   robot_base_frame: base_link  # 机器人参考坐标系  :contentReference[oaicite:1]{index=1}
 
   # ───────── 运行频率 ─────────
-  update_frequency: 2.0        # 仅用于全局规划，2-5 Hz 足够；15 Hz 会浪费 CPU  :contentReference[oaicite:2]{index=2}
-  publish_frequency: 2.0       # RViz 可视化频率，无需太高  :contentReference[oaicite:3]{index=3}
+  update_frequency: 5.0        # 仅用于全局规划，2-5 Hz 足够；15 Hz 会浪费 CPU  :contentReference[oaicite:2]{index=2}
+  publish_frequency: 5.0       # RViz 可视化频率，无需太高  :contentReference[oaicite:3]{index=3}
   transform_tolerance: 0.5     # TF 迟延裕量；过小易触发 Costmap2DROS transform timeout
 
   # ───────── 地图尺寸与分辨率 ─────────

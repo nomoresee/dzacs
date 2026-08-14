@@ -5,11 +5,11 @@ TebLocalPlannerROS:
  
  #Trajectory
  teb_autosize: True 
- dt_ref: 0.3
- dt_hysteresis: 0.03
- global_plan_overwrite_orientation: True 
+ dt_ref: 0.2
+ dt_hysteresis: 0.05
+ global_plan_overwrite_orientation: false
  allow_init_with_backwards_motion: True 
- max_global_plan_lookahead_dist: 3.0 
+ max_global_plan_lookahead_dist: 2.5
  feasibility_check_no_poses: 5 
  
  # 路径平滑参数
@@ -22,14 +22,14 @@ TebLocalPlannerROS:
  max_vel_y: 0 
  max_vel_x_backwards: 0.5  # 后退速度限制
  max_vel_theta: 2.0  # 角速度限制，考虑阿克曼转向
- acc_lim_x: 1.0  # 加速度限制
+ acc_lim_x: 0.8  # 加速度限制
  acc_lim_y: 0  
- acc_lim_theta: 0.6  # 角加速度限制
+ acc_lim_theta: 1.5  # 角加速度限制
  max_vel_trans: 1.0  # 最大平移速度
  
  # 根据硬件参数调整
  wheelbase: 0.15  # 轴距150mm
- min_turning_radius: 0.25  # 最小转弯半径240-260mm，取250mm
+ min_turning_radius: 0.35  # 最小转弯半径240-260mm，取250mm
  
  cmd_angle_instead_rotvel: False
  
@@ -39,7 +39,7 @@ TebLocalPlannerROS:
   vertices: [[-0.14, -0.055], [-0.14, 0.055], [0.14, 0.055], [0.14, -0.055]]  # 长度278mm，宽度140mm
 
  xy_goal_tolerance: 0.1  #gai
- yaw_goal_tolerance: 0.2 #gai
+ yaw_goal_tolerance: 0.1 #gai
  free_goal_vel: False #gai
  
  # Obstacles（静态地图模式：仅绕开 costmap 中的墙体/膨胀区）
@@ -74,7 +74,7 @@ TebLocalPlannerROS:
  weight_kinematics_forward_drive: 2
  weight_kinematics_turning_radius: 5 
  weight_optimaltime: 5  # 增加时间优化权重
- weight_shortest_path: 80  # 增加最短路径权重，减少路径长度
+ weight_shortest_path: 5  # 增加最短路径权重，减少路径长度
  weight_obstacle: 50  # 降低障碍物权重，减少过度避障
  weight_inflation: 0.1  # 降低膨胀权重
  weight_dynamic_obstacle: 10
@@ -83,7 +83,7 @@ TebLocalPlannerROS:
  weight_adapt_factor: 2 
  
  # Homotopy Class Planner
- enable_homotopy_class_planning: True
+ enable_homotopy_class_planning: false
  enable_multithreading: True
  max_number_classes: 2
  selection_cost_hysteresis: 2.0 

@@ -15,5 +15,5 @@ GlobalPlanner:
   cost_factor: 2.0
  
   orientation_mode: 2
-  orientation_window_size: 1
+  orientation_window_size: 3
   outline_map: true

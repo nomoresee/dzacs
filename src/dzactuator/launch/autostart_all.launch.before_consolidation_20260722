@@ -1,0 +1,10 @@
+<launch>
+
+  <include file="$(find dzactuator)/launch/bringup.launch" />
+  <include file="$(find dzactuator)/launch/amcl.launch" />
+  <include file="$(find dzactuator)/launch/dznavigation.launch" />
+  <include file="$(find dzactuator)/launch/dzjudgment.launch" />
+  <include file="$(find dzactuator)/launch/dzrknnpt.launch" />
+  <!-- <include file="$(find rknn_pt)/launch/fusion_detector.launch" /> -->
+  <include file="$(find auto_navigation)/launch/auto_navigation.launch" />
+ </launch>

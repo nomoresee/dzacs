@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/duzhong/dzacs/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/duzhong/dzacs/src/clear_costmap_recovery/include/**",
+        "/home/duzhong/dzacs/src/dzactuator/include/**",
+        "/home/duzhong/dzacs/src/move_base/include/**",
+        "/home/duzhong/dzacs/src/rknn_pt/include/**",
+        "/home/duzhong/dzacs/src/voice_module/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-arm64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

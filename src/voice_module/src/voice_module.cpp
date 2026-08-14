@@ -8,17 +8,18 @@
 VoiceModule::VoiceModule(ros::NodeHandle nh)
     : nh_(nh),
       private_nh_("~"),
-      visual_repeat_interval_(3.0),
-      voice_sequence_interval_(1.2),
+      visual_vote_window_(3.0),
+      voice_sequence_interval_(2.0),
       voice_recognition_ready_(false),
       voice_synthesis_ready_(false),
       is_listening_(false),
       current_material_position_(0),
-      has_material_position_(false) {
+      has_material_position_(false),
+      material_position_broadcasted_(false) {
     private_nh_.param<std::string>("visual_class_topic", visual_class_topic_, "/dzatornode2");
     private_nh_.param<std::string>("material_position_topic", material_position_topic_, "/voice_material_position");
-    private_nh_.param<double>("visual_repeat_interval", visual_repeat_interval_, 3.0);
-    private_nh_.param<double>("voice_sequence_interval", voice_sequence_interval_, 1.2);
+    private_nh_.param<double>("visual_vote_window", visual_vote_window_, 3.0);
+    private_nh_.param<double>("voice_sequence_interval", voice_sequence_interval_, 2.0);
 
     initializeCommandMapping();
     initializeClassNames();
@@ -30,6 +31,9 @@ VoiceModule::VoiceModule(ros::NodeHandle nh)
     sub_visual_class_ = nh_.subscribe(visual_class_topic_, 10, &VoiceModule::visualClassCallback, this);
     sub_material_position_ = nh_.subscribe(material_position_topic_, 10, &VoiceModule::materialPositionCallback, this);
     sub_robot_status_ = nh_.subscribe("/robot_status", 10, &VoiceModule::robotStatusCallback, this);
+    visual_vote_timer_ = nh_.createTimer(ros::Duration(visual_vote_window_),
+                                         &VoiceModule::visualVoteTimerCallback, this,
+                                         true, false);
 
     pub_voice_feedback_ = nh_.advertise<std_msgs::String>("/voice_feedback", 10);
     pub_control_command_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
@@ -38,8 +42,8 @@ VoiceModule::VoiceModule(ros::NodeHandle nh)
 
     publishVoiceStatus(voice_synthesis_ready_ ? 1 : 0);
 
-    ROS_INFO("voice_module started. visual_class_topic=%s material_position_topic=%s",
-             visual_class_topic_.c_str(), material_position_topic_.c_str());
+    ROS_INFO("voice_module started. visual_class_topic=%s material_position_topic=%s visual_vote_window=%.1f",
+             visual_class_topic_.c_str(), material_position_topic_.c_str(), visual_vote_window_);
 }
 
 VoiceModule::~VoiceModule() = default;
@@ -94,13 +98,18 @@ void VoiceModule::voiceCommandCallback(const std_msgs::String::ConstPtr& msg) {
 }
 
 void VoiceModule::visualClassCallback(const std_msgs::String::ConstPtr& msg) {
-    handleVisualToken(msg->data);
+    collectVisualVote(msg->data);
 }
 
 void VoiceModule::materialPositionCallback(const std_msgs::UInt8::ConstPtr& msg) {
     current_material_position_ = static_cast<int>(msg->data);
     has_material_position_ = true;
-    ROS_INFO("material position updated: %d", current_material_position_);
+    visual_vote_timer_.stop();
+    visual_class_votes_.clear();
+    visual_vote_order_.clear();
+    material_position_broadcasted_ = false;
+
+    ROS_INFO("material position updated: %d; waiting for visual votes.", current_material_position_);
 }
 
 void VoiceModule::robotStatusCallback(const std_msgs::UInt8::ConstPtr& msg) {
@@ -165,7 +174,11 @@ void VoiceModule::generateVoiceFeedback(const std::string& message) {
     synthesizeSpeech(message);
 }
 
-void VoiceModule::handleVisualToken(const std::string& token) {
+void VoiceModule::collectVisualVote(const std::string& token) {
+    if (!has_material_position_ || material_position_broadcasted_) {
+        return;
+    }
+
     std::vector<uint8_t> voice_ids;
     std::string broadcast_text;
     if (!parseVisualToken(token, &voice_ids, &broadcast_text)) {
@@ -173,33 +186,61 @@ void VoiceModule::handleVisualToken(const std::string& token) {
         return;
     }
 
-    std::string broadcast_key = token;
-    if (has_material_position_) {
-        broadcast_key += "@" + std::to_string(current_material_position_);
+    const auto vote_it = visual_class_votes_.find(token);
+    if (vote_it == visual_class_votes_.end()) {
+        visual_class_votes_[token] = 1;
+        visual_vote_order_.push_back(token);
+    } else {
+        ++vote_it->second;
     }
 
-    if (!shouldBroadcastToken(broadcast_key)) {
+    if (!visual_vote_timer_.hasStarted()) {
+        visual_vote_timer_.setPeriod(ros::Duration(visual_vote_window_), true);
+        visual_vote_timer_.start();
+        ROS_INFO("visual vote started for material position %d (%.1f seconds).",
+                 current_material_position_, visual_vote_window_);
+    }
+}
+
+void VoiceModule::visualVoteTimerCallback(const ros::TimerEvent&) {
+    if (!has_material_position_ || material_position_broadcasted_ || visual_vote_order_.empty()) {
         return;
     }
 
-    last_visual_token_ = broadcast_key;
-    last_visual_broadcast_time_ = ros::Time::now();
+    std::string selected_token;
+    int highest_votes = -1;
+    for (const std::string& token : visual_vote_order_) {
+        const int votes = visual_class_votes_[token];
+        if (votes > highest_votes) {
+            highest_votes = votes;
+            selected_token = token;
+        }
+    }
+
+    ROS_INFO("visual vote selected token=%s votes=%d for material position %d.",
+             selected_token.c_str(), highest_votes, current_material_position_);
+    broadcastVisualToken(selected_token);
+}
+
+void VoiceModule::broadcastVisualToken(const std::string& token) {
+    std::vector<uint8_t> voice_ids;
+    std::string broadcast_text;
+    if (!parseVisualToken(token, &voice_ids, &broadcast_text)) {
+        ROS_WARN("cannot broadcast invalid visual token: %s", token.c_str());
+        return;
+    }
 
     publishVoiceSwitchSequence(voice_ids);
     generateVoiceFeedback(broadcast_text);
-}
-
-bool VoiceModule::shouldBroadcastToken(const std::string& token) const {
-    if (token != last_visual_token_) {
-        return true;
-    }
-
-    if (last_visual_broadcast_time_.isZero()) {
-        return true;
-    }
-
-    const double elapsed = (ros::Time::now() - last_visual_broadcast_time_).toSec();
-    return elapsed >= visual_repeat_interval_;
+    material_position_broadcasted_ = true;
+    const int announced_position = current_material_position_;
+    visual_vote_timer_.stop();
+    visual_class_votes_.clear();
+    visual_vote_order_.clear();
+    has_material_position_ = false;
+    current_material_position_ = 0;
+    material_position_broadcasted_ = false;
+    ROS_INFO("material position %d broadcast completed and cleared.", announced_position);
 }
 
 bool VoiceModule::parseVisualToken(const std::string& token, std::vector<uint8_t>* voice_ids, std::string* broadcast_text) const {
@@ -220,12 +261,16 @@ bool VoiceModule::parseVisualToken(const std::string& token, std::vector<uint8_t
             return false;
         }
         if (has_material_position_ && class_id >= 10) {
-            uint8_t position_voice_id = 0;
-            if (!numberToVoiceId(current_material_position_, &position_voice_id)) {
+            // The ASR board reserves 0x80-0x89 for position-prefix clips and
+            // 0xA0-0xAE for the 15 item-name-only clips. Keeping these
+            // separate from the legacy preset IDs avoids repeated prefixes.
+            if (current_material_position_ < 0 || current_material_position_ > 16) {
                 return false;
             }
+            const uint8_t position_voice_id = static_cast<uint8_t>(0x80 + current_material_position_);
+            const uint8_t item_voice_id = static_cast<uint8_t>(0xA0 + class_id - 10);
             voice_ids->push_back(position_voice_id);
-            voice_ids->push_back(voice_id);
+            voice_ids->push_back(item_voice_id);
             *broadcast_text = std::to_string(current_material_position_) + "号位置识别到" + class_names_[class_id];
         } else {
             voice_ids->push_back(voice_id);

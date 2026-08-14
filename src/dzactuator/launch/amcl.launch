@@ -6,7 +6,7 @@
 	<node pkg="amcl" type="amcl" name="amcl" output="screen">
 		<!-- Publish scans from best pose at a max of 10 Hz -->
 		<param name="use_map_topic" value="true"/>
-		<param name="scan_topic_" value="scan"/>
+		<param name="scan_topic" value="scan"/>
 		<param name="odom_model_type" value="diff-corrected"/>
 		<param name="odom_alpha5" value="0.1"/>
 		<param name="transform_tolerance" value="0.2" />
@@ -16,8 +16,8 @@
 		<param name="max_particles" value="1500"/>
 		<param name="kld_err" value="0.05"/>
 		<param name="kld_z" value="0.99"/>
-		<param name="odom_alpha1" value="1"/> <!-- Specifies the expected noise in odometry's rotation estimate from the rotational component of the robot's motion. -->
-		<param name="odom_alpha2" value="1"/> <!-- Specifies the expected noise in odometry's rotation estimate from translational component of the robot's motion. -->
+		<param name="odom_alpha1" value="0.5"/> <!-- Specifies the expected noise in odometry's rotation estimate from the rotational component of the robot's motion. -->
+		<param name="odom_alpha2" value="0.5"/> <!-- Specifies the expected noise in odometry's rotation estimate from translational component of the robot's motion. -->
 		<!-- translation std dev, m -->
 		<param name="odom_alpha3" value="0.2"/> <!-- Specifies the expected noise in odometry's translation estimate from the translational component of the robot's motion. -->
 		<param name="odom_alpha4" value="0.2"/> <!-- Specifies the expected noise in odometry's translation estimate from the rotational component of the robot's motion. -->
@@ -30,8 +30,8 @@
 		<param name="laser_model_type" value="beam"/>
 		<!-- <param name="laser_model_type" value="beam"/> -->
 		<param name="laser_likelihood_max_dist" value="2.0"/>
-		<param name="update_min_d" value="0.1"/> <!-- Translational movement required before performing a filter update. -->
-		<param name="update_min_a" value="0.1"/> <!-- Rotational movement required before performing a filter update. 0.1 represents 5.7 degrees  -->
+		<param name="update_min_d" value="0.05"/> <!-- Translational movement required before performing a filter update. -->
+		<param name="update_min_a" value="0.05"/> <!-- Rotational movement required before performing a filter update. 0.1 represents 5.7 degrees  -->
 		<param name="odom_frame_id" value="odom"/>
 		<!-- <param name="odom_frame_id" value="odom_ekf"/> -->
 		<param name="base_frame_id" value="base_link"/>

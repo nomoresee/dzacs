@@ -1,0 +1,3 @@
+ec1fbecdd1fed99e2dbbf8f594e5e1150bb6d92b126c69ed2affdfa682cbbbcf  /home/duzhong/dzacs/src/auto_navigation/scripts/auto_navigation_node.py
+81385d24605aa5908c297deb483a7673e7dc388be681954b41ad4cf0910fdad9  /home/duzhong/dzacs/src/auto_navigation/scripts/goal_publisher.py
+597772495eacb61bf394c7662bd7e30e6f0edffeed91c72b62e77a6bd80888db  /home/duzhong/dzacs/src/auto_navigation/launch/auto_navigation.launch
