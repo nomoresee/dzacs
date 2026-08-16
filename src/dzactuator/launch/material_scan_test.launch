@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+  <!--
+    独立云台扫描测试：只启动 dzactuator 和测试节点。
+    不启动底盘导航、雷达、相机、模型、裁判系统、语音或发射。
+  -->
+  <arg name="serial_port_name" default="/dev/dzactutor" />
+  <arg name="serial_baud_rate" default="115200" />
+  <arg name="dwell_seconds" default="5.0" />
+  <arg name="startup_delay" default="1.0" />
+  <arg name="material_scan_target_topic" default="/material_scan_target" />
+
+  <node pkg="dzactuator" type="dzactuator_node" name="dzactuator"
+        output="screen" respawn="false">
+    <param name="serial_port_name" value="$(arg serial_port_name)" />
+    <param name="serial_baud_rate" value="$(arg serial_baud_rate)" />
+    <param name="calibrate_lineSpeed" value="1" type="int" />
+    <param name="ticksPerMeter" value="1441" type="int" />
+    <param name="ticksPer2PI" value="1242" type="int" />
+  </node>
+
+  <node pkg="dzactuator" type="material_scan_test.py" name="material_scan_test"
+        output="screen" required="false">
+    <param name="dwell_seconds" value="$(arg dwell_seconds)" />
+    <param name="startup_delay" value="$(arg startup_delay)" />
+    <param name="material_scan_target_topic" value="$(arg material_scan_target_topic)" />
+  </node>
+</launch>

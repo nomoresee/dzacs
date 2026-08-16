@@ -14,13 +14,13 @@ TebLocalPlannerROS:
  
  # 路径平滑参数
  enable_smoothing: True
- smoothing_factor: 0.3  # 路径平滑因子
+ smoothing_factor: 60  # 路径平滑因子
  path_smoothing: True
  
  # Robot - 根据SmartMaster硬件参数调整
  max_vel_x: 1.0  # 最高速度1m/s
  max_vel_y: 0 
- max_vel_x_backwards: 0.5  # 后退速度限制
+ max_vel_x_backwards: 0.1  # 后退速度限制
  max_vel_theta: 2.0  # 角速度限制，考虑阿克曼转向
  acc_lim_x: 0.8  # 加速度限制
  acc_lim_y: 0  
@@ -38,8 +38,8 @@ TebLocalPlannerROS:
   type: "polygon"
   vertices: [[-0.14, -0.055], [-0.14, 0.055], [0.14, 0.055], [0.14, -0.055]]  # 长度278mm，宽度140mm
 
- xy_goal_tolerance: 0.1  #gai
- yaw_goal_tolerance: 0.1 #gai
+ xy_goal_tolerance: 0.03  #gai
+ yaw_goal_tolerance: 0.8 #gai
  free_goal_vel: False #gai
  
  # Obstacles（静态地图模式：仅绕开 costmap 中的墙体/膨胀区）

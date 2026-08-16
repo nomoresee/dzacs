@@ -78,14 +78,14 @@ constexpr bool kFireOnlyAtYawEndpoint = true;
 // 开启后完全绕过实时跟踪/端点开火：每 0.3 秒采样一次最新 offset，
 // 按比例一步下发云台位置，短暂等待机械到位后非阻塞发射两次。
 constexpr bool kUsePeriodicStepAndBurstMode = true;
-constexpr double kPeriodicAimIntervalSec = 0.1;
+constexpr double kPeriodicAimIntervalSec = 0.15;
 constexpr double kPeriodicAimSettleTimeSec = 0.08;
 constexpr double kPeriodicBurstShotIntervalSec = 0.08;
 constexpr int kPeriodicBurstShotCount = 2;
-constexpr int kPeriodicAimMotorSpeed = 8000;
+constexpr int kPeriodicAimMotorSpeed = 7000;
 
 // offset 像素数 / 该值 = 云台位置增量。数值越小，单次调整越大。
-constexpr double kPeriodicYawPixelsPerMotorPosition = 1.35;
+constexpr double kPeriodicYawPixelsPerMotorPosition = 1.5;
 constexpr double kPeriodicPitchPixelsPerMotorPosition = 2.7;
 
 // 保持原先“每 80 ms 最多一发”的频率，但不再阻塞视觉回调。只有确认下位机和
@@ -145,6 +145,12 @@ MaterialRecognitionPose gMaterialRecognitionPoses[kMaterialRecognitionPointCount
     {2047, 2047, false},  // 点位16：待标定
 };
 constexpr int kMaterialRecognitionPositionSpeed = 2000;
+// 比赛物资预扫描：以每个 YAML 标定点为中心，Yaw 两侧各 300。
+constexpr int kMaterialLocalScanHalfWidth = 300;
+constexpr int kMaterialLocalScanPitchSpeed = 2600;
+constexpr int kMaterialLocalScanYawSpeed = 6000;
+// 使用实际反馈判断云台到位；保留少量容差，避免位置反馈抖动导致无法换向。
+constexpr int kMaterialLocalScanArrivalTolerance = 20;
 
 // material_pose_calibration 的 Int32MultiArray 接口：
 // [0, point_id]：开始/切换到指定点位标定；[1, pitch, yaw]：设置当前点位姿态；
@@ -252,6 +258,15 @@ turn_on_robot::turn_on_robot() : Power_voltage(0)
   post_shot_focused_scan_active = false;
   post_shot_scan_center_yaw = 2047;
   material_recognition_mode_active = false;
+  material_local_scan_active = false;
+  material_center_hold_active = false;
+  material_scan_pitch = GIMBAL_MOTOR0_CENTER_POSITION;
+  material_scan_center_yaw = 2047;
+  material_scan_yaw_min = kFullScanYawMin;
+  material_scan_yaw_max = kFullScanYawMax;
+  material_scan_direction = -1;
+  material_scan_center_locked = false;
+  shooting_mode_active = false;
   material_recognition_point_id = 0;
   material_calibration_mode_active = false;
   material_calibration_pose_set = false;
@@ -263,6 +278,7 @@ turn_on_robot::turn_on_robot() : Power_voltage(0)
   memset(&Receive_Data, 0, sizeof(Receive_Data));
   memset(&Send_Data, 0, sizeof(Send_Data));
   memset(&Mpu6050_Data, 0, sizeof(Mpu6050_Data));
+  memset(&curYuntai_feedback_data, 0, sizeof(curYuntai_feedback_data));
   memset(&moveBaseControl, 0, sizeof(sMartcarControl));
   moveBaseControl.Position_0 = 2047;
   moveBaseControl.Position_1 = 2047;
@@ -324,6 +340,8 @@ turn_on_robot::turn_on_robot() : Power_voltage(0)
   sub_stop_point_singal = n.subscribe("/move_base/stop_signal",1,&turn_on_robot::callback_stop_point_signal,this);              //停车状态回调
   sub_voice_switch = n.subscribe("/voice_switch",1,&turn_on_robot::callback_voice_switch,this);                                 //语音播报回调
   sub_material_scan_mode = n.subscribe("material_scan_mode", 1, &turn_on_robot::callback_material_scan_mode, this);               //物资扫描模式回调
+  sub_material_scan_target = n.subscribe("/material_scan_target", 1, &turn_on_robot::callback_material_scan_target, this);        //物资点局部预扫描/回中回调
+  sub_shooting_mode = n.subscribe("/shooting_mode", 1, &turn_on_robot::callback_shooting_mode, this);                              //打靶模式回调
   sub_material_recognition_point = n.subscribe("material_recognition_point", 1, &turn_on_robot::callback_material_recognition_point, this); //物资识别定姿点位回调
   sub_arrived_material_number = n.subscribe("/arrived_material_number", 1, &turn_on_robot::callback_arrived_material_number, this); //导航到达物资点回调
   sub_material_pose_calibration = n.subscribe("material_pose_calibration", 1, &turn_on_robot::callback_material_pose_calibration, this); //物资点位坐标标定回调
@@ -861,7 +879,7 @@ void turn_on_robot::callback_stop_point_signal(const std_msgs::UInt8::ConstPtr &
 
 void turn_on_robot::callback_monter_control(const geometry_msgs::Twist::ConstPtr &msg)
 {
-  if (material_recognition_mode_active)
+  if (material_recognition_mode_active || material_center_hold_active)
   {
     ROS_WARN_THROTTLE(1.0, "物资识别定姿模式中，忽略 monter_control 云台位置命令");
     return;
@@ -882,6 +900,48 @@ void turn_on_robot::callback_monter_control(const geometry_msgs::Twist::ConstPtr
 void turn_on_robot::CaremaMontorControl(){  
     if(find_center == false)
     {
+      // 物资识别改为离散到点切换：新目标先锁定标定中心，中心到位后
+      // 直接在 Yaw 两端之间往返；每个端点以实际反馈到位后立即换向。
+      if (material_local_scan_active)
+      {
+        moveBaseControl.Position_0 = material_scan_pitch;
+        moveBaseControl.Speed_0 = kMaterialLocalScanPitchSpeed;
+        moveBaseControl.Speed_1 = kMaterialLocalScanYawSpeed;
+
+        if (!material_scan_center_locked)
+        {
+          moveBaseControl.Position_1 = material_scan_center_yaw;
+          const bool pitch_arrived = std::abs(
+              curYuntai_feedback_data.Position_0 - material_scan_pitch) <=
+              kMaterialLocalScanArrivalTolerance;
+          const bool yaw_arrived = std::abs(
+              curYuntai_feedback_data.Position_1 - material_scan_center_yaw) <=
+              kMaterialLocalScanArrivalTolerance;
+          if (pitch_arrived && yaw_arrived)
+          {
+            material_scan_center_locked = true;
+            material_scan_direction = 1;
+            moveBaseControl.Position_1 = material_scan_yaw_max;
+            ROS_INFO("物资预扫描中心已到位，开始离散切换: Yaw=[%d,%d]",
+                     material_scan_yaw_min, material_scan_yaw_max);
+          }
+        }
+        else
+        {
+          int target_yaw = material_scan_direction > 0
+              ? material_scan_yaw_max : material_scan_yaw_min;
+          if (std::abs(curYuntai_feedback_data.Position_1 - target_yaw) <=
+              kMaterialLocalScanArrivalTolerance)
+          {
+            material_scan_direction = -material_scan_direction;
+            target_yaw = material_scan_direction > 0
+                ? material_scan_yaw_max : material_scan_yaw_min;
+          }
+          moveBaseControl.Position_1 = target_yaw;
+        }
+        return;
+      }
+
       // if(stop_point_signal_msg == 1 ){
         // 静态变量用于保持状态
       static int direction_0 = -1;  // 控制扫描方向：1表示正向，-1表示反向
@@ -889,12 +949,16 @@ void turn_on_robot::CaremaMontorControl(){
 
       static int scan_interval = 0; // 控制扫描速度的计数器
 
-      int scan_yaw_min = kFullScanYawMin;
-      int scan_yaw_max = kFullScanYawMax;
-      const int scan_step = post_shot_focused_scan_active
-          ? kFocusedScanStep : kNormalScanStep;
-      const int scan_speed = post_shot_focused_scan_active
-          ? kFocusedScanSpeed : kNormalScanSpeed;
+      int scan_yaw_min = material_local_scan_active
+          ? material_scan_yaw_min : kFullScanYawMin;
+      int scan_yaw_max = material_local_scan_active
+          ? material_scan_yaw_max : kFullScanYawMax;
+      const int scan_step = material_local_scan_active
+          ? kNormalScanStep
+          : (post_shot_focused_scan_active ? kFocusedScanStep : kNormalScanStep);
+      const int scan_speed = material_local_scan_active
+          ? kMaterialLocalScanYawSpeed
+          : (post_shot_focused_scan_active ? kFocusedScanSpeed : kNormalScanSpeed);
 
       if (post_shot_focused_scan_active)
       {
@@ -902,7 +966,8 @@ void turn_on_robot::CaremaMontorControl(){
             post_shot_scan_center_yaw, scan_yaw_min, scan_yaw_max);
       }
 
-      moveBaseControl.Position_0 = 2047;
+      moveBaseControl.Position_0 = material_local_scan_active
+          ? material_scan_pitch : GIMBAL_MOTOR0_CENTER_POSITION;
 
       // 降低扫描位置更新频率，给视觉留出完成检测和回传结果的时间。
       if (++scan_interval >= kScanCommandIntervalCycles)
@@ -910,18 +975,34 @@ void turn_on_robot::CaremaMontorControl(){
         scan_interval = 0;
 
         // 更新电机1的位置
-        moveBaseControl.Position_1 += direction_0 * scan_step;
+        const int direction = material_local_scan_active
+            ? material_scan_direction : direction_0;
+        moveBaseControl.Position_1 += direction * scan_step;
         // moveBaseControl.Position_0 +=direction_0 * 50;
         // 到达当前搜索窗口边界后切换方向。
         if (moveBaseControl.Position_1 >= scan_yaw_max)
         {
           moveBaseControl.Position_1 = scan_yaw_max;
-          direction_0 = -1; // 反向扫描
+          if (material_local_scan_active)
+          {
+            material_scan_direction = -1;
+          }
+          else
+          {
+            direction_0 = -1; // 反向扫描
+          }
         }
         else if (moveBaseControl.Position_1 <= scan_yaw_min)
         {
           moveBaseControl.Position_1 = scan_yaw_min;
-          direction_0 = 1; // 正向扫描
+          if (material_local_scan_active)
+          {
+            material_scan_direction = 1;
+          }
+          else
+          {
+            direction_0 = 1; // 正向扫描
+          }
         }
         // if(moveBaseControl.Position_0 >=2047)
         // {
@@ -936,7 +1017,8 @@ void turn_on_robot::CaremaMontorControl(){
       }
 
       // 设置电机速度
-      moveBaseControl.Speed_0 = kNormalScanSpeed;//Pitch_Speed
+      moveBaseControl.Speed_0 = material_local_scan_active
+          ? kMaterialLocalScanPitchSpeed : kNormalScanSpeed;//Pitch_Speed
       moveBaseControl.Speed_1 = scan_speed;//Yaw_Speed
     //}
     // else if(stop_point_signal_msg == 0 ){
@@ -964,6 +1046,9 @@ void turn_on_robot::callback_material_scan_mode(const std_msgs::UInt8::ConstPtr 
 {
   if (msg->data == 1)
   {
+    material_local_scan_active = false;
+    material_scan_center_locked = false;
+    material_center_hold_active = false;
     material_recognition_mode_active = false;
     material_recognition_point_id = 0;
     material_calibration_mode_active = false;
@@ -974,10 +1059,126 @@ void turn_on_robot::callback_material_scan_mode(const std_msgs::UInt8::ConstPtr 
   }
   else
   {
+    material_local_scan_active = false;
+    material_scan_center_locked = false;
     find_center = true;   // 停止扫描
     post_shot_focused_scan_active = false;
     ROS_INFO("[dzactuator] Material scan mode deactivated");
   }
+}
+
+// 比赛导航的预扫描接口：data=1..16 进入该标定点的局部扫描；data=0
+// 立即回全局中心并锁住，确保最后一个物资点到打靶点的行驶期间不再被
+// 视觉或迟到的物资到达消息覆盖。
+void turn_on_robot::callback_material_scan_target(const std_msgs::UInt8::ConstPtr &msg)
+{
+  const int requested_point = static_cast<int>(msg->data);
+  if (shooting_mode_active)
+  {
+    ROS_WARN("打靶模式中，忽略物资预扫描请求: %d", requested_point);
+    return;
+  }
+
+  if (requested_point == 0)
+  {
+    material_local_scan_active = false;
+    material_scan_center_locked = false;
+    material_center_hold_active = true;
+    material_recognition_mode_active = false;
+    material_recognition_point_id = 0;
+    material_calibration_mode_active = false;
+    material_calibration_pose_set = false;
+    material_calibration_point_id = 0;
+    find_center = true;
+    post_shot_focused_scan_active = false;
+    moveBaseControl.Position_0 = GIMBAL_MOTOR0_CENTER_POSITION;
+    moveBaseControl.Position_1 = 2047;
+    moveBaseControl.Speed_0 = kMaterialLocalScanPitchSpeed;
+    moveBaseControl.Speed_1 = kMaterialLocalScanPitchSpeed;
+    moveBaseControl.Time_0 = 0;
+    moveBaseControl.Time_1 = 0;
+    moveBaseControl.Fun = 0;
+    ROS_INFO("物资预扫描结束：云台回中心并保持，等待打靶点");
+    return;
+  }
+
+  if (requested_point < 1 || requested_point > kMaterialRecognitionPointCount)
+  {
+    ROS_WARN("物资预扫描点位无效: %d，允许范围为 1-%d（0 为回中心）",
+             requested_point, kMaterialRecognitionPointCount);
+    return;
+  }
+
+  const MaterialRecognitionPose &pose =
+      gMaterialRecognitionPoses[requested_point - 1];
+  if (!pose.calibrated)
+  {
+    ROS_WARN("物资预扫描点位 %d 尚未标定，已忽略", requested_point);
+    return;
+  }
+
+  material_scan_pitch = limitGimbalMotor0Position(pose.pitch);
+  material_scan_center_yaw = clamp(pose.yaw, kFullScanYawMin, kFullScanYawMax);
+  // 两侧分别截断，保留标定中心点；不会为了凑满宽度而把窗口整体平移。
+  material_scan_yaw_min = std::max(
+      kFullScanYawMin, material_scan_center_yaw - kMaterialLocalScanHalfWidth);
+  material_scan_yaw_max = std::min(
+      kFullScanYawMax, material_scan_center_yaw + kMaterialLocalScanHalfWidth);
+  material_scan_direction = 1;
+  material_scan_center_locked = false;
+  material_local_scan_active = true;
+  material_center_hold_active = false;
+  // 复用定姿锁来屏蔽视觉跟踪和外部扫描话题；CaremaMontorControl 对局部
+  // 扫描状态有专门分支，仍会持续发送本扫描命令。
+  material_recognition_mode_active = true;
+  material_recognition_point_id = requested_point;
+  material_calibration_mode_active = false;
+  material_calibration_pose_set = false;
+  material_calibration_point_id = 0;
+  post_shot_focused_scan_active = false;
+  find_center = false;
+  moveBaseControl.Position_0 = material_scan_pitch;
+  moveBaseControl.Position_1 = material_scan_center_yaw;
+  moveBaseControl.Speed_0 = kMaterialLocalScanPitchSpeed;
+  moveBaseControl.Speed_1 = kMaterialLocalScanYawSpeed;
+  moveBaseControl.Time_0 = 0;
+  moveBaseControl.Time_1 = 0;
+  moveBaseControl.Fun = 0;
+  ROS_INFO("物资预扫描：点位=%d, 先锁定 Pitch=%d/Yaw=%d，再离散切换=[%d,%d], Yaw速度=%d",
+           requested_point, material_scan_pitch, material_scan_center_yaw,
+           material_scan_yaw_min, material_scan_yaw_max,
+           kMaterialLocalScanYawSpeed);
+}
+
+// This command is sent by auto_navigation only after the shooting model
+// reports itself active on /current_model.
+void turn_on_robot::callback_shooting_mode(const std_msgs::Bool::ConstPtr &msg)
+{
+  if (!msg->data)
+  {
+    shooting_mode_active = false;
+    material_scan_center_locked = false;
+    find_center = true;
+    post_shot_focused_scan_active = false;
+    ROS_INFO("[dzactuator] Shooting mode deactivated; gimbal scan stopped");
+    return;
+  }
+
+  // Shooting must not inherit a material pose lock. A later delayed material
+  // message is ignored while this mode is active.
+  shooting_mode_active = true;
+  material_local_scan_active = false;
+  material_scan_center_locked = false;
+  material_center_hold_active = false;
+  material_recognition_mode_active = false;
+  material_recognition_point_id = 0;
+  material_calibration_mode_active = false;
+  material_calibration_pose_set = false;
+  material_calibration_point_id = 0;
+  laser_shot_while_target_visible = false;
+  post_shot_focused_scan_active = false;
+  find_center = false;
+  ROS_INFO("[dzactuator] Shooting mode active; gimbal scan started");
 }
 
 // 物资识别点位定姿回调。
@@ -988,17 +1189,36 @@ void turn_on_robot::callback_material_recognition_point(const std_msgs::Int32::C
 }
 
 // 导航节点发布 /arrived_material_number（std_msgs/UInt8，1..16）后，
-// 直接复用物资定姿逻辑。0 仍沿用原接口的“退出定姿模式”语义。
+// 仍供识别/语音模块使用。若云台已经在对应物资局部扫描，则不要把它
+// 改回固定定姿，保证到达后的三秒窗口内扫描不断。
 void turn_on_robot::callback_arrived_material_number(const std_msgs::UInt8::ConstPtr &msg)
 {
   ROS_INFO("收到导航到达物资点: %u", static_cast<unsigned int>(msg->data));
+  if (material_center_hold_active)
+  {
+    ROS_INFO("云台已在打靶前中心保持状态，忽略迟到的物资定姿请求");
+    return;
+  }
+  if (material_local_scan_active)
+  {
+    ROS_INFO("物资局部扫描持续中，到达通知不覆盖当前扫描姿态");
+    return;
+  }
   set_material_recognition_point(static_cast<int>(msg->data));
 }
 
 void turn_on_robot::set_material_recognition_point(int requested_point)
 {
+  if (requested_point != 0 && shooting_mode_active)
+  {
+    ROS_WARN("打靶模式中，忽略物资识别定姿请求: %d", requested_point);
+    return;
+  }
+
   if (requested_point == 0)
   {
+    material_local_scan_active = false;
+    material_center_hold_active = false;
     material_recognition_mode_active = false;
     material_recognition_point_id = 0;
     material_calibration_mode_active = false;
@@ -1028,6 +1248,8 @@ void turn_on_robot::set_material_recognition_point(int requested_point)
 
   const int pitch = limitGimbalMotor0Position(pose.pitch);
   const int yaw = clamp(pose.yaw, kFullScanYawMin, kFullScanYawMax);
+  material_local_scan_active = false;
+  material_center_hold_active = false;
   material_recognition_mode_active = true;
   material_recognition_point_id = requested_point;
   material_calibration_mode_active = false;
@@ -1068,6 +1290,8 @@ void turn_on_robot::callback_material_pose_calibration(
     }
 
     material_calibration_mode_active = true;
+    material_local_scan_active = false;
+    material_center_hold_active = false;
     material_calibration_pose_set = false;
     material_calibration_point_id = msg->data[1];
     material_recognition_mode_active = true;
@@ -1144,6 +1368,8 @@ void turn_on_robot::callback_material_pose_calibration(
   if (command == kMaterialCalibrationCommandExit)
   {
     material_calibration_mode_active = false;
+    material_local_scan_active = false;
+    material_center_hold_active = false;
     material_calibration_pose_set = false;
     material_calibration_point_id = 0;
     material_recognition_mode_active = false;
@@ -1160,7 +1386,7 @@ void turn_on_robot::callback_material_pose_calibration(
 // 扫描云台位置回调
 void turn_on_robot::callback_scan_gimbal_position(const std_msgs::Int32MultiArray::ConstPtr &msg)
 {
-  if (material_recognition_mode_active)
+  if (material_recognition_mode_active || material_center_hold_active)
   {
     ROS_WARN_THROTTLE(1.0, "物资识别定姿模式中，忽略 scan_gimbal_position 命令");
     return;
@@ -1182,7 +1408,7 @@ void turn_on_robot::callback_scan_gimbal_position(const std_msgs::Int32MultiArra
 
 void turn_on_robot::callback_offset_center(const std_msgs::Int32MultiArray::ConstPtr &msg)
 {
-  if (material_recognition_mode_active)
+  if (material_recognition_mode_active || material_center_hold_active)
   {
     ROS_DEBUG_THROTTLE(1.0, "物资识别定姿模式中，暂停视觉云台跟踪");
     return;

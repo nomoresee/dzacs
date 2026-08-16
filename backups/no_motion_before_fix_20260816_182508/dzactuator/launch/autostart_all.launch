@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<launch>
+  <!--
+    全系统唯一入口。
+
+    注意：使用本文件时，不要再单独启动 bringup、dzjudgment、dzrknnpt、
+    voice_module、amcl、dznavigation 或 auto_navigation，否则同名节点会互相
+    替换，造成里程计、TF 或导航链路中断。
+
+    各子 launch 的职责边界：
+      bringup        : 底盘、雷达、相机、静态 TF、robot_pose_ekf
+      dzjudgment     : 裁判系统串口
+      dzrknnpt       : RKNN 视觉识别
+      voice_module   : 语音模块
+      amcl           : map_server、AMCL
+      dznavigation   : move_base、costmap_cleaner
+      auto_navigation: 自动任务节点、可选的目标发布器
+  -->
+
+  <!-- 子系统开关。调试单个模块时可在命令行传入 false。 -->
+  <arg name="start_bringup" default="true" />
+  <arg name="start_judgment" default="true" />
+  <arg name="start_vision" default="true" />
+  <arg name="start_voice" default="true" />
+  <arg name="start_localization" default="true" />
+  <arg name="start_navigation" default="true" />
+  <arg name="start_auto_navigation" default="true" />
+
+  <!-- 自动导航参数。auto_execute=false 时只启动服务，不自动发送整条路线。 -->
+  <arg name="auto_execute" default="true" />
+  <arg name="goal_timeout" default="30.0" />
+  <arg name="max_retries" default="3" />
+  <arg name="goal_tolerance" default="0.1" />
+  <arg name="max_queue_size" default="25" />
+  <arg name="referee_material_topic" default="/all_Material_Number" />
+  <arg name="arrived_material_topic" default="/arrived_material_number" />
+  <arg name="material_arrive_tolerance" default="0.1" />
+  <arg name="material_wait_duration" default="1.5" />
+  <arg name="material_scan_target_topic" default="/material_scan_target" />
+  <arg name="material_scan_switch_delay" default="3.0" />
+  <arg name="switch_model_on_route_complete" default="true" />
+  <arg name="model_switch_topic" default="/switch_model" />
+  <arg name="route_complete_model" default="light_det" />
+  <arg name="shooting_mode_topic" default="/shooting_mode" />
+  <arg name="current_model_topic" default="/current_model" />
+  <arg name="model_switch_timeout" default="15.0" />
+  <arg name="slope_mode_enabled" default="true" />
+  <arg name="slope_test_bypass_safety" default="false" />
+  <arg name="slope_start_x" default="1.30" />
+  <arg name="slope_start_y" default="2.07" />
+  <arg name="slope_end_x" default="2.83" />
+  <arg name="slope_end_y" default="2.05" />
+  <arg name="slope_heading_yaw" default="0.01" />
+  <arg name="slope_linear_speed" default="0.5" />
+  <arg name="slope_alignment_linear_speed" default="0.1" />
+  <arg name="slope_max_curvature" default="2.0" />
+  <arg name="slope_max_cross_track_error" default="0.05" />
+  <arg name="slope_scan_forward_angle" default="3.14159" />
+  <arg name="slope_goal_tolerance" default="0.05" />
+  <arg name="slope_route_match_tolerance" default="0.015" />
+  <arg name="slope_takeover_max_pose_age" default="1.0" />
+  <arg name="slope_takeover_max_anchor_age" default="5.0" />
+  <arg name="slope_takeover_max_anchor_translation" default="0.4" />
+  <arg name="slope_takeover_max_anchor_rotation" default="0.5" />
+  <arg name="slope_takeover_max_position_error" default="0.1" />
+  <arg name="slope_takeover_max_heading_error" default="0.35" />
+  <arg name="slope_odom_timeout" default="0.5" />
+  <arg name="slope_odom_jump_max_translation" default="0.30" />
+  <arg name="slope_odom_jump_max_rotation" default="0.60" />
+  <arg name="base_x" default="0" />
+  <arg name="base_y" default="0" />
+  <arg name="base_yaw" default="0" />
+
+  <!-- 语音参数。 -->
+  <arg name="visual_class_topic" default="/dzatornode2" />
+  <arg name="material_position_topic" default="/arrived_material_number" />
+  <arg name="visual_vote_window" default="1.0" />
+  <arg name="voice_sequence_interval" default="2.0" />
+  <!-- 默认隔离语音运动指令，避免与 move_base 同时发布 /cmd_vel。 -->
+  <arg name="voice_cmd_vel_topic" default="/voice_cmd_vel" />
+
+  <!-- bringup 已经包含雷达、USB 相机和 robot_pose_ekf，不再重复包含。 -->
+  <group if="$(arg start_bringup)">
+    <include file="$(find dzactuator)/launch/bringup.launch" />
+  </group>
+
+  <!-- 使用 dzjudgment 包内的正式 launch，不使用 dzactuator 中的重复副本。 -->
+  <group if="$(arg start_judgment)">
+    <include file="$(find dzjudgment)/launch/dzjudgment.launch" />
+  </group>
+
+  <group if="$(arg start_vision)">
+    <include file="$(find dzactuator)/launch/dzrknnpt.launch" />
+  </group>
+
+  <group if="$(arg start_voice)">
+    <remap from="/cmd_vel" to="$(arg voice_cmd_vel_topic)" />
+    <include file="$(find voice_module)/launch/voice_module.launch">
+      <arg name="visual_class_topic" value="$(arg visual_class_topic)" />
+      <arg name="material_position_topic" value="$(arg material_position_topic)" />
+      <arg name="visual_vote_window" value="$(arg visual_vote_window)" />
+      <arg name="voice_sequence_interval" value="$(arg voice_sequence_interval)" />
+    </include>
+  </group>
+
+  <!-- amcl.launch 已经包含 map_server；这里只包含一次。 -->
+  <group if="$(arg start_localization)">
+    <include file="$(find dzactuator)/launch/amcl.launch" />
+  </group>
+
+  <!-- dznavigation.launch 已经包含 move_base 和 costmap_cleaner。 -->
+  <group if="$(arg start_navigation)">
+    <include file="$(find dzactuator)/launch/dznavigation.launch" />
+  </group>
+
+  <group if="$(arg start_auto_navigation)">
+    <include file="$(find auto_navigation)/launch/auto_navigation.launch">
+      <arg name="auto_execute" value="$(arg auto_execute)" />
+      <arg name="goal_timeout" value="$(arg goal_timeout)" />
+      <arg name="max_retries" value="$(arg max_retries)" />
+      <arg name="goal_tolerance" value="$(arg goal_tolerance)" />
+      <arg name="max_queue_size" value="$(arg max_queue_size)" />
+      <arg name="referee_material_topic" value="$(arg referee_material_topic)" />
+      <arg name="arrived_material_topic" value="$(arg arrived_material_topic)" />
+      <arg name="material_arrive_tolerance" value="$(arg material_arrive_tolerance)" />
+      <arg name="material_wait_duration" value="$(arg material_wait_duration)" />
+      <arg name="material_scan_target_topic" value="$(arg material_scan_target_topic)" />
+      <arg name="material_scan_switch_delay" value="$(arg material_scan_switch_delay)" />
+      <arg name="switch_model_on_route_complete" value="$(arg switch_model_on_route_complete)" />
+      <arg name="model_switch_topic" value="$(arg model_switch_topic)" />
+      <arg name="route_complete_model" value="$(arg route_complete_model)" />
+      <arg name="shooting_mode_topic" value="$(arg shooting_mode_topic)" />
+      <arg name="current_model_topic" value="$(arg current_model_topic)" />
+      <arg name="model_switch_timeout" value="$(arg model_switch_timeout)" />
+      <arg name="slope_mode_enabled" value="$(arg slope_mode_enabled)" />
+      <arg name="slope_test_bypass_safety" value="$(arg slope_test_bypass_safety)" />
+      <arg name="slope_start_x" value="$(arg slope_start_x)" />
+      <arg name="slope_start_y" value="$(arg slope_start_y)" />
+      <arg name="slope_end_x" value="$(arg slope_end_x)" />
+      <arg name="slope_end_y" value="$(arg slope_end_y)" />
+      <arg name="slope_heading_yaw" value="$(arg slope_heading_yaw)" />
+      <arg name="slope_linear_speed" value="$(arg slope_linear_speed)" />
+      <arg name="slope_alignment_linear_speed" value="$(arg slope_alignment_linear_speed)" />
+      <arg name="slope_max_curvature" value="$(arg slope_max_curvature)" />
+      <arg name="slope_max_cross_track_error" value="$(arg slope_max_cross_track_error)" />
+      <arg name="slope_scan_forward_angle" value="$(arg slope_scan_forward_angle)" />
+      <arg name="slope_goal_tolerance" value="$(arg slope_goal_tolerance)" />
+      <arg name="slope_route_match_tolerance" value="$(arg slope_route_match_tolerance)" />
+      <arg name="slope_takeover_max_pose_age" value="$(arg slope_takeover_max_pose_age)" />
+      <arg name="slope_takeover_max_anchor_age" value="$(arg slope_takeover_max_anchor_age)" />
+      <arg name="slope_takeover_max_anchor_translation" value="$(arg slope_takeover_max_anchor_translation)" />
+      <arg name="slope_takeover_max_anchor_rotation" value="$(arg slope_takeover_max_anchor_rotation)" />
+      <arg name="slope_takeover_max_position_error" value="$(arg slope_takeover_max_position_error)" />
+      <arg name="slope_takeover_max_heading_error" value="$(arg slope_takeover_max_heading_error)" />
+      <arg name="slope_odom_timeout" value="$(arg slope_odom_timeout)" />
+      <arg name="slope_odom_jump_max_translation" value="$(arg slope_odom_jump_max_translation)" />
+      <arg name="slope_odom_jump_max_rotation" value="$(arg slope_odom_jump_max_rotation)" />
+      <arg name="base_x" value="$(arg base_x)" />
+      <arg name="base_y" value="$(arg base_y)" />
+      <arg name="base_yaw" value="$(arg base_yaw)" />
+    </include>
+  </group>
+</launch>

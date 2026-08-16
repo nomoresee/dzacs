@@ -1,10 +1,10 @@
 <launch>
     <param name="/use_sim_time" value="false" />
     <arg name="visual_class_topic" default="/dzatornode2" />
-    <arg name="material_position_topic" default="/arrived_material_number" />
-    <arg name="visual_vote_window" default="3.0" />
+    <arg name="material_position_topic" default="/voice_material_position" />
+    <arg name="visual_vote_window" default="1.0" />
     <arg name="voice_sequence_interval" default="2.0" />
-
+    
     <node name="voice_module" pkg="voice_module" type="voice_module" output="screen">
         <param name="visual_class_topic" value="$(arg visual_class_topic)" />
         <param name="material_position_topic" value="$(arg material_position_topic)" />

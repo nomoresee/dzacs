@@ -35,10 +35,17 @@ uint64_t latest_frame_sequence = 0;
 std::mutex latest_frame_mtx;
 
 const std::map<std::string, std::string> model_map = {
+    {"light_det", "/home/duzhong/dzacs/src/rknn_pt/model/light_det.rknn"},
     {"light_det2", "/home/duzhong/dzacs/src/rknn_pt/model/light_det2.rknn"},
     {"aug_enhanced_v5s_opt2_v3", "/home/duzhong/dzacs/src/rknn_pt/model/aug_enhanced_v5s_opt2_v3.rknn"},
     {"augmented_finetune_v1_best_416", "/home/duzhong/dzacs/src/rknn_pt/model/augmented_finetune_v1_best_416.rknn"}
 };
+
+bool is_light_model(const std::string &model_name)
+{
+  return model_name == "light_det" || model_name == "light_det2";
+}
+
 std::string pending_model_name;
 std::string pending_model_path;
 bool need_swap = false;
@@ -168,7 +175,7 @@ bool resolve_model(const std::string &request, std::string &model_name,
   }
 
   error = "Unknown model '" + request +
-          "'. Use light_det2, aug_enhanced_v5s_opt2_v3, or "
+          "'. Use light_det, light_det2, aug_enhanced_v5s_opt2_v3, or "
           "augmented_finetune_v1_best_416";
   return false;
 }
@@ -262,7 +269,7 @@ int main(int argc, char **argv)
 
   ROS_INFO("Model switch topic ready at /switch_model (std_msgs/String)");
   ROS_INFO("Model switch service retained at /switch_model_srv");
-  ROS_INFO("Available models: light_det2, aug_enhanced_v5s_opt2_v3, "
+  ROS_INFO("Available models: light_det, light_det2, aug_enhanced_v5s_opt2_v3, "
            "augmented_finetune_v1_best_416");
 
   std::string initial_model_request = "augmented_finetune_v1_best_416";
@@ -302,7 +309,7 @@ int main(int argc, char **argv)
   std_msgs::String current_model_msg;
   current_model_msg.data = active_model_name;
   current_model_pub.publish(current_model_msg);
-  if (active_model_name == "light_det2")
+  if (is_light_model(active_model_name))
   {
     std_msgs::String empty_objects;
     objects_pub.publish(empty_objects);
@@ -363,7 +370,7 @@ int main(int argc, char **argv)
       {
         // Stop consumers of the old model before the blocking reinit. In
         // particular, offset_center valid=0 stops gimbal tracking/firing.
-        if (active_model_name == "light_det2")
+        if (is_light_model(active_model_name))
         {
           det_pub.publish(make_offset_message());
         }
@@ -439,7 +446,7 @@ int main(int argc, char **argv)
     if (result_is_fresh && !results_group.cur_img.empty())
     {
       last_published_frame_id = results_group.cur_frame_id;
-      if (active_model_name == "light_det2")
+      if (is_light_model(active_model_name))
       {
         std_msgs::Int32MultiArray offset_msg = make_offset_message();
         if (!results_group.dets.empty())

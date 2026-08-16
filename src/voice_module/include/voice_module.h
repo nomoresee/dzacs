@@ -30,6 +30,7 @@ private:
     ros::Publisher pub_control_command_;
     ros::Publisher pub_voice_status_;
     ros::Publisher pub_voice_switch_;
+    ros::Publisher pub_voice_broadcast_started_;
 
     std::string visual_class_topic_;
     std::string material_position_topic_;
@@ -71,7 +72,6 @@ private:
     void broadcastVisualToken(const std::string& token);
     bool parseVisualToken(const std::string& token, std::vector<uint8_t>* voice_ids, std::string* broadcast_text) const;
     bool numberToVoiceId(int number, uint8_t* voice_id) const;
-    bool materialPositionToVoiceId(int position, uint8_t* voice_id) const;
     std::string numberToChineseText(int number) const;
     bool classIndexToVoiceId(int class_id, uint8_t* voice_id) const;
     void publishVoiceSwitch(uint8_t voice_id);

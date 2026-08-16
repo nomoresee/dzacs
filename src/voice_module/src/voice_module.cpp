@@ -8,7 +8,7 @@
 VoiceModule::VoiceModule(ros::NodeHandle nh)
     : nh_(nh),
       private_nh_("~"),
-      visual_vote_window_(3.0),
+      visual_vote_window_(1.0),
       voice_sequence_interval_(2.0),
       voice_recognition_ready_(false),
       voice_synthesis_ready_(false),
@@ -18,7 +18,7 @@ VoiceModule::VoiceModule(ros::NodeHandle nh)
       material_position_broadcasted_(false) {
     private_nh_.param<std::string>("visual_class_topic", visual_class_topic_, "/dzatornode2");
     private_nh_.param<std::string>("material_position_topic", material_position_topic_, "/voice_material_position");
-    private_nh_.param<double>("visual_vote_window", visual_vote_window_, 3.0);
+    private_nh_.param<double>("visual_vote_window", visual_vote_window_, 1.0);
     private_nh_.param<double>("voice_sequence_interval", voice_sequence_interval_, 2.0);
 
     initializeCommandMapping();
@@ -39,6 +39,7 @@ VoiceModule::VoiceModule(ros::NodeHandle nh)
     pub_control_command_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
     pub_voice_status_ = nh_.advertise<std_msgs::UInt8>("/voice_status", 10);
     pub_voice_switch_ = nh_.advertise<std_msgs::UInt8>("/voice_switch", 10);
+    pub_voice_broadcast_started_ = nh_.advertise<std_msgs::UInt8>("/voice_broadcast_started", 10);
 
     publishVoiceStatus(voice_synthesis_ready_ ? 1 : 0);
 
@@ -102,14 +103,30 @@ void VoiceModule::visualClassCallback(const std_msgs::String::ConstPtr& msg) {
 }
 
 void VoiceModule::materialPositionCallback(const std_msgs::UInt8::ConstPtr& msg) {
-    current_material_position_ = static_cast<int>(msg->data);
+    const int position = static_cast<int>(msg->data);
+    if (position < 1 || position > 16) {
+        visual_vote_timer_.stop();
+        visual_class_votes_.clear();
+        visual_vote_order_.clear();
+        has_material_position_ = false;
+        current_material_position_ = 0;
+        material_position_broadcasted_ = false;
+        ROS_WARN("ignored invalid material position: %d (expected 1-16).", position);
+        return;
+    }
+
+    current_material_position_ = position;
     has_material_position_ = true;
     visual_vote_timer_.stop();
     visual_class_votes_.clear();
     visual_vote_order_.clear();
     material_position_broadcasted_ = false;
 
-    ROS_INFO("material position updated: %d; waiting for visual votes.", current_material_position_);
+    visual_vote_timer_.setPeriod(ros::Duration(visual_vote_window_), true);
+    visual_vote_timer_.start();
+
+    ROS_INFO("material position updated: %d; collecting visual votes for %.1f seconds.",
+             current_material_position_, visual_vote_window_);
 }
 
 void VoiceModule::robotStatusCallback(const std_msgs::UInt8::ConstPtr& msg) {
@@ -194,16 +211,22 @@ void VoiceModule::collectVisualVote(const std::string& token) {
         ++vote_it->second;
     }
 
-    if (!visual_vote_timer_.hasStarted()) {
-        visual_vote_timer_.setPeriod(ros::Duration(visual_vote_window_), true);
-        visual_vote_timer_.start();
-        ROS_INFO("visual vote started for material position %d (%.1f seconds).",
-                 current_material_position_, visual_vote_window_);
-    }
 }
 
 void VoiceModule::visualVoteTimerCallback(const ros::TimerEvent&) {
-    if (!has_material_position_ || material_position_broadcasted_ || visual_vote_order_.empty()) {
+    if (!has_material_position_ || material_position_broadcasted_) {
+        return;
+    }
+
+    if (visual_vote_order_.empty()) {
+        const int expired_position = current_material_position_;
+        visual_class_votes_.clear();
+        visual_vote_order_.clear();
+        has_material_position_ = false;
+        current_material_position_ = 0;
+        material_position_broadcasted_ = false;
+        ROS_WARN("no visual votes received within %.1f seconds for material position %d; cleared.",
+                 visual_vote_window_, expired_position);
         return;
     }
 
@@ -261,10 +284,10 @@ bool VoiceModule::parseVisualToken(const std::string& token, std::vector<uint8_t
             return false;
         }
         if (has_material_position_ && class_id >= 10) {
-            // The ASR board reserves 0x80-0x89 for position-prefix clips and
+            // The ASR board reserves 0x81-0x90 for position-prefix clips and
             // 0xA0-0xAE for the 15 item-name-only clips. Keeping these
             // separate from the legacy preset IDs avoids repeated prefixes.
-            if (current_material_position_ < 0 || current_material_position_ > 16) {
+            if (current_material_position_ < 1 || current_material_position_ > 16) {
                 return false;
             }
             const uint8_t position_voice_id = static_cast<uint8_t>(0x80 + current_material_position_);
@@ -373,6 +396,12 @@ void VoiceModule::publishVoiceSwitch(uint8_t voice_id) {
 void VoiceModule::publishVoiceSwitchSequence(const std::vector<uint8_t>& voice_ids) {
     for (size_t i = 0; i < voice_ids.size(); ++i) {
         publishVoiceSwitch(voice_ids[i]);
+        if (i == 0 && has_material_position_) {
+            std_msgs::UInt8 started_msg;
+            started_msg.data = static_cast<uint8_t>(current_material_position_);
+            pub_voice_broadcast_started_.publish(started_msg);
+            ROS_INFO("voice broadcast started for material position %d.", current_material_position_);
+        }
         if (i + 1 < voice_ids.size()) {
             ros::Duration(voice_sequence_interval_).sleep();
         }

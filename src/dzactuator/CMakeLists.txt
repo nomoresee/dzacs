@@ -35,3 +35,8 @@ include_directories(include/${PROJECT_NAME})
 
 add_executable(dzactuator_node src/dzactuator.cpp src/Quaternion_Solution.cpp)
 target_link_libraries(dzactuator_node ${catkin_LIBRARIES})
+
+catkin_install_python(PROGRAMS
+  scripts/material_scan_test.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

@@ -22,6 +22,7 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <sensor_msgs/Imu.h>
 #include <std_msgs/UInt8.h>
+#include <std_msgs/Bool.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Int32MultiArray.h>
 
@@ -220,6 +221,8 @@ public:
 	ros::Subscriber  sub_stop_point_singal;
     ros::Subscriber  sub_voice_switch;
     ros::Subscriber  sub_material_scan_mode;   // 物资扫描模式订阅
+    ros::Subscriber  sub_material_scan_target; // 物资点局部预扫描/回中订阅
+    ros::Subscriber  sub_shooting_mode;        // 打靶模式订阅
     ros::Subscriber  sub_material_recognition_point; // 物资识别定姿点位订阅
     ros::Subscriber  sub_arrived_material_number; // 导航到达物资点订阅
     ros::Subscriber  sub_material_pose_calibration; // 物资点位坐标标定订阅
@@ -232,6 +235,8 @@ public:
 	void callback_stop_point_signal(const std_msgs::UInt8::ConstPtr &msg);
     void callback_voice_switch(const std_msgs::UInt8::ConstPtr &msg);
     void callback_material_scan_mode(const std_msgs::UInt8::ConstPtr &msg);
+    void callback_material_scan_target(const std_msgs::UInt8::ConstPtr &msg);
+    void callback_shooting_mode(const std_msgs::Bool::ConstPtr &msg);
     void callback_material_recognition_point(const std_msgs::Int32::ConstPtr &msg);
     void callback_arrived_material_number(const std_msgs::UInt8::ConstPtr &msg);
     void set_material_recognition_point(int requested_point);
@@ -326,6 +331,15 @@ public:
 	int post_shot_scan_center_yaw;
 	// 点位定姿模式激活后，暂停扫描、视觉跟踪和其他云台位置输入，保持当前点位姿态。
 	bool material_recognition_mode_active;
+	bool material_local_scan_active;
+	bool material_center_hold_active;
+	int material_scan_pitch;
+	int material_scan_center_yaw;
+	int material_scan_yaw_min;
+	int material_scan_yaw_max;
+	int material_scan_direction;
+	bool material_scan_center_locked;
+	bool shooting_mode_active;
 	int material_recognition_point_id;
 	bool material_calibration_mode_active;
 	bool material_calibration_pose_set;

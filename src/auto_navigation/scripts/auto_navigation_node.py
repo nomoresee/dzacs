@@ -14,27 +14,26 @@ from auto_navigation.msg import NavigationGoal, NavigationStatus
 class AutoNavigationNode:
     # 裁判系统物资点编号对应的地图坐标，格式为：点号: (x, y, yaw)。
     # x、y 的单位为米，yaw 的单位为弧度；当前到达判断只比较 x、y。
-    # B1/B2、B15/B16 分别共用同一物理位置，但仍保留各自的裁判点号。
-    # B8/B9 为彼此独立的可选物资点，可同时出现，不互斥。
+    # B1/B2、B8/9、B15/B16 分别共用同一物理位置，但仍保留各自的裁判点号。
     # B11/B12：仅在裁判物资包含对应点时进入路径并参与命名；
     # 若都不包含，路径仍经过 B12，但不把 12 写入路径文件名。
     MATERIAL_POINTS = {
-        1: (1.20, 2.21, 0.01),
-        2: (1.20, 2.21, 0.01),
-        3: (3.19, 2.31, -0.13),
-        4: (3.43, 1.67, -1.40),
-        5: (3.57, 0.48, -1.54),
+        1: (1.24, 2.09, 0.01),
+        2: (1.24, 2.09, 0.01),
+        3: (3.14, 2.20, -0.13),
+        4: (3.55, 1.97, -1.40),
+        5: (3.50, 0.48, -1.54),
         6: (2.89, -0.11, -3.14),
-        7: (3.39, 0.06, -3.01),
-        8: (2.63, -0.02, -3.11),
-        9: (2.63, -0.12, -3.12),
-        10: (1.90, -0.13, -3.09),
+        7: (3.49, 0.22, -1.54),
+        8: (2.63, -0.12, -3.14),
+        9: (2.63, -0.12, -3.14),
+        10: (1.90, -0.13, -3.14),
         11: (2.10, 0.65, 0.03),
         12: (1.65, 0.65, 0.09),
         13: (2.55, 0.80, 1.29),
-        14: (2.53, 1.40, 3.04),
-        15: (1.53, 1.4, -3.09),
-        16: (1.53, 1.4, -3.09)
+        14: (2.66, 1.21, 2.36),
+        15: (1.63, 1.4, -3.14),
+        16: (1.63, 1.4, -3.14)
     }
 
     def __init__(self):
@@ -57,12 +56,25 @@ class AutoNavigationNode:
             '~material_arrive_tolerance', 0.25)
         self.material_wait_duration = rospy.get_param(
             '~material_wait_duration', 3.0)
+        # 导航期间的物资预扫描目标。该话题不表示“已经到达”，不会影响
+        # 语音/识别的到达事件；data=1..16 选择扫描点，data=0 回中并锁住。
+        self.material_scan_target_topic = rospy.get_param(
+            '~material_scan_target_topic', '/material_scan_target')
+        # 物资到达事件后的云台独立切换时间。它不影响底盘停留或下一目标发送。
+        self.material_scan_switch_delay = rospy.get_param(
+            '~material_scan_switch_delay', 3.0)
         self.switch_model_on_route_complete = rospy.get_param(
             '~switch_model_on_route_complete', True)
         self.model_switch_topic = rospy.get_param(
             '~model_switch_topic', '/switch_model')
         self.route_complete_model = rospy.get_param(
-            '~route_complete_model', 'light_det2')
+            '~route_complete_model', 'light_det')
+        self.shooting_mode_topic = rospy.get_param(
+            '~shooting_mode_topic', '/shooting_mode')
+        self.current_model_topic = rospy.get_param(
+            '~current_model_topic', '/current_model')
+        self.model_switch_timeout = rospy.get_param(
+            '~model_switch_timeout', 15.0)
 
         # 状态变量
         self.current_goal = None
@@ -82,6 +94,13 @@ class AutoNavigationNode:
         self.referee_material_numbers = []
         # 保存 /amcl_pose 最近一次发布的机器人实时位姿。
         self.current_pose = None
+        self.current_model = ''
+        self.waiting_for_shooting_model = False
+        self.shooting_mode_active = False
+        self.model_switch_timer = None
+        self.active_material_scan_target = None
+        self.pending_material_scan_target = None
+        self.material_scan_switch_timer = None
 
         # 订阅话题
         self.goal_sub = rospy.Subscriber(
@@ -96,6 +115,9 @@ class AutoNavigationNode:
         # 接收机器人在 map 坐标系中的实时定位。
         self.amcl_pose_sub = rospy.Subscriber(
             '/amcl_pose', PoseWithCovarianceStamped, self.amcl_pose_callback)
+        # RKNN publishes this latched topic only after a model is actually active.
+        self.current_model_sub = rospy.Subscriber(
+            self.current_model_topic, String, self.current_model_callback)
 
         # 目标检测话题订阅
         self.target_sub = rospy.Subscriber(
@@ -118,8 +140,13 @@ class AutoNavigationNode:
         # 导航成功且坐标匹配时，将具体的 B 点编号发布给云台。
         self.arrived_material_pub = rospy.Publisher(
             self.arrived_material_topic, UInt8, queue_size=10)
+        self.material_scan_target_pub = rospy.Publisher(
+            self.material_scan_target_topic, UInt8, queue_size=1)
         self.model_switch_pub = rospy.Publisher(
             self.model_switch_topic, String, queue_size=1)
+        # This is the only automatic entry point for gimbal shooting scan mode.
+        self.shooting_mode_pub = rospy.Publisher(
+            self.shooting_mode_topic, Bool, queue_size=1, latch=True)
 
         # Action客户端
         self.move_base_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
@@ -131,7 +158,7 @@ class AutoNavigationNode:
 
         if self.switch_model_on_route_complete:
             rospy.loginfo(
-                "最后一个导航点到达后将发布模型切换: %s -> %s",
+                "打靶点到达后将发布模型切换: %s -> %s",
                 self.model_switch_topic,
                 self.route_complete_model)
 
@@ -197,6 +224,10 @@ class AutoNavigationNode:
             self.retry_count = 0
         self.retry_goal = None
         self.last_planning_time = rospy.Time.now()
+
+        # 只选择下一个“裁判物资点”，忽略路线中的中转点。这样底盘驶向
+        # 该物资点时云台已经在对应 Pitch/Yaw 小窗口内扫描。
+        self.prepare_material_scan_for_pending_route()
 
         rospy.loginfo("开始导航到: %s", self.current_goal.description)
 
@@ -287,14 +318,22 @@ class AutoNavigationNode:
             self.retry_count = 0
             arrived_material = self.publish_arrived_material_if_needed()
 
-            # goal_publisher 将整条路线的最后一个目标标记为 route_end。
-            # 在 action 成功回调中直接发布，避免周期状态话题漏掉 reached。
+            # 到达物资点只启动云台自己的 3 秒切换计时；绝不改变底盘的
+            # 停留时间或下一个导航目标。第四点没有下一个物资点，因此继续
+            # 扫描第四点直到真正到达打靶点。
+            if arrived_material:
+                self.schedule_next_material_scan_if_available()
+
+            # All selected route files end at the shooting point. The final
+            # goal is marked route_end by goal_publisher.
             if completed_goal.goal_type == "route_end":
                 if self.goal_queue:
                     rospy.logwarn(
                         "已到达 route_end，但队列中仍有 %d 个目标，暂不切换模型",
                         len(self.goal_queue))
                 else:
+                    # 仅在实际到达打靶点时强制结束物资扫描并回中心。
+                    self.stop_material_scan_and_center()
                     self.publish_route_complete_model_switch()
 
             if self.goal_queue:
@@ -313,21 +352,67 @@ class AutoNavigationNode:
             self.handle_navigation_failure()
 
     def publish_route_complete_model_switch(self):
-        """最后一个路线点到达后，向检测节点发送一次模型切换请求。"""
+        """Enter shooting only after the shooting model reports ready."""
         if not self.switch_model_on_route_complete:
-            rospy.loginfo("路线已完成，但自动切换模型已关闭")
+            rospy.loginfo("已到达打靶点，但自动打靶模式已关闭")
             return
 
         model_name = str(self.route_complete_model).strip()
         if not model_name:
-            rospy.logerr("route_complete_model 为空，未发布模型切换请求")
+            rospy.logerr("route_complete_model 为空，未进入打靶模式")
             return
 
+        # Keep the gimbal stopped until the requested model confirms activation.
+        self.shooting_mode_pub.publish(Bool(data=False))
+        self.waiting_for_shooting_model = True
+        self.shooting_mode_active = False
         self.model_switch_pub.publish(String(data=model_name))
         rospy.loginfo(
-            "最后一个导航点已到达，已发布模型切换请求: %s -> %s",
+            "打靶点已到达，等待模型就绪: %s -> %s",
             self.model_switch_topic,
             model_name)
+        if self.model_switch_timer is not None:
+            self.model_switch_timer.shutdown()
+        self.model_switch_timer = rospy.Timer(
+            rospy.Duration(self.model_switch_timeout),
+            self.model_switch_timeout_callback, oneshot=True)
+
+        # A latched /current_model may already contain the requested model.
+        if self.current_model == model_name:
+            self.activate_shooting_mode()
+
+    def current_model_callback(self, msg):
+        """Record the model that has completed loading in the RKNN node."""
+        model_name = str(msg.data).strip()
+        if not model_name:
+            return
+        self.current_model = model_name
+        rospy.loginfo("RKNN active model: %s", model_name)
+        if (self.waiting_for_shooting_model and
+                model_name == str(self.route_complete_model).strip()):
+            self.activate_shooting_mode()
+
+    def activate_shooting_mode(self):
+        """Release material pose lock and start scan after model readiness."""
+        if self.shooting_mode_active:
+            return
+        if self.model_switch_timer is not None:
+            self.model_switch_timer.shutdown()
+            self.model_switch_timer = None
+        self.waiting_for_shooting_model = False
+        self.shooting_mode_active = True
+        self.shooting_mode_pub.publish(Bool(data=True))
+        rospy.loginfo(
+            "打靶模型 %s 已就绪，已发布 %s=true，云台开始扫描",
+            self.current_model, self.shooting_mode_topic)
+
+    def model_switch_timeout_callback(self, event):
+        if not self.waiting_for_shooting_model:
+            return
+        self.waiting_for_shooting_model = False
+        rospy.logerr(
+            "打靶模型 %s 在 %.1f 秒内未就绪，云台保持停止扫描",
+            self.route_complete_model, self.model_switch_timeout)
 
     def material_numbers_callback(self, msg):
         """接收裁判系统物资点；仅首次有效数据时打印一次排序结果。"""
@@ -354,14 +439,17 @@ class AutoNavigationNode:
         用当前导航目标的 x、y（即路径点坐标）与裁判物资点坐标匹配，
         不依赖 yaw。B1/B2 或 B15/B16 坐标相同时，因列表已升序，取较小编号。
         """
-        if self.current_goal is None:
+        return self.find_material_number_for_goal(self.current_goal)
+
+    def find_material_number_for_goal(self, goal):
+        """返回任意路线目标对应的裁判物资编号，普通路径点返回 None。"""
+        if goal is None:
             return None
         if not self.referee_material_numbers:
-            rospy.logwarn("尚未收到裁判系统物资点，无法发布识别编号")
             return None
 
-        goal_x = self.current_goal.goal_pose.pose.position.x
-        goal_y = self.current_goal.goal_pose.pose.position.y
+        goal_x = goal.goal_pose.pose.position.x
+        goal_y = goal.goal_pose.pose.position.y
 
         for number in self.referee_material_numbers:
             point_x, point_y, _ = self.MATERIAL_POINTS[number]
@@ -373,6 +461,84 @@ class AutoNavigationNode:
                 return number
 
         return None
+
+    def find_next_selected_material_number(self):
+        """从当前尚未执行的路线中找下一个实际需要识别的物资点。"""
+        for goal in self.goal_queue:
+            number = self.find_material_number_for_goal(goal)
+            if number is not None:
+                return number
+        return None
+
+    def prepare_material_scan_for_pending_route(self):
+        """在行驶过程中预置下一物资点的局部扫描，普通中转点不改变目标。"""
+        if self.shooting_mode_active:
+            return
+
+        # 物资到达后的三秒窗口内，云台必须继续扫描当前点。即使底盘已经
+        # 启动下一个导航目标，也不能由本函数提前覆盖扫描目标。
+        if self.pending_material_scan_target is not None:
+            return
+
+        pending_goals = [self.current_goal] + list(self.goal_queue)
+        next_number = None
+        for goal in pending_goals:
+            next_number = self.find_material_number_for_goal(goal)
+            if next_number is not None:
+                break
+
+        if next_number is None or next_number == self.active_material_scan_target:
+            return
+
+        self.material_scan_target_pub.publish(UInt8(data=next_number))
+        self.active_material_scan_target = next_number
+        rospy.loginfo(
+            "驶向物资点期间预扫描：点位 %d -> %s",
+            next_number, self.material_scan_target_topic)
+
+    def schedule_next_material_scan_if_available(self):
+        """只调度云台切换；不修改底盘导航计时或队列。"""
+        next_number = self.find_next_selected_material_number()
+        if next_number is None:
+            rospy.loginfo("当前为最后一个物资点，云台保持扫描直到打靶点到达")
+            return
+
+        if self.material_scan_switch_timer is not None:
+            self.material_scan_switch_timer.shutdown()
+
+        self.pending_material_scan_target = next_number
+        self.material_scan_switch_timer = rospy.Timer(
+            rospy.Duration(self.material_scan_switch_delay),
+            self.material_scan_switch_timer_callback, oneshot=True)
+        rospy.loginfo(
+            "物资到达通知已发布；云台继续扫描当前点，%.1f 秒后切换到点位 %d",
+            self.material_scan_switch_delay, next_number)
+
+    def material_scan_switch_timer_callback(self, _event):
+        """独立于底盘状态，在三秒后切换云台局部扫描目标。"""
+        next_number = self.pending_material_scan_target
+        self.material_scan_switch_timer = None
+        self.pending_material_scan_target = None
+        if next_number is None or self.shooting_mode_active:
+            return
+
+        self.material_scan_target_pub.publish(UInt8(data=next_number))
+        self.active_material_scan_target = next_number
+        rospy.loginfo(
+            "云台独立计时结束，已切换扫描点位 %d -> %s",
+            next_number, self.material_scan_target_topic)
+
+    def stop_material_scan_and_center(self):
+        """打靶点到达后回到全局中心，并阻止视觉覆盖直到模型就绪。"""
+        if self.material_scan_switch_timer is not None:
+            self.material_scan_switch_timer.shutdown()
+            self.material_scan_switch_timer = None
+        self.pending_material_scan_target = None
+        self.material_scan_target_pub.publish(UInt8(data=0))
+        self.active_material_scan_target = None
+        rospy.loginfo(
+            "打靶点已到达：%s=0，云台回中心并等待打靶模型",
+            self.material_scan_target_topic)
 
     def publish_arrived_material_if_needed(self):
         """
